@@ -27,7 +27,13 @@ export function DataTable<T>({
   caption: string;
 }) {
   return (
-    <div className="relative overflow-x-auto rounded-xl border border-drs-ink/10 bg-drs-white shadow-sm">
+    <div
+      // Focusable so keyboard users can scroll a table that is wider than a phone screen.
+      role="region"
+      aria-label={caption}
+      tabIndex={0}
+      className="relative overflow-x-auto rounded-xl border border-drs-ink/10 bg-drs-white shadow-sm"
+    >
       <table className="w-full min-w-full text-left text-sm">
         <caption className="sr-only">{caption}</caption>
         <thead className="border-b border-drs-ink/10 bg-drs-cream/60">

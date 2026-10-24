@@ -32,7 +32,12 @@ export function ChartFrame({
         <summary className="inline-flex min-h-11 cursor-pointer items-center font-medium text-drs-green">
           Show data table
         </summary>
-        <div className="relative mt-2 max-h-72 overflow-auto rounded-lg border border-drs-ink/10">
+        <div
+          role="region"
+          aria-label={`${title} data`}
+          tabIndex={0}
+          className="relative mt-2 max-h-72 overflow-auto rounded-lg border border-drs-ink/10"
+        >
           <table className="w-full text-left text-sm">
             <caption className="sr-only">{title} — data</caption>
             <thead className="bg-drs-cream/60">
