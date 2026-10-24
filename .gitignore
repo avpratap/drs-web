@@ -6,3 +6,9 @@ dist/
 .env.*
 !.env.example
 *.log
+coverage/
+playwright-report/
+test-results/
+*.tsbuildinfo
+next-env.d.ts
+.vercel
