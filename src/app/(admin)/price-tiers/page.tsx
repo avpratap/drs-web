@@ -6,6 +6,7 @@ import { TierTypeBadge } from "@/components/catalog/tier-badge";
 import { ButtonLink } from "@/components/ui/button";
 import { PageHeader } from "@/components/ui/card";
 import { DataTable, type Column } from "@/components/ui/table";
+import { RowLink } from "@/components/ui/links";
 import type { components } from "@/lib/api/client";
 
 type Tier = components["schemas"]["PriceTierOut"];
@@ -27,12 +28,9 @@ const columns: Column<Tier>[] = [
     header: "Actions",
     className: "text-right",
     cell: (t) => (
-      <Link
-        href={`/price-tiers/${t.id}/edit`}
-        className="inline-flex min-h-11 items-center px-2 text-sm font-medium text-drs-green hover:underline"
-      >
-        Edit<span className="sr-only"> {t.code}</span>
-      </Link>
+      <RowLink href={`/price-tiers/${t.id}/edit`} srLabel={t.code}>
+        Edit
+      </RowLink>
     ),
   },
 ];

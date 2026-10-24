@@ -986,7 +986,11 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    get?: never;
+    /**
+     * Get Variant
+     * @description One variant by id, whatever its status (admin edit screens).
+     */
+    get: operations["get_variant"];
     put?: never;
     post?: never;
     /** Retire Variant */
@@ -2754,6 +2758,26 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/admin/support/tickets/{ticket_id}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Admin Get Ticket
+     * @description Any ticket with its thread (the customer endpoint only serves the owner's).
+     */
+    get: operations["admin_get_ticket"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/admin/support/tickets/{ticket_id}/messages": {
     parameters: {
       query?: never;
@@ -2813,7 +2837,11 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    get?: never;
+    /**
+     * Admin Get Article
+     * @description One article in any status (drafts included) for the admin editor.
+     */
+    get: operations["admin_get_article"];
     put?: never;
     post?: never;
     /** Delete Article */
@@ -2883,7 +2911,8 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    get?: never;
+    /** Admin Get Page */
+    get: operations["admin_get_page"];
     put?: never;
     post?: never;
     /** Delete Page */
@@ -2953,7 +2982,8 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    get?: never;
+    /** Admin Get Banner */
+    get: operations["admin_get_banner"];
     put?: never;
     post?: never;
     /** Delete Banner */
@@ -3342,6 +3372,27 @@ export interface paths {
      * @description Fire a test delivery at this webhook (uses the real dispatch, fail-soft).
      */
     post: operations["test_outbound_webhook"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/admin/products": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Admin List Products
+     * @description Catalogue list for the admin dashboard. Unlike the storefront `/products`
+     *     (active only, cached) this can include retired products and reports a total.
+     */
+    get: operations["admin_list_products"];
+    put?: never;
+    post?: never;
     delete?: never;
     options?: never;
     head?: never;
@@ -3868,6 +3919,67 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/admin/accounts/{account_id}/wallet/transactions": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Wallet Transactions
+     * @description The account's append-only wallet ledger, newest first (txn_type as entry_type).
+     */
+    get: operations["admin_wallet_transactions"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/admin/accounts/{account_id}/credit/ledger": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Credit Ledger
+     * @description The account's postpaid receivables ledger (+charge, -payment/credit note), newest first.
+     */
+    get: operations["admin_credit_ledger"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/admin/delivery-orders/{order_id}/fulfillment": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Delivery Fulfillment
+     * @description Everything captured at the door for one delivery order: proof of delivery (with
+     *     signed, short-lived media URLs), cash/UPI collected and returned lines.
+     */
+    get: operations["admin_delivery_fulfillment"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/uploads": {
     parameters: {
       query?: never;
@@ -4013,6 +4125,26 @@ export interface components {
       order_count: number;
       /** Subscription Count */
       subscription_count: number;
+    };
+    /** AccountLedgerEntryOut */
+    AccountLedgerEntryOut: {
+      /** Id */
+      id: number;
+      /** Entry Type */
+      entry_type: string;
+      /** Amount */
+      amount: number;
+      /** Balance After */
+      balance_after: number;
+      /** Ref Type */
+      ref_type?: string | null;
+      /** Ref Id */
+      ref_id?: number | null;
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at: string;
     };
     /** AccountRow */
     AccountRow: {
@@ -4461,6 +4593,24 @@ export interface components {
       items: components["schemas"]["CartLineOut"][];
       /** Subtotal */
       subtotal: number;
+    };
+    /** CashCollectionOut */
+    CashCollectionOut: {
+      /** Id */
+      id: number;
+      /** Amount Collected */
+      amount_collected: number;
+      /** Method */
+      method: string;
+      /** Reference */
+      reference?: string | null;
+      /** Collected By */
+      collected_by?: number | null;
+      /**
+       * Collected At
+       * Format: date-time
+       */
+      collected_at: string;
     };
     /** CheckoutIn */
     CheckoutIn: {
@@ -4933,6 +5083,30 @@ export interface components {
       plan: {
         [key: string]: unknown;
       }[];
+    };
+    /** FulfillmentOut */
+    FulfillmentOut: {
+      order: components["schemas"]["DeliveryOrderOut"];
+      /**
+       * Pod
+       * @default []
+       */
+      pod: components["schemas"]["PODOut"][];
+      /**
+       * Cash
+       * @default []
+       */
+      cash: components["schemas"]["CashCollectionOut"][];
+      /**
+       * Returns
+       * @default []
+       */
+      returns: components["schemas"]["ReturnLineOut"][];
+      /**
+       * Cash Total
+       * @default 0
+       */
+      cash_total: number;
     };
     /** GRNIn */
     GRNIn: {
@@ -5519,6 +5693,30 @@ export interface components {
       lng?: number | null;
       /** Note */
       note?: string | null;
+    };
+    /** PODOut */
+    PODOut: {
+      /** Id */
+      id: number;
+      /** Delivered By */
+      delivered_by?: number | null;
+      /** Recipient Name */
+      recipient_name?: string | null;
+      /** Photo Url */
+      photo_url?: string | null;
+      /** Signature Url */
+      signature_url?: string | null;
+      /** Lat */
+      lat?: number | null;
+      /** Lng */
+      lng?: number | null;
+      /** Note */
+      note?: string | null;
+      /**
+       * Captured At
+       * Format: date-time
+       */
+      captured_at: string;
     };
     /** POIn */
     POIn: {
@@ -6475,6 +6673,22 @@ export interface components {
       qty_returned: number;
       /** Reason */
       reason: string;
+    };
+    /** ReturnLineOut */
+    ReturnLineOut: {
+      /** Id */
+      id: number;
+      /** Product Id */
+      product_id: number;
+      /** Qty Returned */
+      qty_returned: number;
+      /** Reason */
+      reason: string;
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at: string;
     };
     /** RevenuePoint */
     RevenuePoint: {
@@ -9265,6 +9479,37 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["ProductFullOut"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  get_variant: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        variant_id: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["VariantOut"];
         };
       };
       /** @description Validation Error */
@@ -13331,6 +13576,37 @@ export interface operations {
       };
     };
   };
+  admin_get_ticket: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        ticket_id: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["TicketOut"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
   admin_reply_ticket: {
     parameters: {
       query?: never;
@@ -13446,6 +13722,37 @@ export interface operations {
         "application/json": components["schemas"]["ArticleIn"];
       };
     };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ArticleOut"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  admin_get_article: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        article_id: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
     responses: {
       /** @description Successful Response */
       200: {
@@ -13658,6 +13965,37 @@ export interface operations {
       };
     };
   };
+  admin_get_page: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        page_id: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["PageOut"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
   delete_page: {
     parameters: {
       query?: never;
@@ -13828,6 +14166,37 @@ export interface operations {
         "application/json": components["schemas"]["BannerIn"];
       };
     };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["BannerOut"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  admin_get_banner: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        banner_id: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
     responses: {
       /** @description Successful Response */
       200: {
@@ -14682,6 +15051,41 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["WebhookDeliveryOut"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  admin_list_products: {
+    parameters: {
+      query?: {
+        status?: string;
+        q?: string | null;
+        category?: string | null;
+        limit?: number;
+        offset?: number;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ProductOut"][];
         };
       };
       /** @description Validation Error */
@@ -15618,6 +16022,105 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["TopProductOut"][];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  admin_wallet_transactions: {
+    parameters: {
+      query?: {
+        limit?: number;
+        offset?: number;
+      };
+      header?: never;
+      path: {
+        account_id: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["AccountLedgerEntryOut"][];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  admin_credit_ledger: {
+    parameters: {
+      query?: {
+        limit?: number;
+        offset?: number;
+      };
+      header?: never;
+      path: {
+        account_id: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["AccountLedgerEntryOut"][];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  admin_delivery_fulfillment: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        order_id: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["FulfillmentOut"];
         };
       };
       /** @description Validation Error */

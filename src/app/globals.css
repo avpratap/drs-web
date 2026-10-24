@@ -1,6 +1,18 @@
 @import "tailwindcss";
 @config "../../tailwind.config.ts";
 
+/* CSS custom properties for the palette (mirrors src/lib/brand.ts). Tailwind's JS-config
+   colours aren't emitted as variables, so anything using var() needs these. */
+:root {
+  --color-drs-green: #0d4c3c;
+  --color-drs-gold: #c5a253;
+  --color-drs-cream: #f4eade;
+  --color-drs-maroon: #3b0a1e;
+  --color-drs-sky: #6fc5f4;
+  --color-drs-ink: #1e1a1e;
+  --color-drs-white: #ffffff;
+}
+
 @layer base {
   html {
     -webkit-text-size-adjust: 100%;

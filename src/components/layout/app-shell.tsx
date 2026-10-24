@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/cn";
-import { NAV, isActive } from "./nav";
+import { NAV_GROUPS, isActive } from "./nav";
 import { Toaster } from "./toaster";
 
 function initials(name?: string): string {
@@ -24,7 +24,7 @@ function Brand() {
       </span>
       <span className="leading-tight">
         <span className="block text-base font-semibold tracking-wide text-drs-cream">DRS</span>
-        <span className="block text-[11px] tracking-[0.2em] text-drs-cream/75 uppercase">Admin</span>
+        <span className="block text-[11px] tracking-[0.2em] text-drs-cream/80 uppercase">Admin</span>
       </span>
     </Link>
   );
@@ -33,30 +33,41 @@ function Brand() {
 function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
   return (
-    <nav aria-label="Main" className="mt-8 flex flex-col gap-1">
-      {NAV.map((item) => {
-        const active = isActive(pathname, item.href);
-        return (
-          <Link
-            key={item.href}
-            href={item.href}
-            onClick={onNavigate}
-            aria-current={active ? "page" : undefined}
-            className={cn(
-              "relative flex min-h-11 items-center gap-3 rounded-lg px-3 text-sm font-medium transition-colors",
-              active
-                ? "bg-drs-cream/10 text-drs-cream"
-                : "text-drs-cream/80 hover:bg-drs-cream/5 hover:text-drs-cream",
-            )}
-          >
-            {active && <span aria-hidden className="absolute inset-y-2 left-0 w-1 rounded-r bg-drs-gold" />}
-            <span aria-hidden className="w-5 text-center">
-              {item.icon}
-            </span>
-            {item.label}
-          </Link>
-        );
-      })}
+    <nav aria-label="Main" className="mt-6 -mr-2 flex-1 overflow-y-auto pr-2 pb-4">
+      {NAV_GROUPS.map((group) => (
+        <div key={group.label || "home"} className="mt-4 first:mt-0">
+          {group.label && (
+            <p className="mb-1 px-3 text-[11px] font-semibold tracking-[0.18em] text-drs-cream/80 uppercase">
+              {group.label}
+            </p>
+          )}
+          <ul className="flex flex-col gap-0.5">
+            {group.items.map((item) => {
+              const active = isActive(pathname, item.href);
+              return (
+                <li key={item.href}>
+                  <Link
+                    href={item.href}
+                    onClick={onNavigate}
+                    aria-current={active ? "page" : undefined}
+                    className={cn(
+                      "relative flex min-h-10 items-center rounded-lg px-3 text-sm font-medium transition-colors",
+                      active
+                        ? "bg-drs-cream/10 text-drs-cream"
+                        : "text-drs-cream/80 hover:bg-drs-cream/5 hover:text-drs-cream",
+                    )}
+                  >
+                    {active && (
+                      <span aria-hidden className="absolute inset-y-2 left-0 w-1 rounded-r bg-drs-gold" />
+                    )}
+                    {item.label}
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      ))}
     </nav>
   );
 }
@@ -86,7 +97,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <aside className="on-dark sticky top-0 hidden h-dvh flex-col bg-drs-green px-4 py-6 lg:flex">
         <Brand />
         <SidebarNav />
-        <p className="mt-auto px-2 text-xs text-drs-cream/60">Since heritage · Pure dairy</p>
       </aside>
 
       {/* Mobile drawer */}

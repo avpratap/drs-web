@@ -34,16 +34,56 @@ export function Badge({
   );
 }
 
-const STATUS_TONE: Record<string, Tone> = {
-  active: "green",
-  inactive: "neutral",
-  draft: "neutral",
-  retired: "maroon",
-};
+const GREEN = [
+  "active",
+  "approved",
+  "paid",
+  "delivered",
+  "published",
+  "processed",
+  "resolved",
+  "completed",
+  "received",
+  "captured",
+  "success",
+  "sent",
+  "enabled",
+  "confirmed",
+  "settled",
+  "subscribed",
+];
+const MAROON = [
+  "retired",
+  "rejected",
+  "failed",
+  "cancelled",
+  "canceled",
+  "expired",
+  "voided",
+  "void",
+  "hidden",
+  "suspended",
+  "closed",
+  "unsubscribed",
+  "disabled",
+  "error",
+  "bounced",
+  "not_delivered",
+  "depleted",
+];
+
+/** Map any backend status string onto a tone (green = done/good, maroon = stopped/bad). */
+export function statusTone(status: string | null | undefined): Tone {
+  const s = (status ?? "").toLowerCase();
+  if (GREEN.includes(s)) return "green";
+  if (MAROON.includes(s)) return "maroon";
+  return "neutral";
+}
 
 export function StatusBadge({ status }: { status: string | null | undefined }) {
   const s = status ?? "unknown";
-  return <Badge tone={STATUS_TONE[s] ?? "neutral"}>{s.charAt(0).toUpperCase() + s.slice(1)}</Badge>;
+  const label = s.replace(/[_-]+/g, " ");
+  return <Badge tone={statusTone(s)}>{label.charAt(0).toUpperCase() + label.slice(1)}</Badge>;
 }
 
 /** Milk and buttermilk are the only places sky blue appears. */
@@ -52,6 +92,6 @@ export function isMilkLine(category: string | null | undefined): boolean {
 }
 
 export function CategoryBadge({ category }: { category: string | null | undefined }) {
-  if (!category) return <span className="text-drs-ink/50">—</span>;
+  if (!category) return <span className="text-drs-ink/70">—</span>;
   return <Badge tone={isMilkLine(category) ? "sky" : "neutral"}>{category}</Badge>;
 }

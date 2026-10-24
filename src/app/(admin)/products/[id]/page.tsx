@@ -8,6 +8,7 @@ import { ButtonLink } from "@/components/ui/button";
 import { Card, DescriptionList, PageHeader } from "@/components/ui/card";
 import { DeleteButton } from "@/components/ui/delete-button";
 import { DataTable, type Column } from "@/components/ui/table";
+import { RowLink } from "@/components/ui/links";
 import type { components } from "@/lib/api/client";
 import { inr } from "@/lib/forms";
 
@@ -47,12 +48,9 @@ export default function ProductShowPage() {
       header: "Actions",
       className: "text-right",
       cell: (v) => (
-        <Link
-          href={`/products/${id}/variants/${v.id}/edit`}
-          className="inline-flex min-h-11 items-center px-2 text-sm font-medium text-drs-green hover:underline"
-        >
-          Edit<span className="sr-only"> {v.label}</span>
-        </Link>
+        <RowLink href={`/products/${id}/variants/${v.id}/edit`} srLabel={v.label}>
+          Edit
+        </RowLink>
       ),
     },
   ];

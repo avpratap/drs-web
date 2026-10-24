@@ -27,7 +27,7 @@ export function DataTable<T>({
   caption: string;
 }) {
   return (
-    <div className="overflow-x-auto rounded-xl border border-drs-ink/10 bg-drs-white shadow-sm">
+    <div className="relative overflow-x-auto rounded-xl border border-drs-ink/10 bg-drs-white shadow-sm">
       <table className="w-full min-w-full text-left text-sm">
         <caption className="sr-only">{caption}</caption>
         <thead className="border-b border-drs-ink/10 bg-drs-cream/60">
@@ -96,12 +96,16 @@ export function DataTable<T>({
 
 export function Pager({
   page,
+  pageCount,
   hasNext,
   onPage,
+  total,
 }: {
   page: number;
+  pageCount?: number;
   hasNext: boolean;
   onPage: (p: number) => void;
+  total?: number;
 }) {
   const btn =
     "min-h-11 rounded-lg border border-drs-ink/15 bg-drs-white px-4 text-sm font-medium text-drs-green hover:border-drs-green disabled:cursor-not-allowed disabled:opacity-40";
@@ -110,8 +114,12 @@ export function Pager({
       <button type="button" className={btn} disabled={page <= 1} onClick={() => onPage(page - 1)}>
         Previous
       </button>
-      <span className="text-sm text-drs-ink/75" aria-live="polite">
+      <span className="text-center text-sm text-drs-ink/75" aria-live="polite">
         Page {page}
+        {pageCount ? ` of ${pageCount}` : ""}
+        {total !== undefined && (
+          <span className="hidden md:inline"> · {total.toLocaleString("en-IN")} total</span>
+        )}
       </span>
       <button type="button" className={btn} disabled={!hasNext} onClick={() => onPage(page + 1)}>
         Next

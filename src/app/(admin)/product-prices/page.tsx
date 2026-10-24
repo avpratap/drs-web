@@ -8,6 +8,7 @@ import { PriceWindowBadge } from "@/components/catalog/price-window-badge";
 import { ButtonLink } from "@/components/ui/button";
 import { PageHeader } from "@/components/ui/card";
 import { DataTable, Pager, type Column } from "@/components/ui/table";
+import { RowLink } from "@/components/ui/links";
 import type { components } from "@/lib/api/client";
 import { formatDate, inr } from "@/lib/forms";
 
@@ -16,14 +17,16 @@ type Price = components["schemas"]["ProductPriceOut"];
 export default function ProductPriceListPage() {
   const lookups = useCatalogLookups();
   const deepLinkProduct = useSearchParams().get("product_id");
-  const { result, tableQuery, currentPage, setCurrentPage, pageSize, filters, setFilters } = useTable<Price>({
-    resource: "product-prices",
-    pagination: { pageSize: 20 },
-    filters: deepLinkProduct
-      ? { initial: [{ field: "product_id", operator: "eq", value: deepLinkProduct }] }
-      : undefined,
-    syncWithLocation: true,
-  });
+  const { result, tableQuery, currentPage, setCurrentPage, pageCount, filters, setFilters } = useTable<Price>(
+    {
+      resource: "product-prices",
+      pagination: { pageSize: 20 },
+      filters: deepLinkProduct
+        ? { initial: [{ field: "product_id", operator: "eq", value: deepLinkProduct }] }
+        : undefined,
+      syncWithLocation: true,
+    },
+  );
   const productFilter = filters.find((f) => "field" in f && f.field === "product_id")?.value as
     string | undefined;
 
@@ -52,12 +55,9 @@ export default function ProductPriceListPage() {
       header: "Actions",
       className: "text-right",
       cell: (r) => (
-        <Link
-          href={`/product-prices/${r.id}/edit`}
-          className="inline-flex min-h-11 items-center px-2 text-sm font-medium text-drs-green hover:underline"
-        >
-          Edit<span className="sr-only"> price {r.id}</span>
-        </Link>
+        <RowLink href={`/product-prices/${r.id}/edit`} srLabel={`price ${r.id}`}>
+          Edit
+        </RowLink>
       ),
     },
   ];
@@ -107,7 +107,9 @@ export default function ProductPriceListPage() {
       />
       <Pager
         page={currentPage}
-        hasNext={(result.total ?? 0) > currentPage * pageSize}
+        pageCount={pageCount}
+        total={result.total}
+        hasNext={currentPage < pageCount}
         onPage={setCurrentPage}
       />
     </>

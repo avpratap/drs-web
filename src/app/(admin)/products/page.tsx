@@ -7,6 +7,7 @@ import { Badge, CategoryBadge, StatusBadge } from "@/components/ui/badge";
 import { ButtonLink } from "@/components/ui/button";
 import { PageHeader } from "@/components/ui/card";
 import { DataTable, Pager, type Column } from "@/components/ui/table";
+import { RowLink } from "@/components/ui/links";
 import type { components } from "@/lib/api/client";
 
 type Product = components["schemas"]["ProductOut"];
@@ -37,59 +38,79 @@ const columns: Column<Product>[] = [
     header: "Actions",
     className: "text-right",
     cell: (p) => (
-      <Link
-        href={`/products/${p.id}/edit`}
-        className="inline-flex min-h-11 items-center px-2 text-sm font-medium text-drs-green hover:underline"
-      >
-        Edit<span className="sr-only"> {p.name}</span>
-      </Link>
+      <RowLink href={`/products/${p.id}/edit`} srLabel={p.name}>
+        Edit
+      </RowLink>
     ),
   },
 ];
 
 export default function ProductListPage() {
-  const { result, tableQuery, currentPage, setCurrentPage, pageSize, setFilters, filters } =
+  const { result, tableQuery, currentPage, setCurrentPage, pageCount, setFilters, filters } =
     useTable<Product>({
       resource: "products",
       pagination: { pageSize: 20 },
       syncWithLocation: true,
     });
-  const initialQ = filters.find((f) => "field" in f && f.field === "q")?.value as string | undefined;
-  const [q, setQ] = useState(initialQ ?? "");
+  const value = (field: string) =>
+    filters.find((f) => "field" in f && f.field === field)?.value as string | undefined;
+  const [q, setQ] = useState(value("q") ?? "");
+  const setFilter = (field: string, v: string | undefined) =>
+    setFilters((prev) => [
+      ...prev.filter((f) => !("field" in f && f.field === field)),
+      { field, operator: "eq", value: v },
+    ]);
 
   return (
     <>
       <PageHeader
         title="Products"
-        description="Catalogue items with unit, GST and HSN details. Retired products are hidden."
+        description="Catalogue items with unit, GST and HSN details."
         actions={<ButtonLink href="/products/create">New product</ButtonLink>}
       />
-      <form
-        role="search"
-        className="mb-4 flex gap-2"
-        onSubmit={(e) => {
-          e.preventDefault();
-          setFilters([{ field: "q", operator: "contains", value: q || undefined }], "replace");
-        }}
-      >
-        <label htmlFor="product-search" className="sr-only">
-          Search products
-        </label>
-        <input
-          id="product-search"
-          type="search"
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-          placeholder="Search by name or SKU"
-          className="min-h-11 w-full max-w-md rounded-lg border border-drs-ink/20 bg-drs-white px-3 text-sm"
-        />
-        <button
-          type="submit"
-          className="min-h-11 rounded-lg border border-drs-green/30 bg-drs-white px-4 text-sm font-medium text-drs-green hover:border-drs-green"
+      <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-end">
+        <form
+          role="search"
+          className="flex flex-1 gap-2"
+          onSubmit={(e) => {
+            e.preventDefault();
+            setFilter("q", q.trim() || undefined);
+          }}
         >
-          Search
-        </button>
-      </form>
+          <label htmlFor="product-search" className="sr-only">
+            Search products
+          </label>
+          <input
+            id="product-search"
+            type="search"
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder="Search by name or SKU"
+            className="min-h-11 w-full max-w-md rounded-lg border border-drs-ink/20 bg-drs-white px-3 text-sm"
+          />
+          <button
+            type="submit"
+            className="min-h-11 rounded-lg border border-drs-green/30 bg-drs-white px-4 text-sm font-medium text-drs-green hover:border-drs-green"
+          >
+            Search
+          </button>
+        </form>
+        <div className="flex flex-col gap-1.5 md:w-48">
+          <label htmlFor="product-status" className="text-xs font-medium text-drs-ink/75">
+            Status
+          </label>
+          <select
+            id="product-status"
+            value={value("status") ?? ""}
+            onChange={(e) => setFilter("status", e.target.value || undefined)}
+            className="min-h-11 rounded-lg border border-drs-ink/20 bg-drs-white px-3 text-sm"
+          >
+            <option value="">All</option>
+            <option value="active">Active</option>
+            <option value="retired">Retired</option>
+          </select>
+        </div>
+      </div>
       <DataTable
         caption="Products"
         columns={columns}
@@ -101,7 +122,9 @@ export default function ProductListPage() {
       />
       <Pager
         page={currentPage}
-        hasNext={(result.total ?? 0) > currentPage * pageSize}
+        pageCount={pageCount}
+        total={result.total}
+        hasNext={currentPage < pageCount}
         onPage={setCurrentPage}
       />
     </>

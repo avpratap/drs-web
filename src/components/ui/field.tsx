@@ -2,7 +2,7 @@ import { useId } from "react";
 import { cn } from "@/lib/cn";
 
 const control =
-  "block w-full min-h-11 rounded-lg border bg-drs-white px-3 py-2 text-sm text-drs-ink placeholder:text-drs-ink/50 focus-visible:border-drs-green aria-[invalid=true]:border-drs-maroon";
+  "block w-full min-h-11 rounded-lg border bg-drs-white px-3 py-2 text-sm text-drs-ink placeholder:text-drs-ink/70 focus-visible:border-drs-green aria-[invalid=true]:border-drs-maroon";
 
 type FieldProps = {
   label: string;

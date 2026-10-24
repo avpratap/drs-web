@@ -3156,6 +3156,52 @@
       }
     },
     "/api/v1/products/variants/{variant_id}": {
+      "get": {
+        "tags": [
+          "products"
+        ],
+        "summary": "Get Variant",
+        "description": "One variant by id, whatever its status (admin edit screens).",
+        "operationId": "get_variant",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "variant_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Variant Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VariantOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
       "patch": {
         "tags": [
           "products"
@@ -10057,6 +10103,54 @@
         }
       }
     },
+    "/api/v1/admin/support/tickets/{ticket_id}": {
+      "get": {
+        "tags": [
+          "support"
+        ],
+        "summary": "Admin Get Ticket",
+        "description": "Any ticket with its thread (the customer endpoint only serves the owner's).",
+        "operationId": "admin_get_ticket",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "ticket_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Ticket Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TicketOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/admin/support/tickets/{ticket_id}/messages": {
       "post": {
         "tags": [
@@ -10297,6 +10391,52 @@
       }
     },
     "/api/v1/admin/content/articles/{article_id}": {
+      "get": {
+        "tags": [
+          "content"
+        ],
+        "summary": "Admin Get Article",
+        "description": "One article in any status (drafts included) for the admin editor.",
+        "operationId": "admin_get_article",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "article_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Article Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArticleOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
       "patch": {
         "tags": [
           "content"
@@ -10595,6 +10735,51 @@
       }
     },
     "/api/v1/admin/content/pages/{page_id}": {
+      "get": {
+        "tags": [
+          "content"
+        ],
+        "summary": "Admin Get Page",
+        "operationId": "admin_get_page",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "page_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Page Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
       "patch": {
         "tags": [
           "content"
@@ -10893,6 +11078,51 @@
       }
     },
     "/api/v1/admin/content/banners/{banner_id}": {
+      "get": {
+        "tags": [
+          "content"
+        ],
+        "summary": "Admin Get Banner",
+        "operationId": "admin_get_banner",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "banner_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Banner Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BannerOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
       "patch": {
         "tags": [
           "content"
@@ -12305,6 +12535,115 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/WebhookDeliveryOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/products": {
+      "get": {
+        "tags": [
+          "admin-tools"
+        ],
+        "summary": "Admin List Products",
+        "description": "Catalogue list for the admin dashboard. Unlike the storefront `/products`\n(active only, cached) this can include retired products and reports a total.",
+        "operationId": "admin_list_products",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^(all|active|retired)$",
+              "default": "all",
+              "title": "Status"
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Q"
+            }
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Category"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 200,
+              "minimum": 1,
+              "default": 50,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ProductOut"
+                  },
+                  "title": "Response Admin List Products"
                 }
               }
             }
@@ -14105,6 +14444,204 @@
         }
       }
     },
+    "/api/v1/admin/accounts/{account_id}/wallet/transactions": {
+      "get": {
+        "tags": [
+          "admin-ops"
+        ],
+        "summary": "Wallet Transactions",
+        "description": "The account's append-only wallet ledger, newest first (txn_type as entry_type).",
+        "operationId": "admin_wallet_transactions",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "account_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Account Id"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 200,
+              "minimum": 1,
+              "default": 50,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AccountLedgerEntryOut"
+                  },
+                  "title": "Response Admin Wallet Transactions"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/accounts/{account_id}/credit/ledger": {
+      "get": {
+        "tags": [
+          "admin-ops"
+        ],
+        "summary": "Credit Ledger",
+        "description": "The account's postpaid receivables ledger (+charge, -payment/credit note), newest first.",
+        "operationId": "admin_credit_ledger",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "account_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Account Id"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 200,
+              "minimum": 1,
+              "default": 50,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AccountLedgerEntryOut"
+                  },
+                  "title": "Response Admin Credit Ledger"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/delivery-orders/{order_id}/fulfillment": {
+      "get": {
+        "tags": [
+          "admin-ops"
+        ],
+        "summary": "Delivery Fulfillment",
+        "description": "Everything captured at the door for one delivery order: proof of delivery (with\nsigned, short-lived media URLs), cash/UPI collected and returned lines.",
+        "operationId": "admin_delivery_fulfillment",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "order_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Order Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FulfillmentOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/uploads": {
       "post": {
         "tags": [
@@ -14463,6 +15000,62 @@
           "subscription_count"
         ],
         "title": "AccountDetailOut"
+      },
+      "AccountLedgerEntryOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "entry_type": {
+            "type": "string",
+            "title": "Entry Type"
+          },
+          "amount": {
+            "type": "number",
+            "title": "Amount"
+          },
+          "balance_after": {
+            "type": "number",
+            "title": "Balance After"
+          },
+          "ref_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ref Type"
+          },
+          "ref_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ref Id"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "entry_type",
+          "amount",
+          "balance_after",
+          "created_at"
+        ],
+        "title": "AccountLedgerEntryOut"
       },
       "AccountRow": {
         "properties": {
@@ -16116,6 +16709,57 @@
         ],
         "title": "CartOut"
       },
+      "CashCollectionOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "amount_collected": {
+            "type": "number",
+            "title": "Amount Collected"
+          },
+          "method": {
+            "type": "string",
+            "title": "Method"
+          },
+          "reference": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reference"
+          },
+          "collected_by": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Collected By"
+          },
+          "collected_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Collected At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "amount_collected",
+          "method",
+          "collected_at"
+        ],
+        "title": "CashCollectionOut"
+      },
       "CheckoutIn": {
         "properties": {
           "address": {
@@ -17494,6 +18138,47 @@
           "plan"
         ],
         "title": "ForecastOut"
+      },
+      "FulfillmentOut": {
+        "properties": {
+          "order": {
+            "$ref": "#/components/schemas/DeliveryOrderOut"
+          },
+          "pod": {
+            "items": {
+              "$ref": "#/components/schemas/PODOut"
+            },
+            "type": "array",
+            "title": "Pod",
+            "default": []
+          },
+          "cash": {
+            "items": {
+              "$ref": "#/components/schemas/CashCollectionOut"
+            },
+            "type": "array",
+            "title": "Cash",
+            "default": []
+          },
+          "returns": {
+            "items": {
+              "$ref": "#/components/schemas/ReturnLineOut"
+            },
+            "type": "array",
+            "title": "Returns",
+            "default": []
+          },
+          "cash_total": {
+            "type": "number",
+            "title": "Cash Total",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "required": [
+          "order"
+        ],
+        "title": "FulfillmentOut"
       },
       "GRNIn": {
         "properties": {
@@ -19244,6 +19929,102 @@
         },
         "type": "object",
         "title": "PODIn"
+      },
+      "PODOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "delivered_by": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Delivered By"
+          },
+          "recipient_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Recipient Name"
+          },
+          "photo_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Photo Url"
+          },
+          "signature_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Signature Url"
+          },
+          "lat": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lat"
+          },
+          "lng": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lng"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          },
+          "captured_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Captured At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "captured_at"
+        ],
+        "title": "PODOut"
       },
       "POIn": {
         "properties": {
@@ -22210,6 +22991,40 @@
           "reason"
         ],
         "title": "ReturnIn"
+      },
+      "ReturnLineOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "product_id": {
+            "type": "integer",
+            "title": "Product Id"
+          },
+          "qty_returned": {
+            "type": "number",
+            "title": "Qty Returned"
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "product_id",
+          "qty_returned",
+          "reason",
+          "created_at"
+        ],
+        "title": "ReturnLineOut"
       },
       "RevenuePoint": {
         "properties": {

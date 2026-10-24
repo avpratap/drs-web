@@ -28,7 +28,7 @@ export function Toaster() {
             <button
               type="button"
               onClick={() => toastStore.dismiss(t.key)}
-              className="-m-2 p-2 text-drs-ink/60 hover:text-drs-ink"
+              className="-m-2 p-2 text-drs-ink/70 hover:text-drs-ink"
               aria-label="Dismiss notification"
             >
               ×

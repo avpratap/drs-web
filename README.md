@@ -70,18 +70,40 @@ Login  ──► /api/auth/otp/request ─► POST /api/v1/auth/otp/request
   remains the authority (`require_role("admin")` on every admin endpoint).
 - **Pagination** — the API has `limit/offset` but no totals, so lists fetch `pageSize + 1` to know if a next page exists.
 
-### Catalog (Phase 1)
+### Modules
 
-| Resource       | Routes                                                                       | Endpoints                                                          |
-| -------------- | ---------------------------------------------------------------------------- | ------------------------------------------------------------------ |
-| Products       | `/products`, `/create`, `/:id`, `/:id/edit`                                  | `/api/v1/products` (DELETE = retire)                               |
-| Variants       | `/products/:id` (list), `/products/:id/variants/create`, `…/:variantId/edit` | `/api/v1/products/{id}/variants`, `/api/v1/products/variants/{id}` |
-| Price tiers    | `/price-tiers…`                                                              | `/api/v1/admin/price-tiers`                                        |
-| Product prices | `/product-prices…` (`?product_id=` filter)                                   | `/api/v1/admin/product-prices`                                     |
+All screens are Refine resources over the typed client (`src/modules/*/handlers.ts`), registered in
+`src/modules/registry.ts` (data) and `src/modules/resources.ts` (routes). Generic building blocks live in
+`src/components/resource/` (list with filters + pagination, field grid, form, action dialog, line items).
+
+| Phase | Area      | Screens                                                                                                                                                                                                                                                                      |
+| ----- | --------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1     | Catalog   | Products (status filter incl. retired), variants, price tiers, product prices                                                                                                                                                                                                |
+| 2     | Billing   | Accounts & wallets (balances, wallet ledger, credit ledger, top-up, adjust, settle credit, type & tier), withdrawals (approve/reject)                                                                                                                                        |
+| 2     | Payments  | Payments (refund), refunds (reconcile)                                                                                                                                                                                                                                       |
+| 2     | Inventory | Stock (low stock, reorder suggestions, adjust, wastage, reorder point, movements), batches (FEFO, receive, expire), locations, transfers (dispatch/receive/cancel), suppliers, purchase orders (place, GRN receive, cancel), BOMs, production orders (start/complete/cancel) |
+| 2     | Delivery  | Daily deliveries (date, summary, cash collected), fulfilment detail (POD photo/signature/GPS, cash, returns, mark failed, invoice), orders (cancel)                                                                                                                          |
+| 3     | Insights  | Reports (KPIs, revenue & orders trend, top products — with data tables), audit log                                                                                                                                                                                           |
+| 3     | Content   | Banners, articles & pages (publish/unpublish), newsletter subscribers                                                                                                                                                                                                        |
+| 3     | Customers | Support tickets (thread, reply, status), ratings moderation (approve/reject/hide, reply), coupons                                                                                                                                                                            |
+| 3     | System    | Feature flags                                                                                                                                                                                                                                                                |
+
+**Backend requirements** (added in [avpratap/drs-backend#2](https://github.com/avpratap/drs-backend/pull/2)):
+`X-Total-Count` on admin lists, `GET /admin/products?status=`, `GET /products/variants/{id}`, account wallet/credit
+ledgers, delivery fulfilment (POD + cash), and admin GETs for tickets/articles/pages/banners.
+
+### Running locally without the backend
+
+`e2e/mock-api.mjs` is a stateful fake of the API (seeded with realistic data) used by the e2e suite:
+
+```bash
+node e2e/mock-api.mjs                                   # :8787
+NEXT_PUBLIC_API_BASE=http://127.0.0.1:8787 pnpm dev     # http://localhost:3000 — any mobile, OTP 123456
+```
 
 ## Brand & accessibility
 
-Palette lives in `tailwind.config.ts` under `theme.extend.colors.drs` (loaded via `@config` in `globals.css`):
+Palette lives in `src/lib/brand.ts`, exposed as `theme.extend.colors.drs` in `tailwind.config.ts` (loaded via `@config`) and as `--color-drs-*` CSS variables in `globals.css`:
 green `#0D4C3C`, gold `#C5A253`, cream `#F4EADE`, maroon `#3B0A1E`, sky `#6FC5F4`, ink `#1E1A1E`, white.
 Font: Poppins via `next/font`.
 
@@ -99,6 +121,9 @@ Import the repo, framework preset **Next.js**, set `NEXT_PUBLIC_API_BASE`, deplo
 
 ## Tests
 
-- `tests/unit` — error mapping, pagination, JWT/phone helpers, single-flight refresh, badges, login form (RTL).
-- `e2e/smoke.spec.ts` — starts `e2e/mock-api.mjs` (a tiny fake backend) and a production build, then logs in with
-  OTP and checks the product list at mobile and 1440px viewports. First run: `pnpm exec playwright install chromium`.
+- **Unit (Vitest + RTL, `tests/unit`)** — helpers, data provider, one handler/action suite per module (exact
+  method/path/query/body/Idempotency-Key per call), UI components (action dialog, line items, charts, tabs, POD
+  viewer, filters) and page flows per module rendered inside Refine with a stubbed fetch.
+- **E2E (Playwright, `e2e/`)** — login/logout/role gate plus every major flow of each phase, run at **360, 768,
+  1024 and 1440 px**. Each visited page is checked with **axe-core (WCAG 2.1 A/AA)** and for horizontal page
+  overflow. The suite builds the app against `e2e/mock-api.mjs`. First run: `pnpm exec playwright install chromium`.

@@ -18,13 +18,13 @@ export default function LoginPage() {
           <span className="text-lg font-semibold tracking-wide">DRS</span>
         </div>
         <div>
-          <p className="text-xs tracking-[0.3em] text-drs-cream/75 uppercase">Admin console</p>
+          <p className="text-xs tracking-[0.3em] text-drs-cream/80 uppercase">Admin console</p>
           <h1 className="mt-4 max-w-md text-4xl leading-tight font-semibold">
             Heritage dairy, run with care.
           </h1>
           <div aria-hidden className="mt-6 h-0.5 w-16 bg-drs-gold" />
         </div>
-        <p className="text-sm text-drs-cream/70">Authorised staff only.</p>
+        <p className="text-sm text-drs-cream/80">Authorised staff only.</p>
       </section>
       <main className="flex items-center justify-center px-4 py-12">
         <div className="w-full max-w-sm">
