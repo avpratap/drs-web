@@ -83,3 +83,34 @@ export function renderWithRefine(ui: React.ReactNode, dp: DataProvider = dataPro
     </Refine>,
   );
 }
+
+/** Open a custom Select and choose the option with this value (or accessible name). */
+export async function pick(
+  user: { click: (el: Element) => Promise<void> },
+  trigger: HTMLElement,
+  value: string | RegExp,
+) {
+  await user.click(trigger);
+  const list = document.getElementById(trigger.getAttribute("aria-controls") ?? "");
+  if (!list) throw new Error("Select listbox did not open");
+  const option =
+    typeof value === "string"
+      ? list.querySelector<HTMLElement>(`[role="option"][data-value="${CSS.escape(value)}"]`)
+      : Array.from(list.querySelectorAll<HTMLElement>('[role="option"]')).find((o) =>
+          value.test(o.textContent ?? ""),
+        );
+  if (!option) throw new Error(`No option ${String(value)}`);
+  await user.click(option);
+}
+
+/** Labels of a custom Select's options (opens it, reads them, closes it again). */
+export async function optionLabels(
+  user: { click: (el: Element) => Promise<void>; keyboard: (k: string) => Promise<void> },
+  trigger: HTMLElement,
+) {
+  await user.click(trigger);
+  const list = document.getElementById(trigger.getAttribute("aria-controls") ?? "");
+  const labels = Array.from(list?.querySelectorAll('[role="option"]') ?? []).map((o) => o.textContent ?? "");
+  await user.keyboard("{Escape}");
+  return labels;
+}

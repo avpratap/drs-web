@@ -4,11 +4,14 @@ import { useTable } from "@refinedev/core";
 import Link from "next/link";
 import { useState } from "react";
 import { Badge, CategoryBadge, StatusBadge } from "@/components/ui/badge";
-import { ButtonLink } from "@/components/ui/button";
+import { ButtonLink, buttonClass } from "@/components/ui/button";
 import { PageHeader } from "@/components/ui/card";
+import { SearchInput } from "@/components/ui/search-input";
+import { Select } from "@/components/ui/select";
 import { DataTable, Pager, type Column } from "@/components/ui/table";
 import { RowLink } from "@/components/ui/links";
 import type { components } from "@/lib/api/client";
+import { OPTIONS } from "@/modules/options";
 
 type Product = components["schemas"]["ProductOut"];
 
@@ -68,10 +71,10 @@ export default function ProductListPage() {
         description="Catalogue items with unit, GST and HSN details."
         actions={<ButtonLink href="/products/create">New product</ButtonLink>}
       />
-      <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-end">
+      <div className="mb-4 flex flex-col gap-3 md:flex-row md:flex-wrap md:items-end">
         <form
           role="search"
-          className="flex flex-1 gap-2"
+          className="flex w-full gap-2 md:w-auto md:min-w-80 md:flex-1 lg:max-w-md"
           onSubmit={(e) => {
             e.preventDefault();
             setFilter("q", q.trim() || undefined);
@@ -80,35 +83,29 @@ export default function ProductListPage() {
           <label htmlFor="product-search" className="sr-only">
             Search products
           </label>
-          <input
+          <SearchInput
             id="product-search"
-            type="search"
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder="Search by name or SKU"
-            className="min-h-11 w-full max-w-md rounded-lg border border-drs-ink/20 bg-drs-white px-3 text-sm"
           />
-          <button
-            type="submit"
-            className="min-h-11 rounded-lg border border-drs-green/30 bg-drs-white px-4 text-sm font-medium text-drs-green hover:border-drs-green"
-          >
+          <button type="submit" className={buttonClass("secondary")}>
             Search
           </button>
         </form>
-        <div className="flex flex-col gap-1.5 md:w-48">
+        <div className="flex flex-col gap-1.5 md:w-auto md:min-w-40">
           <label htmlFor="product-status" className="text-xs font-medium text-drs-ink/75">
             Status
           </label>
-          <select
+          <Select
             id="product-status"
+            fit
+            clearable
+            placeholder="All"
             value={value("status") ?? ""}
-            onChange={(e) => setFilter("status", e.target.value || undefined)}
-            className="min-h-11 rounded-lg border border-drs-ink/20 bg-drs-white px-3 text-sm"
-          >
-            <option value="">All</option>
-            <option value="active">Active</option>
-            <option value="retired">Retired</option>
-          </select>
+            onChange={(v) => setFilter("status", v === "" ? undefined : String(v))}
+            options={OPTIONS.productStatus}
+          />
         </div>
       </div>
       <DataTable

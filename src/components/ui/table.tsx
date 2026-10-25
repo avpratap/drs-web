@@ -1,3 +1,4 @@
+import { buttonClass } from "@/components/ui/button";
 import { cn } from "@/lib/cn";
 
 export type Column<T> = {
@@ -113,8 +114,10 @@ export function Pager({
   onPage: (p: number) => void;
   total?: number;
 }) {
-  const btn =
-    "min-h-11 rounded-lg border border-drs-ink/15 bg-drs-white px-4 text-sm font-medium text-drs-green hover:border-drs-green disabled:cursor-not-allowed disabled:opacity-40";
+  const btn = buttonClass(
+    "secondary",
+    "disabled:border-drs-ink/15 disabled:bg-drs-white disabled:opacity-40",
+  );
   return (
     <nav aria-label="Pagination" className="mt-4 flex items-center justify-between gap-2">
       <button type="button" className={btn} disabled={page <= 1} onClick={() => onPage(page - 1)}>

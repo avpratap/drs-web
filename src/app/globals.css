@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "tw-animate-css";
 @config "../../tailwind.config.ts";
 
 /* CSS custom properties for the palette (mirrors src/lib/brand.ts). Tailwind's JS-config
@@ -11,6 +12,56 @@
   --color-drs-sky: #6fc5f4;
   --color-drs-ink: #1e1a1e;
   --color-drs-white: #ffffff;
+
+  /* shadcn/ui semantic tokens on the DRS palette (no shadcn neutral palette). Concrete colour
+     values, not var() chains, so every utility built on them (bg-popover, bg-card…) always
+     resolves to an opaque colour. The app's own components use the drs-* classes directly. */
+  --radius: 0.5rem;
+  --background: #f4eade; /* cream */
+  --foreground: #1e1a1e; /* ink */
+  --card: #ffffff;
+  --card-foreground: #1e1a1e;
+  --popover: #ffffff;
+  --popover-foreground: #1e1a1e;
+  --primary: #0d4c3c; /* green */
+  --primary-foreground: #f4eade;
+  --secondary: #f4eade;
+  --secondary-foreground: #0d4c3c;
+  --muted: #f8f2eb; /* cream 60% on white */
+  --muted-foreground: rgb(30 26 30 / 0.72);
+  --accent: #e7edeb; /* green 10% on white */
+  --accent-foreground: #0d4c3c;
+  --destructive: #3b0a1e; /* maroon */
+  --destructive-foreground: #f4eade;
+  --border: rgb(30 26 30 / 0.2);
+  --input: rgb(30 26 30 / 0.2);
+  --ring: #0d4c3c;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
 }
 
 @layer base {
@@ -24,6 +75,48 @@
   :focus-visible {
     outline: 2px solid var(--color-drs-green);
     outline-offset: 2px;
+  }
+  ::selection {
+    background-color: rgb(13 76 60 / 0.18);
+  }
+  input,
+  textarea {
+    caret-color: var(--color-drs-green);
+  }
+  textarea {
+    resize: vertical;
+  }
+  /* Number fields: no browser spinners (values are typed; steppers look off-brand). */
+  input[type="number"] {
+    -moz-appearance: textfield;
+    appearance: textfield;
+  }
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  /* Search fields: drop the browser's own clear (×) and magnifier decorations. */
+  input[type="search"]::-webkit-search-cancel-button,
+  input[type="search"]::-webkit-search-decoration {
+    -webkit-appearance: none;
+  }
+  /* Autofill keeps the white field instead of the browser's yellow/blue tint. */
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus {
+    -webkit-text-fill-color: var(--color-drs-ink);
+    box-shadow: 0 0 0 1000px var(--color-drs-white) inset;
+    transition: background-color 9999s ease-out;
+  }
+  /* Slim, on-brand scrollbars. */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(30 26 30 / 0.25) transparent;
+  }
+  .on-dark,
+  .on-dark * {
+    scrollbar-color: rgb(244 234 222 / 0.3) transparent;
   }
   .on-dark :focus-visible {
     outline-color: var(--color-drs-gold);

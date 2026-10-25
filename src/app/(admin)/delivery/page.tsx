@@ -5,6 +5,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ResourceList } from "@/components/resource/resource-list";
 import { StatusBadge } from "@/components/ui/badge";
 import { PageHeader } from "@/components/ui/card";
+import { DatePicker } from "@/components/ui/date-picker";
 import { RowLink, TextLink } from "@/components/ui/links";
 import { StatCard, StatGrid } from "@/components/ui/stat";
 import type { Column } from "@/components/ui/table";
@@ -74,12 +75,11 @@ export default function DeliveryPage() {
             <label htmlFor="delivery-date" className="text-xs font-medium text-drs-ink/75">
               Delivery date
             </label>
-            <input
+            <DatePicker
               id="delivery-date"
-              type="date"
               value={date}
-              onChange={(e) => router.replace(`${pathname}?date=${e.target.value || todayIST()}`)}
-              className="min-h-11 rounded-lg border border-drs-ink/20 bg-drs-white px-3 text-sm"
+              onChange={(v) => router.replace(`${pathname}?date=${v || todayIST()}`)}
+              className="md:w-48"
             />
           </div>
         }

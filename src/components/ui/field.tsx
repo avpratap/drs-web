@@ -1,8 +1,11 @@
 import { useId } from "react";
 import { cn } from "@/lib/cn";
+import { Checkbox } from "./checkbox";
 
-const control =
-  "block w-full min-h-11 rounded-lg border bg-drs-white px-3 py-2 text-sm text-drs-ink placeholder:text-drs-ink/70 focus-visible:border-drs-green aria-[invalid=true]:border-drs-maroon";
+/** Text-input styling shared by every control (inputs, Select trigger): 44px, radius-lg, ink/20 border. */
+export const inputClass =
+  "block w-full min-h-11 rounded-lg border border-drs-ink/20 bg-drs-white px-3 py-2 text-sm text-drs-ink transition-colors placeholder:text-drs-ink/70 hover:border-drs-green/50 focus-visible:border-drs-green aria-[invalid=true]:border-drs-maroon read-only:hover:border-drs-ink/20";
+const control = inputClass;
 
 type FieldProps = {
   label: string;
@@ -55,15 +58,39 @@ export function Field({ label, error, hint, required, className, children }: Fie
   );
 }
 
-export function Checkbox({
+/** A labelled checkbox (shadcn/Radix Checkbox); the whole row is the click target. */
+export function CheckboxField({
   label,
-  ...rest
-}: React.InputHTMLAttributes<HTMLInputElement> & { label: string }) {
+  checked,
+  onCheckedChange,
+  onBlur,
+  disabled,
+  name,
+}: {
+  label: string;
+  checked: boolean;
+  onCheckedChange: (checked: boolean) => void;
+  onBlur?: () => void;
+  disabled?: boolean;
+  name?: string;
+}) {
   const id = useId();
   return (
-    <label htmlFor={id} className="flex min-h-11 cursor-pointer items-center gap-3 text-sm">
-      <input id={id} type="checkbox" className="size-5 rounded accent-drs-green" {...rest} />
-      {label}
-    </label>
+    <div className="flex min-h-11 items-center gap-3">
+      <Checkbox
+        id={id}
+        name={name}
+        checked={checked}
+        disabled={disabled}
+        onBlur={onBlur}
+        onCheckedChange={(v) => onCheckedChange(v === true)}
+      />
+      <label
+        htmlFor={id}
+        className="cursor-pointer text-sm text-drs-ink peer-disabled:cursor-not-allowed peer-disabled:opacity-60"
+      >
+        {label}
+      </label>
+    </div>
   );
 }

@@ -2,10 +2,8 @@
 
 import { useGetIdentity, useLogout } from "@refinedev/core";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { cn } from "@/lib/cn";
-import { NAV_GROUPS, isActive } from "./nav";
+import { SidebarNav } from "./sidebar-nav";
 import { Toaster } from "./toaster";
 
 function initials(name?: string): string {
@@ -27,48 +25,6 @@ function Brand() {
         <span className="block text-[11px] tracking-[0.2em] text-drs-cream/80 uppercase">Admin</span>
       </span>
     </Link>
-  );
-}
-
-function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
-  const pathname = usePathname();
-  return (
-    <nav aria-label="Main" className="mt-6 -mr-2 flex-1 overflow-y-auto pr-2 pb-4">
-      {NAV_GROUPS.map((group) => (
-        <div key={group.label || "home"} className="mt-4 first:mt-0">
-          {group.label && (
-            <p className="mb-1 px-3 text-[11px] font-semibold tracking-[0.18em] text-drs-cream/80 uppercase">
-              {group.label}
-            </p>
-          )}
-          <ul className="flex flex-col gap-0.5">
-            {group.items.map((item) => {
-              const active = isActive(pathname, item.href);
-              return (
-                <li key={item.href}>
-                  <Link
-                    href={item.href}
-                    onClick={onNavigate}
-                    aria-current={active ? "page" : undefined}
-                    className={cn(
-                      "relative flex min-h-10 items-center rounded-lg px-3 text-sm font-medium transition-colors",
-                      active
-                        ? "bg-drs-cream/10 text-drs-cream"
-                        : "text-drs-cream/80 hover:bg-drs-cream/5 hover:text-drs-cream",
-                    )}
-                  >
-                    {active && (
-                      <span aria-hidden className="absolute inset-y-2 left-0 w-1 rounded-r bg-drs-gold" />
-                    )}
-                    {item.label}
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-        </div>
-      ))}
-    </nav>
   );
 }
 

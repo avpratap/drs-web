@@ -121,6 +121,31 @@ Font: Poppins via `next/font`.
 - Mobile-first, checked at 360 / 768 / 1024 / 1440. 44px min touch targets, visible focus rings (green on light,
   gold on green), labelled form controls with `aria-describedby` errors, skip link, reduced-motion respected.
 
+## UI components (shadcn/ui + Radix)
+
+The component foundation is [shadcn/ui](https://ui.shadcn.com) on Radix primitives, themed with the DRS
+brand rather than shadcn's neutral palette:
+
+- `components.json` is the shadcn config (`@/components/ui`, `@/lib/utils`, lucide icons). The registry
+  wasn't reachable when this was set up, so the components were written in the shadcn structure by hand;
+  `npx shadcn add <name>` works for new ones where the registry is reachable.
+- `src/app/globals.css` maps the shadcn semantic tokens (`--background`, `--primary`, `--accent`,
+  `--border`, `--ring`…) onto the DRS colours: cream background, green primary/ring, a 10% green tint for
+  hover/selected, maroon destructive, ink-20% borders. Animations come from `tw-animate-css`.
+- `src/components/ui/`: `select.tsx` (Radix Select), `date-picker.tsx` + `calendar.tsx` (react-day-picker in
+  a Radix Popover), `checkbox.tsx`, `dialog.tsx`, `dropdown-menu.tsx`, `popover.tsx`, `toast.tsx`,
+  `search-input.tsx`, `disclosure.tsx`. No native select/date/checkbox controls remain; number spinners and
+  the browser's search/autofill decorations are styled away in `globals.css`.
+- **DatePicker**: `<DatePicker value="YYYY-MM-DD" onChange />` (or `type: "date"` in `FieldGrid`/`LineItems`,
+  `FormDate` in custom forms). Same collision-aware popup behaviour as the Select.
+- **Sidebar**: sections are Radix Collapsibles; the one holding the current page opens itself, and your
+  open/closed choices are remembered in `localStorage` (`drs.nav.groups`).
+- **Select**: every dropdown in the app is `<Select options={[{ value, label }]} value onChange />`; inside
+  react-hook-form use `FormSelect` (or a `FieldGrid` field with `type: "select"`). Numbers stay numbers.
+  The list opens at the trigger's width, flips above or shifts sideways so it is never cut off at a
+  screen edge, and portals into an enclosing modal `<dialog>` so it renders above it; Esc closes only
+  the list. `fit` sizes a filter's trigger to its widest option.
+
 ## Deploying on Vercel
 
 Import the repo, framework preset **Next.js**, set `NEXT_PUBLIC_API_BASE`, deploy. Make sure the backend's

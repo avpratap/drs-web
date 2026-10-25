@@ -1,4 +1,4 @@
-import { expect, test, visit } from "./fixtures";
+import { choose, expect, test, visit } from "./fixtures";
 
 test("returns: approve a request, then refund an approved one as store credit", async ({ admin: page }) => {
   await visit(page, "/returns", "Returns (RMA)");
@@ -42,9 +42,9 @@ test("subscriptions: edit standing-order lines, then pause", async ({ admin: pag
 
   await page.getByRole("button", { name: "Edit lines" }).click();
   await page.getByRole("button", { name: /add product/i }).click();
-  await page.getByLabel("Product (line 2)").selectOption({ label: "Masala Buttermilk (BTRMLK-200)" });
+  await choose(page.getByLabel("Product (line 2)"), { label: "Masala Buttermilk (BTRMLK-200)" });
   await page.getByLabel("Qty per drop (line 2)").fill("6");
-  await page.getByLabel("Frequency (line 2)").selectOption("weekly");
+  await choose(page.getByLabel("Frequency (line 2)"), "weekly");
   await page.getByRole("button", { name: "Save standing order" }).click();
   await expect(page.getByText("Weekdays 1–7, comma separated")).toBeVisible();
   await page.getByLabel("Days (Mon=1) (line 2)").fill("6,7");
@@ -68,14 +68,14 @@ test("shops: set price tier and assign a driver", async ({ admin: page }) => {
   await expect(page.getByRole("heading", { level: 1, name: "Verma residence" })).toBeVisible();
   await page.getByRole("button", { name: "Set price tier" }).click();
   const tier = page.getByRole("dialog", { name: "Set price tier" });
-  await tier.getByLabel(/price tier/i).selectOption({ label: "Retail (RETAIL)" });
+  await choose(tier.getByLabel(/price tier/i), { label: "Retail (RETAIL)" });
   await tier.getByRole("button", { name: "Set price tier" }).click();
   await expect(page.getByText("Price tier set")).toBeVisible();
   await expect(page.locator("dd").filter({ hasText: /^Retail$/ })).toBeVisible();
 
   await page.getByRole("button", { name: "Assign driver" }).click();
   const assign = page.getByRole("dialog", { name: "Assign driver" });
-  await assign.getByLabel(/driver/i).selectOption({ label: "Suresh (driver) · 9999900004" });
+  await choose(assign.getByLabel(/driver/i), { label: "Suresh (driver) · 9999900004" });
   await assign.getByRole("button", { name: "Assign driver" }).click();
   await expect(page.getByText("Driver assigned", { exact: true })).toBeVisible();
   await expect(page.getByRole("table", { name: "Delivery drivers" })).toContainText("Suresh (driver)");
@@ -89,8 +89,8 @@ test("driver assignments: assign, unassign, then reassign", async ({ admin: page
 
   await page.getByRole("button", { name: "Assign driver" }).click();
   const assign = page.getByRole("dialog", { name: "Assign driver" });
-  await assign.getByLabel(/driver/i).selectOption({ label: "Suresh (driver) · 9999900004" });
-  await assign.getByLabel(/shop/i).selectOption({ label: "Verma residence · 302001" });
+  await choose(assign.getByLabel(/driver/i), { label: "Suresh (driver) · 9999900004" });
+  await choose(assign.getByLabel(/shop/i), { label: "Verma residence · 302001" });
   await assign.getByRole("button", { name: "Assign driver" }).click();
   await expect(page.getByText("Driver assigned", { exact: true })).toBeVisible();
   await expect(table).toContainText("Verma residence");
@@ -103,7 +103,7 @@ test("driver assignments: assign, unassign, then reassign", async ({ admin: page
   await expect(page.getByText("Driver unassigned")).toBeVisible();
   await expect(table).not.toContainText("Sharma Sweets");
 
-  await page.getByLabel("Status", { exact: true }).selectOption({ label: "Removed" });
+  await choose(page.getByLabel("Status", { exact: true }), { label: "Removed" });
   await page.getByRole("button", { name: "Reassign Ramesh (driver) to Sharma Sweets" }).click();
   await page
     .getByRole("dialog", { name: /reassign ramesh \(driver\) to sharma sweets/i })
@@ -128,7 +128,7 @@ test("cutoff: status, manual run and history", async ({ admin: page }) => {
 
 test("users: filter drivers and search", async ({ admin: page }) => {
   await visit(page, "/users", "Users & staff");
-  await page.getByLabel("Role", { exact: true }).selectOption("delivery");
+  await choose(page.getByLabel("Role", { exact: true }), "delivery");
   const table = page.getByRole("table", { name: "Users & staff" });
   await expect(table.getByRole("row")).toHaveCount(3);
   await page.getByRole("searchbox", { name: /search by phone or name/i }).fill("Suresh");

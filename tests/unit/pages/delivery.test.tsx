@@ -35,7 +35,8 @@ describe("Daily deliveries", () => {
       { path: "/api/v1/delivery/orders", body: [order] },
     ]);
     renderWithRefine(<DeliveryPage />);
-    expect(screen.getByLabelText("Delivery date")).toHaveValue("2026-10-24");
+    expect(screen.getByLabelText("Delivery date")).toHaveAttribute("data-value", "2026-10-24");
+    expect(screen.getByLabelText("Delivery date")).toHaveTextContent("24 Oct 2026");
     expect(await screen.findByText("₹1,250.00")).toBeInTheDocument();
     expect(screen.getByText("18")).toBeInTheDocument();
     const table = await screen.findByRole("table", { name: /Delivery stops on/ });

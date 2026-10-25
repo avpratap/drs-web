@@ -1,4 +1,4 @@
-import { expect, test, visit } from "./fixtures";
+import { choose, expect, test, visit } from "./fixtures";
 
 test("reports: KPIs, charts with tables, range switch", async ({ admin: page }) => {
   await visit(page, "/reports", "Reports");
@@ -42,7 +42,7 @@ test("support: reply to a ticket and resolve it", async ({ admin: page }) => {
   await page.getByRole("button", { name: "Send reply" }).click();
   await expect(page.getByText("Reply sent")).toBeVisible();
   await expect(page.getByText("Sorry — a fresh pouch is on tomorrow's route.")).toBeVisible();
-  await page.getByLabel("Change status").selectOption("resolved");
+  await choose(page.getByLabel("Change status"), "resolved");
   await expect(page.getByText("Ticket resolved")).toBeVisible();
 });
 

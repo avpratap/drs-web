@@ -8,7 +8,7 @@ import FeatureFlagsPage from "@/app/(admin)/feature-flags/page";
 import RatingsPage from "@/app/(admin)/ratings/page";
 import TicketShowPage from "@/app/(admin)/tickets/[id]/page";
 import { nav } from "../../setup";
-import { mockApi, renderWithRefine } from "../../helpers";
+import { mockApi, renderWithRefine, pick } from "../../helpers";
 
 describe("Articles", () => {
   it("publishes a draft", async () => {
@@ -66,7 +66,7 @@ describe("Support ticket", () => {
         body: "Sorry! Replacement on the way.",
       }),
     );
-    await user.selectOptions(screen.getByLabelText("Change status"), "resolved");
+    await pick(user, screen.getByLabelText("Change status"), "resolved");
     await waitFor(() =>
       expect(api.last("POST", "/api/v1/admin/support/tickets/2/status")?.body).toEqual({
         status: "resolved",

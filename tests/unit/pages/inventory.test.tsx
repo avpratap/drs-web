@@ -5,7 +5,7 @@ import PurchaseOrderShowPage from "@/app/(admin)/purchase-orders/[id]/page";
 import StockPage from "@/app/(admin)/stock/page";
 import TransferCreatePage from "@/app/(admin)/transfers/create/page";
 import { nav } from "../../setup";
-import { mockApi, renderWithRefine } from "../../helpers";
+import { mockApi, renderWithRefine, pick } from "../../helpers";
 
 const lookups = [
   {
@@ -98,13 +98,13 @@ describe("Transfer create", () => {
     const user = userEvent.setup();
     renderWithRefine(<TransferCreatePage />);
     const to = await screen.findByLabelText(/^To/);
-    await user.selectOptions(screen.getByLabelText(/^From/), "1");
-    await user.selectOptions(to, "1");
-    await user.selectOptions(screen.getByLabelText("Product (line 1)"), "1");
+    await pick(user, screen.getByLabelText(/^From/), "1");
+    await pick(user, to, "1");
+    await pick(user, screen.getByLabelText("Product (line 1)"), "1");
     await user.type(screen.getByLabelText("Quantity (line 1)"), "25");
     await user.click(screen.getByRole("button", { name: "Create transfer" }));
     expect(await screen.findByText("Pick a different destination")).toBeInTheDocument();
-    await user.selectOptions(to, "2");
+    await pick(user, to, "2");
     await user.click(screen.getByRole("button", { name: "Create transfer" }));
     await waitFor(() => expect(api.last("POST", "/api/v1/admin/transfers")).toBeTruthy());
     expect(api.last("POST", "/api/v1/admin/transfers")!.body).toEqual({

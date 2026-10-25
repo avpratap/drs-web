@@ -1,4 +1,4 @@
-import { expect, test, visit } from "./fixtures";
+import { choose, expect, test, visit } from "./fixtures";
 
 test("account: top up the wallet and see it in the ledger", async ({ admin: page }) => {
   await visit(page, "/accounts", "Accounts & wallets");
@@ -51,7 +51,7 @@ test("payments → refund → reconcile", async ({ admin: page }) => {
   await page.getByRole("link", { name: /^#1 \d/ }).click();
   await page.getByRole("button", { name: "Reconcile" }).click();
   const rec = page.getByRole("dialog", { name: "Reconcile" });
-  await rec.getByLabel(/outcome/i).selectOption("processed");
+  await choose(rec.getByLabel(/outcome/i), "processed");
   await rec.getByRole("button", { name: "Reconcile" }).click();
   await expect(page.getByText("Refund reconciled")).toBeVisible();
 });

@@ -1,3 +1,2 @@
-export function cn(...parts: (string | false | null | undefined)[]): string {
-  return parts.filter(Boolean).join(" ");
-}
+// The app's historical import path for the shadcn/ui `cn` helper.
+export { cn } from "./utils";

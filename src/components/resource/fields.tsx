@@ -1,10 +1,18 @@
 "use client";
 
-import type { FieldValues, Path, RegisterOptions, UseFormReturn } from "react-hook-form";
-import { Checkbox, Field } from "@/components/ui/field";
+import {
+  Controller,
+  type FieldValues,
+  type Path,
+  type RegisterOptions,
+  type UseFormReturn,
+} from "react-hook-form";
+import { CheckboxField, Field } from "@/components/ui/field";
+import { DatePicker } from "@/components/ui/date-picker";
+import { Select } from "@/components/ui/select";
 import { cn } from "@/lib/cn";
 
-export type Option = { value: string | number; label: string };
+export type Option = { value: string | number; label: string; disabled?: boolean };
 
 export type FieldDef = {
   name: string;
@@ -106,6 +114,18 @@ export function rulesFor(f: FieldDef): RegisterOptions {
   return rules;
 }
 
+/** Empty choice of a select: `undefined` for numeric options (like `setValueAs`), else "". */
+export const emptySelectValue = (options: FieldDef["options"]) =>
+  typeof options?.[0]?.value === "number" ? undefined : "";
+
+/** Controller rules for a custom Select (no `setValueAs`: the Select emits typed values). */
+export function selectRulesFor(f: FieldDef): RegisterOptions {
+  const rules = { ...rulesFor(f) } as RegisterOptions & { valueAsNumber?: boolean };
+  delete rules.setValueAs;
+  delete rules.valueAsNumber;
+  return rules;
+}
+
 export function FieldGrid<T extends FieldValues>({
   fields,
   form,
@@ -127,14 +147,96 @@ export function FieldGrid<T extends FieldValues>({
           const name = f.name as Path<T>;
           const error = errors[f.name]?.message as string | undefined;
           const readOnly = isEdit && f.createOnly;
-          const reg = register(name, rulesFor(f) as RegisterOptions<T, Path<T>>);
+          if (f.type === "select") {
+            return (
+              <Field
+                key={f.name}
+                label={f.label}
+                required={f.required}
+                error={error}
+                hint={readOnly ? `${f.label} can't be changed.` : f.hint}
+                className={cn(f.wide && "md:col-span-2")}
+              >
+                {(p) => (
+                  <Controller
+                    control={form.control}
+                    name={name}
+                    rules={selectRulesFor(f) as RegisterOptions<T, Path<T>>}
+                    render={({ field }) => (
+                      <Select
+                        id={p.id}
+                        name={field.name}
+                        invalid={p["aria-invalid"]}
+                        aria-describedby={p["aria-describedby"]}
+                        options={f.options ?? []}
+                        value={field.value}
+                        placeholder={f.placeholder ?? "Select…"}
+                        clearable={!f.required}
+                        disabled={readOnly}
+                        onChange={(v) => field.onChange(v === "" ? emptySelectValue(f.options) : v)}
+                        onBlur={field.onBlur}
+                      />
+                    )}
+                  />
+                )}
+              </Field>
+            );
+          }
+          if (f.type === "date") {
+            return (
+              <Field
+                key={f.name}
+                label={f.label}
+                required={f.required}
+                error={error}
+                hint={readOnly ? `${f.label} can't be changed.` : f.hint}
+                className={cn(f.wide && "md:col-span-2")}
+              >
+                {(p) => (
+                  <Controller
+                    control={form.control}
+                    name={name}
+                    rules={selectRulesFor(f) as RegisterOptions<T, Path<T>>}
+                    render={({ field }) => (
+                      <DatePicker
+                        id={p.id}
+                        name={field.name}
+                        invalid={p["aria-invalid"]}
+                        aria-describedby={p["aria-describedby"]}
+                        value={field.value as string | undefined}
+                        placeholder={f.placeholder}
+                        clearable={!f.required}
+                        disabled={readOnly}
+                        onChange={field.onChange}
+                        onBlur={field.onBlur}
+                      />
+                    )}
+                  />
+                )}
+              </Field>
+            );
+          }
           if (f.type === "checkbox") {
             return (
               <div key={f.name} className={cn(f.wide && "md:col-span-2", "flex items-end")}>
-                <Checkbox label={f.label} disabled={readOnly} {...reg} />
+                <Controller
+                  control={form.control}
+                  name={name}
+                  render={({ field }) => (
+                    <CheckboxField
+                      label={f.label}
+                      name={field.name}
+                      disabled={readOnly}
+                      checked={!!field.value}
+                      onCheckedChange={field.onChange}
+                      onBlur={field.onBlur}
+                    />
+                  )}
+                />
               </div>
             );
           }
+          const reg = register(name, rulesFor(f) as RegisterOptions<T, Path<T>>);
           return (
             <Field
               key={f.name}
@@ -146,18 +248,6 @@ export function FieldGrid<T extends FieldValues>({
             >
               {(p) => {
                 const cls = cn(p.className, readOnly && "bg-drs-cream/50", f.uppercase && "uppercase");
-                if (f.type === "select") {
-                  return (
-                    <select {...p} className={cls} disabled={readOnly} {...reg}>
-                      <option value="">{f.placeholder ?? "Select…"}</option>
-                      {f.options?.map((o) => (
-                        <option key={String(o.value)} value={o.value}>
-                          {o.label}
-                        </option>
-                      ))}
-                    </select>
-                  );
-                }
                 if (f.type === "textarea" || f.type === "json") {
                   return (
                     <textarea

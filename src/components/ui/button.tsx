@@ -14,6 +14,10 @@ const styles: Record<Variant, string> = {
 const base =
   "inline-flex min-h-11 items-center justify-center gap-2 rounded-lg px-4 text-sm font-medium transition-colors disabled:cursor-not-allowed";
 
+/** Class string for a button-styled element that isn't a <Button> (pager, search submit…). */
+export const buttonClass = (variant: Variant = "primary", className?: string) =>
+  cn(base, styles[variant], className);
+
 type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: Variant;
   loading?: boolean;

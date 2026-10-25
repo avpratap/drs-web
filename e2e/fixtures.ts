@@ -1,5 +1,5 @@
 import AxeBuilder from "@axe-core/playwright";
-import { test as base, expect, type Page } from "@playwright/test";
+import { test as base, expect, type Locator, type Page } from "@playwright/test";
 
 const API = "http://127.0.0.1:8787";
 
@@ -46,4 +46,34 @@ export async function visit(page: Page, path: string, heading: string | RegExp) 
   await page.waitForLoadState("networkidle");
   await expectNoHorizontalScroll(page);
   await expectAccessible(page);
+}
+
+/** Open a custom (Radix) Select and pick an option by its value or `{ label }`. */
+export async function choose(trigger: Locator, option: string | { label: string }) {
+  await trigger.click();
+  const list = trigger.page().getByRole("listbox");
+  await expect(list).toBeVisible();
+  const item =
+    typeof option === "string"
+      ? list.locator(`[role="option"][data-value="${option}"]`)
+      : list.getByRole("option", { name: option.label, exact: true });
+  await item.click();
+  await expect(list).toBeHidden();
+}
+
+/** Open a DatePicker and pick an ISO date: page through months with the keyboard, then click the day. */
+export async function pickDate(trigger: Locator, iso: string) {
+  const page = trigger.page();
+  await trigger.click();
+  const dialog = page.getByRole("dialog", { name: "Choose date" });
+  await expect(dialog).toBeVisible();
+  const focused = dialog.locator("button[data-day]:focus");
+  await expect(focused).toHaveCount(1);
+  const from = (await focused.getAttribute("data-day"))!;
+  const months = (d: string) => Number(d.slice(0, 4)) * 12 + Number(d.slice(5, 7)) - 1;
+  const diff = months(iso) - months(from);
+  for (let i = 0; i < Math.abs(diff); i++) await page.keyboard.press(diff > 0 ? "PageDown" : "PageUp");
+  await dialog.locator(`button[data-day="${iso}"]`).first().click();
+  await expect(dialog).toBeHidden();
+  await expect(trigger).toHaveAttribute("data-value", iso);
 }

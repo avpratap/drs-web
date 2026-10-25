@@ -2,6 +2,7 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useForm } from "react-hook-form";
 import { describe, expect, it, vi } from "vitest";
+import { pick } from "../../helpers";
 import { LineItems } from "@/components/resource/line-items";
 
 function Harness({ onSubmit }: { onSubmit: (v: unknown) => void }) {
@@ -43,7 +44,7 @@ describe("LineItems", () => {
     await user.click(screen.getByRole("button", { name: "Save" }));
     expect(await screen.findByText("Product is required")).toBeInTheDocument();
 
-    await user.selectOptions(screen.getByLabelText("Product (line 1)"), "2");
+    await pick(user, screen.getByLabelText("Product (line 1)"), "2");
     await user.type(screen.getByLabelText("Quantity (line 1)"), "0");
     await user.click(screen.getByRole("button", { name: "Save" }));
     expect(await screen.findByText("Must be > 0")).toBeInTheDocument();

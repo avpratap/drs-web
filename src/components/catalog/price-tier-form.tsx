@@ -4,6 +4,7 @@ import type { HttpError } from "@refinedev/core";
 import { useForm } from "@refinedev/react-hook-form";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { FormSelect } from "@/components/resource/form-select";
 import { Field } from "@/components/ui/field";
 import type { components } from "@/lib/api/client";
 import { toPayload } from "@/lib/forms";
@@ -15,6 +16,7 @@ export function PriceTierForm({ id }: { id?: string }) {
   const isEdit = id !== undefined;
   const {
     register,
+    control,
     handleSubmit,
     formState: { errors },
     refineCore: { onFinish, formLoading, query },
@@ -65,10 +67,16 @@ export function PriceTierForm({ id }: { id?: string }) {
           </Field>
           <Field label="Tier type" required error={err("tier_type")}>
             {(p) => (
-              <select {...p} {...register("tier_type", { required: true })}>
-                <option value="retail">Retail</option>
-                <option value="b2b">B2B</option>
-              </select>
+              <FormSelect
+                control={control}
+                name="tier_type"
+                field={p}
+                rules={{ required: "Tier type is required" }}
+                options={[
+                  { value: "retail", label: "Retail" },
+                  { value: "b2b", label: "B2B" },
+                ]}
+              />
             )}
           </Field>
         </div>
