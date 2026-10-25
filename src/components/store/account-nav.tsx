@@ -1,6 +1,19 @@
 "use client";
 
-import { HomeIcon, LogOutIcon, MapPinIcon, PackageIcon, UserRoundIcon, WalletIcon } from "lucide-react";
+import {
+  BellIcon,
+  GiftIcon,
+  HeartIcon,
+  HomeIcon,
+  LifeBuoyIcon,
+  LogOutIcon,
+  MapPinIcon,
+  PackageIcon,
+  ShieldCheckIcon,
+  SparklesIcon,
+  UserRoundIcon,
+  WalletIcon,
+} from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
@@ -11,8 +24,14 @@ export const ACCOUNT_NAV = [
   { href: "/account", label: "Overview", icon: HomeIcon },
   { href: "/account/orders", label: "Orders", icon: PackageIcon },
   { href: "/account/wallet", label: "Wallet", icon: WalletIcon },
+  { href: "/account/rewards", label: "Rewards", icon: SparklesIcon },
+  { href: "/account/gift-cards", label: "Gift cards", icon: GiftIcon },
+  { href: "/account/wishlist", label: "Wishlist", icon: HeartIcon },
+  { href: "/account/notifications", label: "Notifications", icon: BellIcon },
+  { href: "/account/support", label: "Help & support", icon: LifeBuoyIcon },
   { href: "/account/addresses", label: "Addresses", icon: MapPinIcon },
   { href: "/account/profile", label: "Profile", icon: UserRoundIcon },
+  { href: "/account/privacy", label: "Privacy", icon: ShieldCheckIcon },
 ] as const;
 
 export const isAccountActive = (pathname: string, href: string) =>

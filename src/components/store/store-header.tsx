@@ -1,5 +1,6 @@
 import { SunriseIcon } from "lucide-react";
 import Link from "next/link";
+import { NotificationBell } from "./engagement";
 import { AccountButton, CartButton, MobileMenu, SearchForm } from "./header-actions";
 import { StoreLogo } from "./logo";
 import { STORE_NAV } from "./nav";
@@ -31,6 +32,7 @@ export function StoreHeader() {
           </nav>
           <SearchForm className="ml-auto hidden w-72 md:block xl:w-80" />
           <div className="flex items-center gap-0.5 md:ml-2">
+            <NotificationBell />
             <AccountButton />
             <CartButton />
           </div>
