@@ -1,9 +1,9 @@
 import { ArrowRightIcon } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { Suspense } from "react";
 import { JsonLd, organizationLd } from "@/components/marketing/json-ld";
 import { PromoBanners } from "@/components/marketing/promo-banners";
-import { HeroArt } from "@/components/store/hero-art";
 import {
   CategoryGrid,
   CategoryGridSkeleton,
@@ -13,6 +13,7 @@ import {
   SectionHeading,
   SubscriptionBand,
 } from "@/components/store/sections";
+import { mediaUrl } from "@/lib/media";
 
 export default function StoreHome() {
   return (
@@ -52,8 +53,17 @@ export default function StoreHome() {
               </Link>
             </div>
           </div>
-          <div className="relative mx-auto w-full max-w-[17rem] sm:max-w-sm lg:max-w-none">
-            <HeroArt className="h-auto w-full drop-shadow-xl" />
+          <div className="relative mx-auto w-full max-w-sm overflow-hidden rounded-[2rem] shadow-xl shadow-drs-green/15 ring-1 ring-drs-ink/5 lg:max-w-none">
+            <Image
+              src={mediaUrl("/files/storefront-demo/hero.jpg")!}
+              alt="A bottle and glass of fresh DRS milk in soft morning light"
+              width={1024}
+              height={1024}
+              priority
+              sizes="(min-width: 1024px) 36rem, 22rem"
+              className="h-auto w-full object-cover"
+              unoptimized
+            />
           </div>
         </div>
       </section>

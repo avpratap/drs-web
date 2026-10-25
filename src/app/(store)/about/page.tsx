@@ -11,9 +11,11 @@ import {
   TruckIcon,
 } from "lucide-react";
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { JsonLd, organizationLd } from "@/components/marketing/json-ld";
 import { buttonClass } from "@/components/ui/button";
+import { mediaUrl } from "@/lib/media";
 
 export const metadata: Metadata = {
   title: "Our story",
@@ -96,19 +98,24 @@ export default function AboutPage() {
               who raised us.
             </p>
           </div>
-          {/* Monogram */}
-          <div aria-hidden className="mx-auto w-full max-w-sm lg:max-w-md">
-            <div className="relative aspect-square rounded-[2.5rem] bg-drs-green p-10 shadow-xl shadow-drs-green/20">
-              <div className="absolute inset-6 rounded-[2rem] border border-drs-gold/50" />
-              <div className="grid h-full place-items-center text-center text-drs-cream">
-                <div>
-                  <p className="text-7xl font-semibold tracking-[0.12em] md:text-8xl">DRS</p>
-                  <div className="mx-auto mt-4 h-px w-24 bg-drs-gold" />
-                  <p className="mt-4 text-sm tracking-[0.3em] text-drs-cream/85 uppercase">
-                    Dhanna Ram Sherawat
-                  </p>
-                </div>
-              </div>
+          {/* Heritage */}
+          <div className="relative mx-auto w-full max-w-sm overflow-hidden rounded-[2.5rem] shadow-xl shadow-drs-green/20 ring-1 ring-drs-gold/40 lg:max-w-md">
+            <Image
+              src={mediaUrl("/files/storefront-demo/about-heritage.jpg")!}
+              alt="A traditional dairy farm at sunrise, honouring the heritage behind DRS"
+              width={1024}
+              height={1024}
+              sizes="(min-width: 1024px) 28rem, 22rem"
+              className="aspect-square h-auto w-full object-cover"
+              unoptimized
+            />
+            <div
+              aria-hidden
+              className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-drs-ink/75 to-transparent p-5 pt-12"
+            >
+              <p className="text-center text-sm tracking-[0.3em] text-drs-cream uppercase">
+                Dhanna Ram Sherawat
+              </p>
             </div>
           </div>
         </div>
