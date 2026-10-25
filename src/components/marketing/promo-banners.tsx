@@ -45,7 +45,7 @@ function BannerCard({ b, priority }: { b: Banner; priority: boolean }) {
     </>
   );
   const box =
-    "group relative block aspect-[16/7] min-h-44 overflow-hidden rounded-2xl bg-drs-green shadow-sm transition-shadow hover:shadow-md";
+    "group relative block aspect-[16/7] min-h-44 w-full min-w-0 overflow-hidden rounded-2xl bg-drs-green shadow-sm transition-shadow hover:shadow-md";
   if (!target) return <div className={box}>{inner}</div>;
   return target.external ? (
     <a href={target.href} target="_blank" rel="noopener noreferrer" className={box}>
@@ -64,10 +64,11 @@ export async function PromoBanners() {
   const res = await getBanners();
   if (!res.ok || res.data.length === 0) return null;
   return (
+    // minmax(0,1fr) tracks: a card's content must never widen the grid past the page (md+).
     <section aria-label="Offers">
-      <ul className="-mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-1 md:mx-0 md:grid md:grid-cols-2 md:overflow-visible md:px-0">
+      <ul className="-mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-1 md:mx-0 md:grid md:grid-cols-[repeat(2,minmax(0,1fr))] md:overflow-visible md:px-0">
         {res.data.slice(0, 4).map((b, i) => (
-          <li key={b.id} className="w-[85%] shrink-0 snap-start md:w-auto">
+          <li key={b.id} className="w-[85%] shrink-0 snap-start md:w-auto md:min-w-0">
             <BannerCard b={b} priority={i === 0} />
           </li>
         ))}
