@@ -1,4 +1,4 @@
-import { expect, test, visit } from "./fixtures";
+import { choose, expect, test, visit } from "./fixtures";
 
 test("stock: low-stock flag, reorder suggestion and an adjustment", async ({ admin: page }) => {
   await visit(page, "/stock", "Stock");
@@ -9,9 +9,9 @@ test("stock: low-stock flag, reorder suggestion and an adjustment", async ({ adm
 
   await page.getByRole("button", { name: "Adjust stock" }).click();
   const dialog = page.getByRole("dialog", { name: "Adjust stock" });
-  await dialog.getByLabel(/^Product/).selectOption({ label: "Full Cream Milk (MILK-FC-500)" });
+  await choose(dialog.getByLabel(/^Product/), { label: "Full Cream Milk (MILK-FC-500)" });
   await dialog.getByLabel(/^Change/).fill("-20");
-  await dialog.getByLabel(/^Reason/).selectOption("adjustment");
+  await choose(dialog.getByLabel(/^Reason/), "adjustment");
   await dialog.getByRole("button", { name: "Adjust stock" }).click();
   await expect(page.getByText("Stock adjusted")).toBeVisible();
   await page.getByRole("tab", { name: "All stock" }).click();
@@ -27,7 +27,7 @@ test("batches are FEFO and a new batch can be received", async ({ admin: page })
   await expect(rows.nth(1)).toContainText("Today");
   await page.getByRole("button", { name: "Receive batch" }).click();
   const dialog = page.getByRole("dialog", { name: "Receive batch" });
-  await dialog.getByLabel(/^Product/).selectOption({ label: "A2 Desi Ghee (GHEE-1L)" });
+  await choose(dialog.getByLabel(/^Product/), { label: "A2 Desi Ghee (GHEE-1L)" });
   await dialog.getByLabel(/^Batch no/).fill("GHE-2410");
   await dialog.getByLabel(/^Quantity/).fill("24");
   await dialog.getByLabel(/^Manufactured/).fill("2026-10-20");
@@ -43,8 +43,8 @@ test("batches are FEFO and a new batch can be received", async ({ admin: page })
 test("purchase order: create → place → receive (GRN)", async ({ admin: page }) => {
   await visit(page, "/purchase-orders", "Purchase orders");
   await page.getByRole("link", { name: "New purchase order" }).click();
-  await page.getByLabel(/^Supplier/).selectOption({ label: "Gwala Dairy Co-op" });
-  await page.getByLabel("Product (line 1)").selectOption({ label: "Full Cream Milk (MILK-FC-500)" });
+  await choose(page.getByLabel(/^Supplier/), { label: "Gwala Dairy Co-op" });
+  await choose(page.getByLabel("Product (line 1)"), { label: "Full Cream Milk (MILK-FC-500)" });
   await page.getByLabel("Quantity (line 1)").fill("200");
   await page.getByLabel("Unit cost (₹) (line 1)").fill("28");
   await page.getByRole("button", { name: "Create draft PO" }).click();

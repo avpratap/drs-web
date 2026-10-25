@@ -5,6 +5,7 @@ import { useForm } from "@refinedev/react-hook-form";
 import { useSearchParams } from "next/navigation";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { FormSelect } from "@/components/resource/form-select";
 import { Field } from "@/components/ui/field";
 import type { components } from "@/lib/api/client";
 import { toPayload, todayIST } from "@/lib/forms";
@@ -29,6 +30,7 @@ export function ProductPriceForm({ id }: { id?: string }) {
   const presetProduct = Number(params.get("product_id")) || undefined;
   const {
     register,
+    control,
     handleSubmit,
     getValues,
     formState: { errors },
@@ -70,21 +72,15 @@ export function ProductPriceForm({ id }: { id?: string }) {
             hint={isEdit ? "Create a new price to change product." : undefined}
           >
             {(p) => (
-              <select
-                {...p}
+              <FormSelect
+                control={control}
+                name="product_id"
+                field={p}
                 disabled={isEdit}
-                {...register("product_id", {
-                  valueAsNumber: true,
-                  validate: (v) => isEdit || v > 0 || "Choose a product",
-                })}
-              >
-                <option value="">Select a product…</option>
-                {lookups.products.map((pr) => (
-                  <option key={pr.id} value={pr.id}>
-                    {pr.name} ({pr.sku})
-                  </option>
-                ))}
-              </select>
+                placeholder="Select a product…"
+                rules={{ validate: (v) => isEdit || Number(v) > 0 || "Choose a product" }}
+                options={lookups.products.map((pr) => ({ value: pr.id, label: `${pr.name} (${pr.sku})` }))}
+              />
             )}
           </Field>
           <Field
@@ -94,21 +90,15 @@ export function ProductPriceForm({ id }: { id?: string }) {
             hint={isEdit ? "Create a new price to change tier." : undefined}
           >
             {(p) => (
-              <select
-                {...p}
+              <FormSelect
+                control={control}
+                name="price_tier_id"
+                field={p}
                 disabled={isEdit}
-                {...register("price_tier_id", {
-                  valueAsNumber: true,
-                  validate: (v) => isEdit || v > 0 || "Choose a tier",
-                })}
-              >
-                <option value="">Select a tier…</option>
-                {lookups.tiers.map((t) => (
-                  <option key={t.id} value={t.id}>
-                    {t.name} ({t.code})
-                  </option>
-                ))}
-              </select>
+                placeholder="Select a tier…"
+                rules={{ validate: (v) => isEdit || Number(v) > 0 || "Choose a tier" }}
+                options={lookups.tiers.map((t) => ({ value: t.id, label: `${t.name} (${t.code})` }))}
+              />
             )}
           </Field>
           <Field label="Unit price (₹)" required error={err("unit_price")} hint="Before GST">

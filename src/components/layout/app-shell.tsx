@@ -33,15 +33,15 @@ function Brand() {
 function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
   return (
-    <nav aria-label="Main" className="mt-6 -mr-2 flex-1 overflow-y-auto pr-2 pb-4">
+    <nav aria-label="Main" className="mt-7 -mr-2 flex-1 overflow-y-auto pr-2 pb-4">
       {NAV_GROUPS.map((group) => (
-        <div key={group.label || "home"} className="mt-4 first:mt-0">
+        <div key={group.label || "home"} className="mt-6 first:mt-0">
           {group.label && (
-            <p className="mb-1 px-3 text-[11px] font-semibold tracking-[0.18em] text-drs-cream/80 uppercase">
+            <p className="mb-2 px-3 text-[0.6875rem] leading-4 font-semibold tracking-[0.14em] text-drs-cream/75 uppercase">
               {group.label}
             </p>
           )}
-          <ul className="flex flex-col gap-0.5">
+          <ul className="flex flex-col gap-px">
             {group.items.map((item) => {
               const active = isActive(pathname, item.href);
               return (
@@ -51,14 +51,14 @@ function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
                     onClick={onNavigate}
                     aria-current={active ? "page" : undefined}
                     className={cn(
-                      "relative flex min-h-10 items-center rounded-lg px-3 text-sm font-medium transition-colors",
+                      "relative flex min-h-9 items-center rounded-md px-3 py-1.5 text-sm leading-5 font-normal transition-colors",
                       active
-                        ? "bg-drs-cream/10 text-drs-cream"
+                        ? "bg-drs-cream/10 font-medium text-drs-cream"
                         : "text-drs-cream/80 hover:bg-drs-cream/5 hover:text-drs-cream",
                     )}
                   >
                     {active && (
-                      <span aria-hidden className="absolute inset-y-2 left-0 w-1 rounded-r bg-drs-gold" />
+                      <span aria-hidden className="absolute inset-y-1.5 left-0 w-0.5 rounded-r bg-drs-gold" />
                     )}
                     {item.label}
                   </Link>

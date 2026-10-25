@@ -2,6 +2,10 @@
 
 import type { CrudFilter } from "@refinedev/core";
 import { useState } from "react";
+import { buttonClass } from "@/components/ui/button";
+import { inputClass } from "@/components/ui/field";
+import { Select } from "@/components/ui/select";
+import { cn } from "@/lib/cn";
 import type { Option } from "./fields";
 
 export type FilterDef = {
@@ -14,8 +18,7 @@ export type FilterDef = {
   allLabel?: string;
 };
 
-const control =
-  "min-h-11 w-full rounded-lg border border-drs-ink/20 bg-drs-white px-3 text-sm text-drs-ink placeholder:text-drs-ink/70";
+const control = inputClass;
 
 export function currentFilter(filters: CrudFilter[], field: string): string {
   const f = filters.find((x) => "field" in x && x.field === field);
@@ -37,11 +40,11 @@ export function FilterBar({
   const others = defs.filter((d) => d.type !== "search");
 
   return (
-    <div className="mb-4 flex flex-col gap-3 md:flex-row md:flex-wrap md:items-end">
+    <div className="mb-4 grid grid-cols-2 gap-3 md:flex md:flex-row md:flex-wrap md:items-end">
       {search && (
         <form
           role="search"
-          className="flex w-full gap-2 md:w-auto md:min-w-80 md:flex-1 lg:max-w-md"
+          className="col-span-2 flex w-full gap-2 md:w-auto md:min-w-80 md:flex-1 lg:max-w-md"
           onSubmit={(e) => {
             e.preventDefault();
             onChange(search.field, q.trim() || undefined);
@@ -58,10 +61,7 @@ export function FilterBar({
             placeholder={search.placeholder ?? search.label}
             className={control}
           />
-          <button
-            type="submit"
-            className="min-h-11 rounded-lg border border-drs-green/30 bg-drs-white px-4 text-sm font-medium text-drs-green hover:border-drs-green"
-          >
+          <button type="submit" className={buttonClass("secondary")}>
             Search
           </button>
         </form>
@@ -70,24 +70,27 @@ export function FilterBar({
         const id = `f-${d.field}`;
         const value = currentFilter(filters, d.field);
         return (
-          <div key={d.field} className="flex w-full flex-col gap-1.5 md:w-48">
+          <div
+            key={d.field}
+            className={cn(
+              "flex w-full min-w-0 flex-col gap-1.5",
+              d.type === "select" ? "md:w-auto md:min-w-40 md:max-w-xs" : "md:w-44",
+            )}
+          >
             <label htmlFor={id} className="text-xs font-medium text-drs-ink/75">
               {d.label}
             </label>
             {d.type === "select" ? (
-              <select
+              <Select
                 id={id}
+                fit
+                clearable
+                emptyLabel={d.allLabel ?? "All"}
+                placeholder={d.allLabel ?? "All"}
                 value={value}
-                onChange={(e) => onChange(d.field, e.target.value || undefined)}
-                className={control}
-              >
-                <option value="">{d.allLabel ?? "All"}</option>
-                {d.options?.map((o) => (
-                  <option key={String(o.value)} value={o.value}>
-                    {o.label}
-                  </option>
-                ))}
-              </select>
+                options={d.options ?? []}
+                onChange={(v) => onChange(d.field, v === "" ? undefined : String(v))}
+              />
             ) : (
               <input
                 id={id}

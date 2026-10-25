@@ -5,7 +5,7 @@ import { describe, expect, it } from "vitest";
 import DeliveryAssignmentsPage from "@/app/(admin)/delivery-assignments/page";
 import { AuthGuard } from "@/components/layout/auth-guard";
 import { authProvider } from "@/providers/auth-provider";
-import { dataProvider, mockApi, renderWithRefine } from "../../helpers";
+import { dataProvider, mockApi, renderWithRefine, optionLabels, pick } from "../../helpers";
 
 const drivers = {
   path: "/api/v1/admin/users",
@@ -89,9 +89,9 @@ describe("Driver assignments page", () => {
     await user.click(open);
     const dialog = screen.getByRole("dialog", { name: "Assign driver" });
     const driver = within(dialog).getByLabelText(/driver/i);
-    expect(within(driver).queryByText(/Suresh/)).not.toBeInTheDocument(); // suspended
-    await user.selectOptions(driver, "8");
-    await user.selectOptions(within(dialog).getByLabelText(/shop/i), "4");
+    expect((await optionLabels(user, driver)).join()).not.toMatch(/Suresh/); // suspended
+    await pick(user, driver, "8");
+    await pick(user, within(dialog).getByLabelText(/shop/i), "4");
     await user.click(within(dialog).getByRole("button", { name: "Assign driver" }));
     await waitFor(() =>
       expect(api.last("POST", "/api/v1/admin/delivery-assignments")?.body).toEqual({

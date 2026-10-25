@@ -4,6 +4,7 @@ import type { HttpError } from "@refinedev/core";
 import { useForm } from "@refinedev/react-hook-form";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { FormSelect } from "@/components/resource/form-select";
 import { Checkbox, Field } from "@/components/ui/field";
 import type { components } from "@/lib/api/client";
 import { toPayload } from "@/lib/forms";
@@ -33,6 +34,7 @@ export function ProductForm({ id }: { id?: string }) {
   const isEdit = id !== undefined;
   const {
     register,
+    control,
     handleSubmit,
     formState: { errors },
     refineCore: { onFinish, formLoading, query },
@@ -86,13 +88,13 @@ export function ProductForm({ id }: { id?: string }) {
           </Field>
           <Field label="Unit of measure" required error={err("uom")}>
             {(p) => (
-              <select {...p} {...register("uom", { required: "UOM is required" })}>
-                {UOMS.map((u) => (
-                  <option key={u} value={u}>
-                    {u}
-                  </option>
-                ))}
-              </select>
+              <FormSelect
+                control={control}
+                name="uom"
+                field={p}
+                rules={{ required: "UOM is required" }}
+                options={UOMS.map((u) => ({ value: u, label: u }))}
+              />
             )}
           </Field>
           <Field label="Pack size" required error={err("pack_size")} hint="Quantity of the UOM per pack">
@@ -112,13 +114,12 @@ export function ProductForm({ id }: { id?: string }) {
           </Field>
           <Field label="GST rate (%)" required error={err("gst_rate")}>
             {(p) => (
-              <select {...p} {...register("gst_rate", { valueAsNumber: true })}>
-                {GST_RATES.map((r) => (
-                  <option key={r} value={r}>
-                    {r}%
-                  </option>
-                ))}
-              </select>
+              <FormSelect
+                control={control}
+                name="gst_rate"
+                field={p}
+                options={GST_RATES.map((r) => ({ value: r, label: `${r}%` }))}
+              />
             )}
           </Field>
           <Field label="HSN code" error={err("hsn_code")} hint="4, 6 or 8 digits (dairy is chapter 04)">

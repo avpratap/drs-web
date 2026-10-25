@@ -7,6 +7,7 @@ import { useCatalogLookups } from "@/components/catalog/lookups";
 import { PriceWindowBadge } from "@/components/catalog/price-window-badge";
 import { ButtonLink } from "@/components/ui/button";
 import { PageHeader } from "@/components/ui/card";
+import { Select } from "@/components/ui/select";
 import { DataTable, Pager, type Column } from "@/components/ui/table";
 import { RowLink } from "@/components/ui/links";
 import type { components } from "@/lib/api/client";
@@ -73,28 +74,24 @@ export default function ProductPriceListPage() {
           </ButtonLink>
         }
       />
-      <div className="mb-4 max-w-md">
-        <label htmlFor="price-product" className="mb-1.5 block text-sm font-medium">
+      <div className="mb-4 flex flex-col gap-1.5 md:w-fit md:min-w-40 md:max-w-xs">
+        <label htmlFor="price-product" className="text-xs font-medium text-drs-ink/75">
           Filter by product
         </label>
-        <select
+        <Select
           id="price-product"
+          fit
+          clearable
+          placeholder="All products"
           value={productFilter ?? ""}
-          onChange={(e) =>
+          onChange={(v) =>
             setFilters(
-              [{ field: "product_id", operator: "eq", value: e.target.value || undefined }],
+              [{ field: "product_id", operator: "eq", value: v === "" ? undefined : String(v) }],
               "replace",
             )
           }
-          className="min-h-11 w-full rounded-lg border border-drs-ink/20 bg-drs-white px-3 text-sm"
-        >
-          <option value="">All products</option>
-          {lookups.products.map((p) => (
-            <option key={p.id} value={p.id}>
-              {p.name}
-            </option>
-          ))}
-        </select>
+          options={lookups.products.map((p) => ({ value: p.id, label: p.name }))}
+        />
       </div>
       <DataTable
         caption="Product prices"

@@ -6,7 +6,7 @@ import ReturnShowPage from "@/app/(admin)/returns/[id]/page";
 import ShopShowPage from "@/app/(admin)/shops/[id]/page";
 import SubscriptionShowPage from "@/app/(admin)/subscriptions/[id]/page";
 import { nav } from "../../setup";
-import { mockApi, renderWithRefine } from "../../helpers";
+import { mockApi, renderWithRefine, optionLabels, pick } from "../../helpers";
 
 const products = {
   path: "/api/v1/admin/products",
@@ -140,8 +140,8 @@ describe("Subscription detail", () => {
 
     await user.click(screen.getByRole("button", { name: "Edit lines" }));
     await user.click(screen.getByRole("button", { name: /add product/i }));
-    await user.selectOptions(screen.getByLabelText("Product (line 2)"), "2");
-    await user.selectOptions(screen.getByLabelText("Frequency (line 2)"), "weekly");
+    await pick(user, screen.getByLabelText("Product (line 2)"), "2");
+    await pick(user, screen.getByLabelText("Frequency (line 2)"), "weekly");
     await user.click(screen.getByRole("button", { name: "Save standing order" }));
     expect(await screen.findByText("Weekdays 1–7, comma separated")).toBeInTheDocument();
     await user.type(screen.getByLabelText("Days (Mon=1) (line 2)"), "6, 7");
@@ -165,7 +165,7 @@ describe("Subscription detail", () => {
     renderWithRefine(<SubscriptionShowPage />);
     await user.click(await screen.findByRole("button", { name: "Edit lines" }));
     await user.click(screen.getByRole("button", { name: /add product/i }));
-    await user.selectOptions(screen.getByLabelText("Product (line 2)"), "1");
+    await pick(user, screen.getByLabelText("Product (line 2)"), "1");
     await user.click(screen.getByRole("button", { name: "Save standing order" }));
     expect(await screen.findByText("Each product may appear only once.")).toBeInTheDocument();
     expect(api.last("PUT", "/api/v1/subscriptions/2/items")).toBeUndefined();
@@ -211,8 +211,8 @@ describe("Shop detail", () => {
     await user.click(screen.getByRole("button", { name: "Assign driver" }));
     const dialog = screen.getByRole("dialog", { name: "Assign driver" });
     const select = within(dialog).getByLabelText(/driver/i);
-    expect(within(select).queryByText(/Ramesh/)).not.toBeInTheDocument(); // already assigned
-    await user.selectOptions(select, "9");
+    expect((await optionLabels(user, select)).join()).not.toMatch(/Ramesh/); // already assigned
+    await pick(user, select, "9");
     await user.click(within(dialog).getByRole("button", { name: "Assign driver" }));
     await waitFor(() =>
       expect(api.last("POST", "/api/v1/admin/delivery-assignments")?.body).toEqual({

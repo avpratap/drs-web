@@ -1,8 +1,10 @@
 import { useId } from "react";
 import { cn } from "@/lib/cn";
 
-const control =
-  "block w-full min-h-11 rounded-lg border bg-drs-white px-3 py-2 text-sm text-drs-ink placeholder:text-drs-ink/70 focus-visible:border-drs-green aria-[invalid=true]:border-drs-maroon";
+/** Text-input styling shared by every control (inputs, Select trigger): 44px, radius-lg, ink/20 border. */
+export const inputClass =
+  "block w-full min-h-11 rounded-lg border border-drs-ink/20 bg-drs-white px-3 py-2 text-sm text-drs-ink transition-colors placeholder:text-drs-ink/70 hover:border-drs-green/50 focus-visible:border-drs-green aria-[invalid=true]:border-drs-maroon read-only:hover:border-drs-ink/20";
+const control = inputClass;
 
 type FieldProps = {
   label: string;

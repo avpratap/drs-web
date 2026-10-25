@@ -1,7 +1,15 @@
 "use client";
 
-import { useFieldArray, type FieldValues, type UseFormReturn } from "react-hook-form";
+import {
+  Controller,
+  useFieldArray,
+  type FieldValues,
+  type RegisterOptions,
+  type UseFormReturn,
+} from "react-hook-form";
 import { Button } from "@/components/ui/button";
+import { inputClass } from "@/components/ui/field";
+import { Select } from "@/components/ui/select";
 import { cn } from "@/lib/cn";
 import type { Option } from "./fields";
 
@@ -21,8 +29,7 @@ export type LineColumn = {
   validate?: (value: unknown, row: Record<string, unknown>) => true | string;
 };
 
-const control =
-  "block w-full min-h-11 rounded-lg border bg-drs-white px-3 py-2 text-sm text-drs-ink aria-[invalid=true]:border-drs-maroon border-drs-ink/20";
+const control = inputClass;
 
 /**
  * Repeating rows of inputs (PO lines, transfer items, BOM components…). On mobile each row
@@ -83,14 +90,9 @@ export function LineItems({
               const err = (errors[i] as Record<string, { message?: string }> | undefined)?.[c.name]?.message;
               const id = `${name}-${i}-${c.name}`;
               const numeric = c.type === "number" || c.type === "money";
-              const reg = form.register(path, {
+              const rules: RegisterOptions = {
                 required: c.required ? `${c.label} is required` : false,
                 valueAsNumber: numeric,
-                // Numeric selects (ids) submit numbers; text selects keep their string value.
-                setValueAs:
-                  c.type === "select" && typeof c.options?.[0]?.value === "number"
-                    ? (v: unknown) => (v === "" || v == null ? undefined : Number(v))
-                    : undefined,
                 maxLength: c.maxLength
                   ? { value: c.maxLength, message: `Max ${c.maxLength} characters` }
                   : undefined,
@@ -110,21 +112,33 @@ export function LineItems({
                   if (c.max !== undefined && n > c.max) return `Must be ≤ ${c.max}`;
                   return true;
                 },
-              });
+              };
+              const numericSelect = c.type === "select" && typeof c.options?.[0]?.value === "number";
+              const reg = c.type === "select" ? undefined : form.register(path, rules);
               return (
                 <div key={c.name} className="mb-3 last:mb-0 md:mb-0">
                   <label htmlFor={id} className="mb-1 block text-xs font-medium text-drs-ink/75 md:sr-only">
                     {c.label} (line {i + 1})
                   </label>
                   {c.type === "select" ? (
-                    <select id={id} aria-invalid={!!err} disabled={c.readOnly} className={control} {...reg}>
-                      <option value="">Select…</option>
-                      {c.options?.map((o) => (
-                        <option key={String(o.value)} value={o.value}>
-                          {o.label}
-                        </option>
-                      ))}
-                    </select>
+                    <Controller
+                      control={form.control}
+                      name={path}
+                      rules={{ required: rules.required, validate: rules.validate }}
+                      render={({ field }) => (
+                        <Select
+                          id={id}
+                          name={field.name}
+                          invalid={!!err}
+                          disabled={c.readOnly}
+                          options={c.options ?? []}
+                          placeholder={c.placeholder ?? "Select…"}
+                          value={field.value}
+                          onChange={(v) => field.onChange(v === "" ? (numericSelect ? undefined : "") : v)}
+                          onBlur={field.onBlur}
+                        />
+                      )}
+                    />
                   ) : (
                     <input
                       id={id}

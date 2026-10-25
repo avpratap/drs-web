@@ -16,6 +16,7 @@ import { useApiAction } from "@/lib/use-api-action";
 import { mediaUrl } from "@/modules/delivery/actions";
 import { customerActions } from "@/modules/customers/handlers";
 import { OPTIONS } from "@/modules/options";
+import { Select } from "@/components/ui/select";
 
 type Ticket = components["schemas"]["TicketOut"];
 
@@ -119,24 +120,18 @@ export default function TicketShowPage() {
               <label htmlFor="ticket-status" className="mb-1.5 block text-sm font-medium">
                 Change status
               </label>
-              <select
+              <Select
                 id="ticket-status"
                 value={t.status}
                 disabled={pending}
-                onChange={(e) =>
-                  run(() => customerActions.setTicketStatus(t.id, e.target.value), {
-                    success: `Ticket ${humanize(e.target.value).toLowerCase()}`,
+                options={OPTIONS.ticketStatus}
+                onChange={(v) =>
+                  run(() => customerActions.setTicketStatus(t.id, String(v)), {
+                    success: `Ticket ${humanize(String(v)).toLowerCase()}`,
                     invalidate: ["tickets"],
                   }).catch(() => undefined)
                 }
-                className="min-h-11 w-full rounded-lg border border-drs-ink/20 bg-drs-white px-3 text-sm"
-              >
-                {OPTIONS.ticketStatus.map((o) => (
-                  <option key={o.value} value={o.value}>
-                    {o.label}
-                  </option>
-                ))}
-              </select>
+              />
             </div>
           </Card>
         </aside>

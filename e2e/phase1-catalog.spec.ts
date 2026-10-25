@@ -1,11 +1,11 @@
-import { expect, test, visit } from "./fixtures";
+import { choose, expect, test, visit } from "./fixtures";
 
 test("product list: totals, retired filter and create", async ({ admin: page }) => {
   await visit(page, "/products", "Products");
   const table = page.getByRole("table", { name: "Products" });
   await expect(table.getByRole("link", { name: /^Full Cream Milk/ })).toBeVisible();
   // Retired products are visible to admins and filterable.
-  await page.getByLabel("Status").selectOption("retired");
+  await choose(page.getByLabel("Status"), "retired");
   await expect(table.getByRole("link", { name: /^Malai Paneer/ })).toBeVisible();
   await expect(table.getByRole("link", { name: /^Full Cream Milk/ })).toHaveCount(0);
 

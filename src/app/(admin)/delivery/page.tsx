@@ -5,10 +5,12 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ResourceList } from "@/components/resource/resource-list";
 import { StatusBadge } from "@/components/ui/badge";
 import { PageHeader } from "@/components/ui/card";
+import { inputClass } from "@/components/ui/field";
 import { RowLink, TextLink } from "@/components/ui/links";
 import { StatCard, StatGrid } from "@/components/ui/stat";
 import type { Column } from "@/components/ui/table";
 import type { components } from "@/lib/api/client";
+import { cn } from "@/lib/cn";
 import { formatDate, money } from "@/lib/format";
 import { todayIST } from "@/lib/forms";
 
@@ -79,7 +81,7 @@ export default function DeliveryPage() {
               type="date"
               value={date}
               onChange={(e) => router.replace(`${pathname}?date=${e.target.value || todayIST()}`)}
-              className="min-h-11 rounded-lg border border-drs-ink/20 bg-drs-white px-3 text-sm"
+              className={cn(inputClass, "md:w-auto")}
             />
           </div>
         }

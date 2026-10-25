@@ -1,6 +1,7 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
+import { pick } from "../../helpers";
 import { PodViewer } from "@/components/delivery/pod-viewer";
 import { Stars } from "@/components/customers/badges";
 import { FilterBar } from "@/components/resource/filter-bar";
@@ -77,7 +78,7 @@ describe("FilterBar", () => {
         onChange={onChange}
       />,
     );
-    await user.selectOptions(screen.getByLabelText("Status"), "open");
+    await pick(user, screen.getByLabelText("Status"), "open");
     expect(onChange).toHaveBeenLastCalledWith("status", "open");
     await user.type(screen.getByRole("searchbox", { name: "Search" }), "  ghee ");
     expect(onChange).toHaveBeenCalledTimes(1);

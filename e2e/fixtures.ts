@@ -1,5 +1,5 @@
 import AxeBuilder from "@axe-core/playwright";
-import { test as base, expect, type Page } from "@playwright/test";
+import { test as base, expect, type Locator, type Page } from "@playwright/test";
 
 const API = "http://127.0.0.1:8787";
 
@@ -46,4 +46,17 @@ export async function visit(page: Page, path: string, heading: string | RegExp) 
   await page.waitForLoadState("networkidle");
   await expectNoHorizontalScroll(page);
   await expectAccessible(page);
+}
+
+/** Open a custom (Radix) Select and pick an option by its value or `{ label }`. */
+export async function choose(trigger: Locator, option: string | { label: string }) {
+  await trigger.click();
+  const list = trigger.page().getByRole("listbox");
+  await expect(list).toBeVisible();
+  const item =
+    typeof option === "string"
+      ? list.locator(`[role="option"][data-value="${option}"]`)
+      : list.getByRole("option", { name: option.label, exact: true });
+  await item.click();
+  await expect(list).toBeHidden();
 }

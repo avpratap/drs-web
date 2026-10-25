@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { DeleteButton } from "@/components/ui/delete-button";
+import { FormSelect } from "@/components/resource/form-select";
 import { Field } from "@/components/ui/field";
 import type { components } from "@/lib/api/client";
 import { toPayload } from "@/lib/forms";
@@ -33,6 +34,7 @@ export function VariantForm({ productId, id }: { productId: string; id?: string 
   const back = `/products/${productId}`;
   const {
     register,
+    control,
     handleSubmit,
     getValues,
     formState: { errors },
@@ -157,10 +159,15 @@ export function VariantForm({ productId, id }: { productId: string; id?: string 
           {isEdit && (
             <Field label="Status" error={err("status")}>
               {(p) => (
-                <select {...p} {...register("status")}>
-                  <option value="active">Active</option>
-                  <option value="inactive">Inactive</option>
-                </select>
+                <FormSelect
+                  control={control}
+                  name="status"
+                  field={p}
+                  options={[
+                    { value: "active", label: "Active" },
+                    { value: "inactive", label: "Inactive" },
+                  ]}
+                />
               )}
             </Field>
           )}

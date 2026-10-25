@@ -47,7 +47,7 @@ export default function OverviewPage() {
           <section key={g.label} aria-labelledby={`ov-${g.label}`}>
             <h2
               id={`ov-${g.label}`}
-              className="mb-3 text-sm font-semibold tracking-wide text-drs-ink/75 uppercase"
+              className="mb-3 text-xs leading-4 font-semibold tracking-[0.14em] text-drs-ink/70 uppercase"
             >
               {g.label}
             </h2>
