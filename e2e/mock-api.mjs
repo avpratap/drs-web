@@ -202,6 +202,88 @@ function seed() {
       },
     ],
     carts: {},
+    // Published storefront content (kept apart from the admin CMS fixtures above).
+    publicContent: {
+      articles: [
+        {
+          id: 201,
+          slug: "a2-milk-explained",
+          title: "A2 milk, explained",
+          body_html:
+            '<p>Most milk contains two kinds of beta-casein protein. <strong>A2 milk</strong> comes from cows that make only the A2 kind.</p><h2>Why some people prefer it</h2><ul><li>Many find it gentler to digest</li><li>It tastes just like the milk you know</li></ul><p>Read the <a href="https://example.org/a2-study">research summary</a>.</p><script>alert("xss")</script><p onclick="steal()">Fresh every morning.</p>',
+          excerpt: "What makes A2 milk different, and why many families switch to it.",
+          author_name: "DRS Kitchen",
+          category: "nutrition",
+          tags: ["a2", "milk"],
+          status: "published",
+          meta_title: "A2 milk, explained | DRS Journal",
+          meta_description: "What A2 milk is and why many families prefer it.",
+          cover_image_url: null,
+          published_at: "2026-10-20T06:00:00Z",
+        },
+        {
+          id: 202,
+          slug: "how-we-make-bilona-ghee",
+          title: "How we make bilona ghee",
+          body_html:
+            "<p>Curd is churned by hand, the butter slow-cooked until it turns golden and grainy.</p><h2>Slow is the point</h2><p>It takes about 25 litres of milk to make one litre of ghee.</p>",
+          excerpt: "Curd, churning and patience: the slow way to golden ghee.",
+          author_name: "DRS Kitchen",
+          category: "kitchen",
+          tags: ["ghee"],
+          status: "published",
+          meta_title: null,
+          meta_description: null,
+          cover_image_url: "/files/content/ghee-cover.svg",
+          published_at: "2026-10-12T06:00:00Z",
+        },
+      ],
+      pages: [
+        {
+          id: 301,
+          slug: "faq",
+          title: "Frequently asked questions",
+          body_html:
+            "<h2>When do you deliver?</h2><p>Every morning before 7 am.</p><h2>Can I pause my subscription?</h2><p>Yes — pause or skip any day from your account before the nightly cut-off.</p>",
+          status: "published",
+          meta_title: "FAQs",
+          meta_description: "Deliveries, subscriptions and payments — answered.",
+          published_at: "2026-10-01T06:00:00Z",
+        },
+        {
+          id: 302,
+          slug: "terms",
+          title: "Terms of service",
+          body_html: "<p>These terms govern your use of DRS Dairy.</p>",
+          status: "published",
+          meta_title: null,
+          meta_description: null,
+          published_at: "2026-10-01T06:00:00Z",
+        },
+      ],
+      banners: [
+        {
+          id: 401,
+          title: "Ghee week: 10% off A2 ghee",
+          image_url: "/files/content/ghee-banner.svg",
+          cta_link: "/products?category=ghee",
+          position: 1,
+          active: true,
+          valid_from: null,
+          valid_to: null,
+        },
+        {
+          id: 402,
+          title: "Try A2 milk for 7 days",
+          image_url: "/files/content/milk-banner.svg",
+          cta_link: "/products?category=milk",
+          position: 2,
+          active: true,
+          valid_from: null,
+          valid_to: null,
+        },
+      ],
+    },
     // The storefront customer (phone 9000000000): profile, wallet and one delivered order.
     custProfile: {
       user_id: 50,
@@ -1536,6 +1618,53 @@ on("POST", "/api/v1/account/erase", (req, res, { body }) => {
     retained: "Tax invoices and payment records are kept for 8 years as required by law.",
   });
 });
+// --- public CMS (no auth) ---
+on("GET", "/api/v1/content/articles", (req, res, { q }) => {
+  let rows = db.publicContent.articles.filter((a) => a.status === "published");
+  if (q.get("category")) rows = rows.filter((a) => a.category === q.get("category"));
+  const offset = Number(q.get("offset") ?? 0);
+  const limit = Number(q.get("limit") ?? 50);
+  send(res, 200, rows.slice(offset, offset + limit));
+});
+on("GET", "/api/v1/content/articles/:slug", (req, res, { p }) => {
+  const a = db.publicContent.articles.find((x) => x.slug === p.slug && x.status === "published");
+  return a ? send(res, 200, a) : send(res, 404, { detail: "Article not found" });
+});
+on("GET", "/api/v1/content/pages/:slug", (req, res, { p }) => {
+  const pg = db.publicContent.pages.find((x) => x.slug === p.slug && x.status === "published");
+  return pg ? send(res, 200, pg) : send(res, 404, { detail: "Page not found" });
+});
+on("GET", "/api/v1/content/banners", (req, res) =>
+  send(
+    res,
+    200,
+    db.publicContent.banners.filter((b) => b.active).sort((a, b) => a.position - b.position),
+  ),
+);
+// Backend serves the sitemap at the domain root (the web app rewrites /sitemap.xml here).
+on("GET", "/sitemap.xml", (req, res) => {
+  res.writeHead(200, { "content-type": "application/xml" });
+  res.end(
+    '<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' +
+      [
+        "/",
+        "/shop",
+        "/blog",
+        ...db.publicContent.articles.map((a) => `/blog/${a.slug}`),
+        ...db.publicContent.pages.map((p) => `/${p.slug}`),
+      ]
+        .map((u) => `<url><loc>https://drs.co.in${u}</loc></url>`)
+        .join("") +
+      "</urlset>",
+  );
+});
+// Content images (SVG placeholders): a cream tile with the title's first letter.
+on("GET", "/files/content/.+", (req, res) => {
+  res.writeHead(200, { "content-type": "image/svg+xml" });
+  res.end(
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450"><rect width="800" height="450" fill="#0D4C3C"/><circle cx="640" cy="120" r="160" fill="#F4EADE" opacity="0.12"/><path d="M0 380 Q400 300 800 380 V450 H0Z" fill="#C5A253" opacity="0.35"/></svg>',
+  );
+});
 on("POST", "/api/v1/payments/create", (req, res, { body, headers }) =>
   idempotent(headers, res, () => {
     if (body.purpose === "wallet_topup") {
@@ -2493,7 +2622,9 @@ createServer(async (req, res) => {
   const publicCatalogue =
     req.method === "GET" &&
     (/^\/api\/v1\/products(\/categories|\/\d+\/(full|ratings))?$/.test(url.pathname) ||
-      url.pathname === "/api/v1/shipping/serviceability");
+      url.pathname === "/api/v1/shipping/serviceability" ||
+      url.pathname.startsWith("/api/v1/content/") ||
+      url.pathname === "/sitemap.xml");
   if (
     !isAuth &&
     !signedFile &&

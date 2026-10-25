@@ -1,6 +1,8 @@
 import { ArrowRightIcon } from "lucide-react";
 import Link from "next/link";
 import { Suspense } from "react";
+import { JsonLd, organizationLd } from "@/components/marketing/json-ld";
+import { PromoBanners } from "@/components/marketing/promo-banners";
 import { HeroArt } from "@/components/store/hero-art";
 import {
   CategoryGrid,
@@ -15,6 +17,7 @@ import {
 export default function StoreHome() {
   return (
     <>
+      <JsonLd data={organizationLd()} />
       {/* Hero */}
       <section aria-labelledby="hero-heading" className="relative overflow-hidden">
         <div className="mx-auto grid max-w-7xl items-center gap-10 px-4 pt-10 pb-12 md:px-6 md:pt-14 lg:grid-cols-[1.05fr_1fr] lg:gap-16 lg:pt-20 lg:pb-20">
@@ -59,6 +62,10 @@ export default function StoreHome() {
         <section aria-label="Why DRS">
           <Promises />
         </section>
+
+        <Suspense fallback={null}>
+          <PromoBanners />
+        </Suspense>
 
         <section aria-labelledby="categories-heading" id="categories" className="scroll-mt-32">
           <SectionHeading

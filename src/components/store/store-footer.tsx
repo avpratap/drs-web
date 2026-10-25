@@ -18,7 +18,7 @@ const COLUMNS = [
     title: "Company",
     links: [
       { href: "/about", label: "About DRS" },
-      { href: "/blog", label: "Journal" },
+      { href: "/journal", label: "Journal" },
       { href: "/contact", label: "Contact us" },
     ],
   },
