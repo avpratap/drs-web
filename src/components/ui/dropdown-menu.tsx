@@ -13,7 +13,7 @@ const DropdownMenuSub = DropdownMenuPrimitive.Sub;
 const DropdownMenuRadioGroup = DropdownMenuPrimitive.RadioGroup;
 
 const surface =
-  "z-50 min-w-40 max-w-[calc(100vw-1rem)] overflow-hidden rounded-lg border border-drs-green/15 bg-drs-white p-1 text-sm text-drs-ink shadow-lg shadow-drs-green/10 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95";
+  "z-50 min-w-40 max-w-[calc(100vw-1rem)] text-left overflow-hidden rounded-lg border border-drs-green/15 bg-drs-white p-1 text-sm text-drs-ink shadow-lg shadow-drs-green/10 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95";
 const item =
   "relative flex min-h-10 cursor-pointer items-center gap-2 rounded-md px-3 py-2 outline-none select-none focus:bg-drs-green/10 focus:text-drs-green data-[disabled]:pointer-events-none data-[disabled]:opacity-50 [&_svg]:size-4 [&_svg]:shrink-0";
 

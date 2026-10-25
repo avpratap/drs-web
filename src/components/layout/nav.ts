@@ -18,6 +18,14 @@ export const NAV_GROUPS: NavGroup[] = [
       { href: "/withdrawals", label: "Withdrawals" },
       { href: "/payments", label: "Payments" },
       { href: "/refunds", label: "Refunds" },
+      { href: "/invoices", label: "Invoices" },
+    ],
+  },
+  {
+    label: "Loyalty",
+    items: [
+      { href: "/gift-cards", label: "Gift cards" },
+      { href: "/loyalty", label: "Loyalty points" },
     ],
   },
   {
@@ -47,6 +55,10 @@ export const NAV_GROUPS: NavGroup[] = [
     label: "Insights",
     items: [
       { href: "/reports", label: "Reports" },
+      { href: "/churn", label: "Churn risk" },
+      { href: "/forecast", label: "Demand forecast" },
+      { href: "/reorder-suggestions", label: "Reorder suggestions" },
+      { href: "/copilot", label: "AI copilot" },
       { href: "/audit-log", label: "Audit log" },
     ],
   },
@@ -73,6 +85,8 @@ export const NAV_GROUPS: NavGroup[] = [
     label: "System",
     items: [
       { href: "/users", label: "Users & staff" },
+      { href: "/notifications", label: "Notifications" },
+      { href: "/webhooks", label: "Webhooks" },
       { href: "/feature-flags", label: "Feature flags" },
     ],
   },

@@ -1,6 +1,7 @@
 "use client";
 
 import { ActionDialog } from "@/components/resource/action-dialog";
+import { ExportCsvButton } from "@/components/resource/export-csv";
 import { ResourceList } from "@/components/resource/resource-list";
 import { Badge, StatusBadge } from "@/components/ui/badge";
 import type { Column } from "@/components/ui/table";
@@ -78,6 +79,7 @@ const columns: Column<User>[] = [
 export default function UsersPage() {
   return (
     <ResourceList<User>
+      actions={<ExportCsvButton kind="users" />}
       resource="users"
       title="Users & staff"
       description="Everyone who can sign in: customers, B2B subscribers, delivery drivers and admins."

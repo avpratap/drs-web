@@ -41,5 +41,9 @@ export const OPTIONS = {
     { value: "true", label: "Assigned" },
     { value: "false", label: "Removed" },
   ],
+  giftCardStatus: opts("active", "redeemed", "expired", "disabled"),
+  notificationStatus: opts("queued", "sent", "failed", "skipped"),
+  churnRisk: opts("low", "medium", "high"),
+  pointsReason: opts("adjust", "goodwill", "correction", "promo"),
   cutoffStatus: opts("generating", "frozen", "partial", "failed"),
 } as const;

@@ -10,7 +10,14 @@ import { ACCESS_COOKIE, forwardedFor, isSameOrigin } from "@/lib/auth/session";
  */
 const BLOCKED = /^api\/v1\/auth\/(otp|refresh|logout)(\/|$)/;
 const PASS_REQ_HEADERS = ["content-type", "accept", "idempotency-key", "if-none-match"];
-const PASS_RES_HEADERS = ["content-type", "content-disposition", "etag", "cache-control", "x-total-count"];
+const PASS_RES_HEADERS = [
+  "content-type",
+  "content-disposition",
+  "etag",
+  "cache-control",
+  "x-total-count",
+  "x-export-truncated",
+];
 
 async function handle(req: Request, ctx: { params: Promise<{ path: string[] }> }) {
   const path = (await ctx.params).path.map(encodeURIComponent).join("/");

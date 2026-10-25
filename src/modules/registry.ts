@@ -4,6 +4,8 @@ import { catalogHandlers } from "./catalog/handlers";
 import { contentHandlers } from "./content/handlers";
 import { customerHandlers } from "./customers/handlers";
 import { deliveryHandlers } from "./delivery/handlers";
+import { engagementHandlers } from "./engagement/handlers";
+import { insightsHandlers } from "./insights/handlers";
 import { inventoryHandlers } from "./inventory/handlers";
 import { operationsHandlers } from "./operations/handlers";
 import { reportHandlers } from "./reports/handlers";
@@ -20,4 +22,6 @@ export const handlers: Handlers = {
   ...customerHandlers,
   ...systemHandlers,
   ...operationsHandlers,
+  ...engagementHandlers,
+  ...insightsHandlers,
 };

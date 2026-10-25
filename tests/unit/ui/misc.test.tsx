@@ -97,6 +97,7 @@ describe("misc", () => {
     expect(NAV_GROUPS.map((g) => g.label).filter(Boolean)).toEqual([
       "Catalog",
       "Billing",
+      "Loyalty",
       "Inventory",
       "Delivery",
       "Insights",
@@ -104,7 +105,7 @@ describe("misc", () => {
       "Customers",
       "System",
     ]);
-    expect(NAV.length).toBeGreaterThanOrEqual(28);
+    expect(NAV.length).toBeGreaterThanOrEqual(40);
     expect(isActive("/purchase-orders/4", "/purchase-orders")).toBe(true);
     expect(isActive("/products", "/")).toBe(false);
   });

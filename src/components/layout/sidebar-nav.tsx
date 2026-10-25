@@ -84,7 +84,11 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
   }, [pathname]);
 
   return (
-    <nav ref={navRef} aria-label="Main" className="mt-7 -mr-2 flex-1 overflow-y-auto pr-2 pb-4">
+    <nav
+      ref={navRef}
+      aria-label="Main"
+      className="mt-7 -mr-2 min-h-0 flex-1 overflow-y-auto overscroll-contain pr-2 pb-4"
+    >
       {NAV_GROUPS.map((group) => {
         const list = (
           <ul className="flex flex-col gap-px">

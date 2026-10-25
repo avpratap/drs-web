@@ -4,7 +4,6 @@ import * as SelectPrimitive from "@radix-ui/react-select";
 import { CheckIcon, ChevronDownIcon, ChevronUpIcon } from "lucide-react";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
-import { swallowDialogCancel, useDialogContainer } from "./use-dialog-container";
 
 /* ------------------------------------------------------------------------------------------
  * shadcn/ui Select primitives (Radix), themed with the DRS tokens. The Radix root is
@@ -86,7 +85,7 @@ function SelectContent({
         sideOffset={6}
         collisionPadding={8}
         className={cn(
-          "relative z-50 overflow-hidden rounded-lg border border-drs-green/15 bg-drs-white text-sm text-drs-ink shadow-lg shadow-drs-green/10",
+          "relative z-50 overflow-hidden rounded-lg border text-left border-drs-green/15 bg-drs-white text-sm text-drs-ink shadow-lg shadow-drs-green/10",
           "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-1 data-[side=top]:slide-in-from-bottom-1",
           position === "popper" &&
             "max-h-[min(18rem,var(--radix-select-content-available-height))] w-[var(--radix-select-trigger-width)] max-w-[calc(100vw-1rem)] origin-[var(--radix-select-content-transform-origin)]",
@@ -202,21 +201,17 @@ export function Select({
   ...aria
 }: SelectProps) {
   const triggerRef = useRef<HTMLButtonElement>(null);
-  const { container, resolve } = useDialogContainer(triggerRef);
   const [open, setOpen] = useState(false);
 
   const byKey = useMemo(() => new Map(options.map((o) => [keyOf(o.value), o.value])), [options]);
   const selected = blank(value) ? undefined : options.find((o) => String(o.value) === String(value));
 
-  // Portal into an enclosing native modal <dialog> (it lives in the top layer and makes the
-  // rest of the page inert), otherwise into <body>.
   const onOpenChange = useCallback(
     (next: boolean) => {
-      if (next) resolve();
       setOpen(next);
       if (!next) onBlur?.();
     },
-    [onBlur, resolve],
+    [onBlur],
   );
 
   return (
@@ -244,7 +239,7 @@ export function Select({
         >
           <SelectValue placeholder={placeholder} />
         </SelectTrigger>
-        <SelectContent container={container} onEscapeKeyDown={swallowDialogCancel}>
+        <SelectContent>
           {clearable && (
             <SelectItem value={EMPTY} data-value="" className="text-drs-ink/70">
               {emptyLabel ?? placeholder}

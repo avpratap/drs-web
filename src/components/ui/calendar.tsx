@@ -40,7 +40,7 @@ function Calendar({
     <DayPicker
       showOutsideDays={showOutsideDays}
       weekStartsOn={1}
-      className={cn("p-3 text-sm text-drs-ink", className)}
+      className={cn("p-3 text-left text-sm text-drs-ink", className)}
       classNames={{
         root: "relative",
         months: "relative flex flex-col gap-4",

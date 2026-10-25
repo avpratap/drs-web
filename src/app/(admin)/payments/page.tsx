@@ -1,5 +1,6 @@
 "use client";
 
+import { ExportCsvButton } from "@/components/resource/export-csv";
 import { ResourceList } from "@/components/resource/resource-list";
 import { Badge, StatusBadge } from "@/components/ui/badge";
 import { TextLink } from "@/components/ui/links";
@@ -40,6 +41,7 @@ const columns: Column<Payment>[] = [
 export default function PaymentsPage() {
   return (
     <ResourceList<Payment>
+      actions={<ExportCsvButton kind="payments" />}
       resource="payments"
       title="Payments"
       description="Gateway payments across orders and wallet top-ups. Open a payment to refund it."
