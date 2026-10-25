@@ -6638,11 +6638,8 @@ export interface components {
       price_tier_id: number;
       /** Unit Price */
       unit_price: number;
-      /**
-       * Min Qty
-       * @default 1
-       */
-      min_qty: number;
+      /** Min Qty */
+      min_qty?: number | null;
       /**
        * Valid From
        * Format: date

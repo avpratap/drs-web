@@ -23049,11 +23049,17 @@
             "title": "Unit Price"
           },
           "min_qty": {
-            "type": "number",
-            "maximum": 1000000.0,
-            "exclusiveMinimum": 0.0,
-            "title": "Min Qty",
-            "default": 1
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 1000000.0,
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Min Qty"
           },
           "valid_from": {
             "type": "string",
