@@ -60,3 +60,20 @@ export async function choose(trigger: Locator, option: string | { label: string 
   await item.click();
   await expect(list).toBeHidden();
 }
+
+/** Open a DatePicker and pick an ISO date: page through months with the keyboard, then click the day. */
+export async function pickDate(trigger: Locator, iso: string) {
+  const page = trigger.page();
+  await trigger.click();
+  const dialog = page.getByRole("dialog", { name: "Choose date" });
+  await expect(dialog).toBeVisible();
+  const focused = dialog.locator("button[data-day]:focus");
+  await expect(focused).toHaveCount(1);
+  const from = (await focused.getAttribute("data-day"))!;
+  const months = (d: string) => Number(d.slice(0, 4)) * 12 + Number(d.slice(5, 7)) - 1;
+  const diff = months(iso) - months(from);
+  for (let i = 0; i < Math.abs(diff); i++) await page.keyboard.press(diff > 0 ? "PageDown" : "PageUp");
+  await dialog.locator(`button[data-day="${iso}"]`).first().click();
+  await expect(dialog).toBeHidden();
+  await expect(trigger).toHaveAttribute("data-value", iso);
+}

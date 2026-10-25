@@ -1,3 +1,4 @@
+import { Disclosure } from "@/components/ui/disclosure";
 import { useId } from "react";
 
 /** Card chrome for a chart: title, subtitle, the plot, and a disclosable data table. */
@@ -28,10 +29,7 @@ export function ChartFrame({
         {subtitle && <p className="mt-0.5 text-xs text-drs-ink/70">{subtitle}</p>}
       </figcaption>
       <div className={loading ? "opacity-50 transition-opacity" : "transition-opacity"}>{children}</div>
-      <details className="mt-3 text-sm">
-        <summary className="inline-flex min-h-11 cursor-pointer items-center font-medium text-drs-green">
-          Show data table
-        </summary>
+      <Disclosure className="mt-3 text-sm" summary="Show data table">
         <div
           role="region"
           aria-label={`${title} data`}
@@ -66,7 +64,7 @@ export function ChartFrame({
             </tbody>
           </table>
         </div>
-      </details>
+      </Disclosure>
     </figure>
   );
 }

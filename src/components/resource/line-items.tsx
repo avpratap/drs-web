@@ -9,6 +9,7 @@ import {
 } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { inputClass } from "@/components/ui/field";
+import { DatePicker } from "@/components/ui/date-picker";
 import { Select } from "@/components/ui/select";
 import { cn } from "@/lib/cn";
 import type { Option } from "./fields";
@@ -114,7 +115,7 @@ export function LineItems({
                 },
               };
               const numericSelect = c.type === "select" && typeof c.options?.[0]?.value === "number";
-              const reg = c.type === "select" ? undefined : form.register(path, rules);
+              const reg = c.type === "select" || c.type === "date" ? undefined : form.register(path, rules);
               return (
                 <div key={c.name} className="mb-3 last:mb-0 md:mb-0">
                   <label htmlFor={id} className="mb-1 block text-xs font-medium text-drs-ink/75 md:sr-only">
@@ -139,13 +140,32 @@ export function LineItems({
                         />
                       )}
                     />
+                  ) : c.type === "date" ? (
+                    <Controller
+                      control={form.control}
+                      name={path}
+                      rules={{ required: rules.required, validate: rules.validate }}
+                      render={({ field }) => (
+                        <DatePicker
+                          id={id}
+                          name={field.name}
+                          invalid={!!err}
+                          disabled={c.readOnly}
+                          clearable={!c.required}
+                          placeholder={c.placeholder ?? "Pick a date"}
+                          value={field.value as string | undefined}
+                          onChange={field.onChange}
+                          onBlur={field.onBlur}
+                        />
+                      )}
+                    />
                   ) : (
                     <input
                       id={id}
                       aria-invalid={!!err}
                       readOnly={c.readOnly}
                       className={cn(control, c.readOnly && "bg-drs-cream/50")}
-                      type={numeric ? "number" : c.type === "date" ? "date" : "text"}
+                      type={numeric ? "number" : "text"}
                       placeholder={c.placeholder}
                       step={numeric ? (c.type === "money" ? "0.01" : "any") : undefined}
                       inputMode={numeric ? "decimal" : undefined}

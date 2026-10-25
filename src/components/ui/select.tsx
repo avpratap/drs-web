@@ -2,8 +2,9 @@
 
 import * as SelectPrimitive from "@radix-ui/react-select";
 import { CheckIcon, ChevronDownIcon, ChevronUpIcon } from "lucide-react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
+import { swallowDialogCancel, useDialogContainer } from "./use-dialog-container";
 
 /* ------------------------------------------------------------------------------------------
  * shadcn/ui Select primitives (Radix), themed with the DRS tokens. The Radix root is
@@ -15,8 +16,8 @@ const SelectGroup = SelectPrimitive.Group;
 const SelectValue = SelectPrimitive.Value;
 
 /** Same height/radius/border/padding as the text inputs; the chevron turns while open. */
-const triggerClass =
-  "relative flex w-full min-h-11 items-center justify-between gap-2 rounded-lg border border-drs-ink/20 bg-drs-white px-3 py-2 text-left text-sm text-drs-ink transition-colors hover:border-drs-green/50 focus-visible:border-drs-green data-[state=open]:border-drs-green data-[placeholder]:text-drs-ink/70 aria-[invalid=true]:border-drs-maroon disabled:cursor-not-allowed disabled:bg-drs-cream/50 disabled:text-drs-ink/70 disabled:hover:border-drs-ink/20 [&>span]:min-w-0 [&>span]:truncate [&[data-state=open]>svg]:rotate-180";
+export const triggerClass =
+  "relative flex w-full min-h-11 items-center justify-between gap-2 rounded-lg border border-drs-ink/20 bg-drs-white px-3 py-2 text-left text-sm text-drs-ink transition-colors hover:border-drs-green/50 focus-visible:border-drs-green data-[state=open]:border-drs-green data-[placeholder]:text-drs-ink/70 aria-[invalid=true]:border-drs-maroon data-[invalid]:border-drs-maroon disabled:cursor-not-allowed disabled:bg-drs-cream/50 disabled:text-drs-ink/70 disabled:hover:border-drs-ink/20 [&>span]:min-w-0 [&>span]:truncate [&[data-state=open]>svg]:rotate-180";
 
 function SelectTrigger({
   className,
@@ -184,9 +185,6 @@ const EMPTY = "__drs_empty__";
 const keyOf = (v: string | number) => `${typeof v}:${String(v)}`;
 const blank = (v: Value) => v === "" || v == null;
 
-/** Escape in a Select inside a native modal <dialog> closes only the Select. */
-let swallowCancelUntil = 0;
-
 export function Select({
   options,
   value,
@@ -204,7 +202,7 @@ export function Select({
   ...aria
 }: SelectProps) {
   const triggerRef = useRef<HTMLButtonElement>(null);
-  const [container, setContainer] = useState<HTMLElement | null>(null);
+  const { container, resolve } = useDialogContainer(triggerRef);
   const [open, setOpen] = useState(false);
 
   const byKey = useMemo(() => new Map(options.map((o) => [keyOf(o.value), o.value])), [options]);
@@ -214,20 +212,12 @@ export function Select({
   // rest of the page inert), otherwise into <body>.
   const onOpenChange = useCallback(
     (next: boolean) => {
-      if (next) setContainer(triggerRef.current?.closest("dialog") ?? null);
+      if (next) resolve();
       setOpen(next);
       if (!next) onBlur?.();
     },
-    [onBlur],
+    [onBlur, resolve],
   );
-  useEffect(() => {
-    if (!container) return;
-    const onCancel = (e: Event) => {
-      if (Date.now() < swallowCancelUntil) e.preventDefault();
-    };
-    container.addEventListener("cancel", onCancel);
-    return () => container.removeEventListener("cancel", onCancel);
-  }, [container]);
 
   return (
     <div className={cn(fit ? "inline-grid w-full md:w-auto" : "grid w-full", className)}>
@@ -254,12 +244,7 @@ export function Select({
         >
           <SelectValue placeholder={placeholder} />
         </SelectTrigger>
-        <SelectContent
-          container={container}
-          onEscapeKeyDown={() => {
-            swallowCancelUntil = Date.now() + 250;
-          }}
-        >
+        <SelectContent container={container} onEscapeKeyDown={swallowDialogCancel}>
           {clearable && (
             <SelectItem value={EMPTY} data-value="" className="text-drs-ink/70">
               {emptyLabel ?? placeholder}

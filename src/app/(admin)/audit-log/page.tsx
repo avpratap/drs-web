@@ -2,6 +2,7 @@
 
 import { ResourceList } from "@/components/resource/resource-list";
 import { Badge } from "@/components/ui/badge";
+import { Disclosure } from "@/components/ui/disclosure";
 import { JsonView } from "@/components/ui/json-view";
 import type { Column } from "@/components/ui/table";
 import type { components } from "@/lib/api/client";
@@ -35,14 +36,17 @@ const columns: Column<Entry>[] = [
     header: "Detail",
     cell: (e) =>
       e.detail ? (
-        <details>
-          <summary className="inline-flex min-h-11 cursor-pointer items-center text-sm font-medium text-drs-green">
-            View<span className="sr-only"> detail of entry {e.id}</span>
-          </summary>
+        <Disclosure
+          summary={
+            <>
+              View<span className="sr-only"> detail of entry {e.id}</span>
+            </>
+          }
+        >
           <div className="mt-2 w-[min(32rem,70vw)]">
             <JsonView value={e.detail} label={`Detail of audit entry ${e.id}`} />
           </div>
-        </details>
+        </Disclosure>
       ) : (
         "—"
       ),

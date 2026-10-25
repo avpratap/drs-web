@@ -2,10 +2,11 @@
 
 import type { HttpError } from "@refinedev/core";
 import { useForm } from "@refinedev/react-hook-form";
+import { Controller } from "react-hook-form";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { FormSelect } from "@/components/resource/form-select";
-import { Checkbox, Field } from "@/components/ui/field";
+import { CheckboxField, Field } from "@/components/ui/field";
 import type { components } from "@/lib/api/client";
 import { toPayload } from "@/lib/forms";
 
@@ -163,8 +164,22 @@ export function ProductForm({ id }: { id?: string }) {
             )}
           </Field>
           <div className="flex flex-col gap-1 md:col-span-2 md:flex-row md:gap-8">
-            <Checkbox label="Available for subscription" {...register("is_subscribable")} />
-            <Checkbox label="Perishable" {...register("perishable")} />
+            {(["is_subscribable", "perishable"] as const).map((k) => (
+              <Controller
+                key={k}
+                control={control}
+                name={k}
+                render={({ field }) => (
+                  <CheckboxField
+                    label={k === "perishable" ? "Perishable" : "Available for subscription"}
+                    name={field.name}
+                    checked={!!field.value}
+                    onCheckedChange={field.onChange}
+                    onBlur={field.onBlur}
+                  />
+                )}
+              />
+            ))}
           </div>
         </div>
       </Card>

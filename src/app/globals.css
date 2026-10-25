@@ -76,6 +76,48 @@
     outline: 2px solid var(--color-drs-green);
     outline-offset: 2px;
   }
+  ::selection {
+    background-color: rgb(13 76 60 / 0.18);
+  }
+  input,
+  textarea {
+    caret-color: var(--color-drs-green);
+  }
+  textarea {
+    resize: vertical;
+  }
+  /* Number fields: no browser spinners (values are typed; steppers look off-brand). */
+  input[type="number"] {
+    -moz-appearance: textfield;
+    appearance: textfield;
+  }
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  /* Search fields: drop the browser's own clear (×) and magnifier decorations. */
+  input[type="search"]::-webkit-search-cancel-button,
+  input[type="search"]::-webkit-search-decoration {
+    -webkit-appearance: none;
+  }
+  /* Autofill keeps the white field instead of the browser's yellow/blue tint. */
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus {
+    -webkit-text-fill-color: var(--color-drs-ink);
+    box-shadow: 0 0 0 1000px var(--color-drs-white) inset;
+    transition: background-color 9999s ease-out;
+  }
+  /* Slim, on-brand scrollbars. */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(30 26 30 / 0.25) transparent;
+  }
+  .on-dark,
+  .on-dark * {
+    scrollbar-color: rgb(244 234 222 / 0.3) transparent;
+  }
   .on-dark :focus-visible {
     outline-color: var(--color-drs-gold);
   }

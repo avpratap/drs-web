@@ -7,7 +7,8 @@ import {
   type RegisterOptions,
   type UseFormReturn,
 } from "react-hook-form";
-import { Checkbox, Field } from "@/components/ui/field";
+import { CheckboxField, Field } from "@/components/ui/field";
+import { DatePicker } from "@/components/ui/date-picker";
 import { Select } from "@/components/ui/select";
 import { cn } from "@/lib/cn";
 
@@ -181,14 +182,61 @@ export function FieldGrid<T extends FieldValues>({
               </Field>
             );
           }
-          const reg = register(name, rulesFor(f) as RegisterOptions<T, Path<T>>);
+          if (f.type === "date") {
+            return (
+              <Field
+                key={f.name}
+                label={f.label}
+                required={f.required}
+                error={error}
+                hint={readOnly ? `${f.label} can't be changed.` : f.hint}
+                className={cn(f.wide && "md:col-span-2")}
+              >
+                {(p) => (
+                  <Controller
+                    control={form.control}
+                    name={name}
+                    rules={selectRulesFor(f) as RegisterOptions<T, Path<T>>}
+                    render={({ field }) => (
+                      <DatePicker
+                        id={p.id}
+                        name={field.name}
+                        invalid={p["aria-invalid"]}
+                        aria-describedby={p["aria-describedby"]}
+                        value={field.value as string | undefined}
+                        placeholder={f.placeholder}
+                        clearable={!f.required}
+                        disabled={readOnly}
+                        onChange={field.onChange}
+                        onBlur={field.onBlur}
+                      />
+                    )}
+                  />
+                )}
+              </Field>
+            );
+          }
           if (f.type === "checkbox") {
             return (
               <div key={f.name} className={cn(f.wide && "md:col-span-2", "flex items-end")}>
-                <Checkbox label={f.label} disabled={readOnly} {...reg} />
+                <Controller
+                  control={form.control}
+                  name={name}
+                  render={({ field }) => (
+                    <CheckboxField
+                      label={f.label}
+                      name={field.name}
+                      disabled={readOnly}
+                      checked={!!field.value}
+                      onCheckedChange={field.onChange}
+                      onBlur={field.onBlur}
+                    />
+                  )}
+                />
               </div>
             );
           }
+          const reg = register(name, rulesFor(f) as RegisterOptions<T, Path<T>>);
           return (
             <Field
               key={f.name}

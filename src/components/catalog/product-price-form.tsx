@@ -5,7 +5,7 @@ import { useForm } from "@refinedev/react-hook-form";
 import { useSearchParams } from "next/navigation";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { FormSelect } from "@/components/resource/form-select";
+import { FormDate, FormSelect } from "@/components/resource/form-select";
 import { Field } from "@/components/ui/field";
 import type { components } from "@/lib/api/client";
 import { toPayload, todayIST } from "@/lib/forms";
@@ -130,18 +130,26 @@ export function ProductPriceForm({ id }: { id?: string }) {
           </Field>
           <Field label="Valid from" required error={err("valid_from")}>
             {(p) => (
-              <input {...p} type="date" {...register("valid_from", { required: "Start date is required" })} />
+              <FormDate
+                control={control}
+                name="valid_from"
+                field={p}
+                rules={{ required: "Start date is required" }}
+              />
             )}
           </Field>
           <Field label="Valid to" error={err("valid_to")} hint="Leave empty for open-ended">
             {(p) => (
-              <input
-                {...p}
-                type="date"
-                {...register("valid_to", {
+              <FormDate
+                control={control}
+                name="valid_to"
+                field={p}
+                clearable
+                placeholder="Open-ended"
+                rules={{
                   validate: (v) =>
                     !v || v >= getValues("valid_from") || "End date must be on or after the start date",
-                })}
+                }}
               />
             )}
           </Field>

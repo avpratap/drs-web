@@ -5,12 +5,11 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ResourceList } from "@/components/resource/resource-list";
 import { StatusBadge } from "@/components/ui/badge";
 import { PageHeader } from "@/components/ui/card";
-import { inputClass } from "@/components/ui/field";
+import { DatePicker } from "@/components/ui/date-picker";
 import { RowLink, TextLink } from "@/components/ui/links";
 import { StatCard, StatGrid } from "@/components/ui/stat";
 import type { Column } from "@/components/ui/table";
 import type { components } from "@/lib/api/client";
-import { cn } from "@/lib/cn";
 import { formatDate, money } from "@/lib/format";
 import { todayIST } from "@/lib/forms";
 
@@ -76,12 +75,11 @@ export default function DeliveryPage() {
             <label htmlFor="delivery-date" className="text-xs font-medium text-drs-ink/75">
               Delivery date
             </label>
-            <input
+            <DatePicker
               id="delivery-date"
-              type="date"
               value={date}
-              onChange={(e) => router.replace(`${pathname}?date=${e.target.value || todayIST()}`)}
-              className={cn(inputClass, "md:w-auto")}
+              onChange={(v) => router.replace(`${pathname}?date=${v || todayIST()}`)}
+              className="md:w-48"
             />
           </div>
         }

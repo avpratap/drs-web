@@ -1,4 +1,4 @@
-import { choose, expect, test, visit } from "./fixtures";
+import { choose, expect, pickDate, test, visit } from "./fixtures";
 
 test("stock: low-stock flag, reorder suggestion and an adjustment", async ({ admin: page }) => {
   await visit(page, "/stock", "Stock");
@@ -30,11 +30,11 @@ test("batches are FEFO and a new batch can be received", async ({ admin: page })
   await choose(dialog.getByLabel(/^Product/), { label: "A2 Desi Ghee (GHEE-1L)" });
   await dialog.getByLabel(/^Batch no/).fill("GHE-2410");
   await dialog.getByLabel(/^Quantity/).fill("24");
-  await dialog.getByLabel(/^Manufactured/).fill("2026-10-20");
-  await dialog.getByLabel(/^Expiry/).fill("2026-10-01");
+  await pickDate(dialog.getByLabel(/^Manufactured/), "2026-10-20");
+  await pickDate(dialog.getByLabel(/^Expiry/), "2026-10-01");
   await dialog.getByRole("button", { name: "Receive batch" }).click();
   await expect(dialog.getByText("Expiry is before manufacture")).toBeVisible();
-  await dialog.getByLabel(/^Expiry/).fill("2027-04-20");
+  await pickDate(dialog.getByLabel(/^Expiry/), "2027-04-20");
   await dialog.getByRole("button", { name: "Receive batch" }).click();
   await expect(page.getByText("Batch received")).toBeVisible();
   await expect(page.getByRole("table", { name: "Batches (FEFO)" })).toContainText("GHE-2410");

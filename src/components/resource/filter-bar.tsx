@@ -4,6 +4,8 @@ import type { CrudFilter } from "@refinedev/core";
 import { useState } from "react";
 import { buttonClass } from "@/components/ui/button";
 import { inputClass } from "@/components/ui/field";
+import { DatePicker } from "@/components/ui/date-picker";
+import { SearchInput } from "@/components/ui/search-input";
 import { Select } from "@/components/ui/select";
 import { cn } from "@/lib/cn";
 import type { Option } from "./fields";
@@ -53,13 +55,11 @@ export function FilterBar({
           <label htmlFor={`f-${search.field}`} className="sr-only">
             {search.label}
           </label>
-          <input
+          <SearchInput
             id={`f-${search.field}`}
-            type="search"
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder={search.placeholder ?? search.label}
-            className={control}
           />
           <button type="submit" className={buttonClass("secondary")}>
             Search
@@ -90,6 +90,14 @@ export function FilterBar({
                 value={value}
                 options={d.options ?? []}
                 onChange={(v) => onChange(d.field, v === "" ? undefined : String(v))}
+              />
+            ) : d.type === "date" ? (
+              <DatePicker
+                id={id}
+                clearable
+                placeholder={d.placeholder ?? "Any date"}
+                value={value}
+                onChange={(v) => onChange(d.field, v || undefined)}
               />
             ) : (
               <input

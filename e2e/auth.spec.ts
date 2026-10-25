@@ -13,7 +13,7 @@ test("admin logs in with phone OTP and lands on the requested page", async ({ pa
   await page.getByLabel(/one-time code/i).fill("123456");
   await page.getByRole("button", { name: /verify/i }).click();
 
-  await expect(page).toHaveURL(/\/products$/);
+  await expect(page).toHaveURL(/\/products(\?|$)/); // the list may add its pagination params
   await expect(page.getByRole("heading", { name: "Products", level: 1 })).toBeVisible();
   const cookies = await page.context().cookies();
   expect(cookies.find((c) => c.name === "drs_at")?.httpOnly).toBe(true);
@@ -52,16 +52,15 @@ test("sign out clears the session", async ({ admin: page }) => {
 test("navigation works from the sidebar / mobile drawer", async ({ admin: page }) => {
   await page.goto("/");
   const narrow = (page.viewportSize()?.width ?? 1440) < 1024;
-  if (narrow) {
-    await page.getByRole("button", { name: "Open navigation" }).click();
-    const drawer = page.getByRole("dialog", { name: "Navigation" });
-    await drawer.getByRole("link", { name: "Daily deliveries" }).click();
-  } else {
-    await page
-      .getByRole("navigation", { name: "Main" })
-      .getByRole("link", { name: "Daily deliveries" })
-      .click();
-  }
+  if (narrow) await page.getByRole("button", { name: "Open navigation" }).click();
+  const navEl = narrow
+    ? page.getByRole("dialog", { name: "Navigation" })
+    : page.getByRole("navigation", { name: "Main" });
+  // Sections are collapsible: open "Delivery" first.
+  const section = navEl.getByRole("button", { name: /^Delivery/ });
+  await expect(section).toHaveAttribute("aria-expanded", "false");
+  await section.click();
+  await navEl.getByRole("link", { name: "Daily deliveries" }).click();
   await expect(page.getByRole("heading", { level: 1, name: "Daily deliveries" })).toBeVisible();
   await expect(page).toHaveURL(/\/delivery$/);
 });

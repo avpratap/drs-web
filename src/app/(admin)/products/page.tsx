@@ -6,7 +6,7 @@ import { useState } from "react";
 import { Badge, CategoryBadge, StatusBadge } from "@/components/ui/badge";
 import { ButtonLink, buttonClass } from "@/components/ui/button";
 import { PageHeader } from "@/components/ui/card";
-import { inputClass } from "@/components/ui/field";
+import { SearchInput } from "@/components/ui/search-input";
 import { Select } from "@/components/ui/select";
 import { DataTable, Pager, type Column } from "@/components/ui/table";
 import { RowLink } from "@/components/ui/links";
@@ -83,13 +83,11 @@ export default function ProductListPage() {
           <label htmlFor="product-search" className="sr-only">
             Search products
           </label>
-          <input
+          <SearchInput
             id="product-search"
-            type="search"
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder="Search by name or SKU"
-            className={inputClass}
           />
           <button type="submit" className={buttonClass("secondary")}>
             Search

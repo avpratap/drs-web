@@ -132,8 +132,14 @@ brand rather than shadcn's neutral palette:
 - `src/app/globals.css` maps the shadcn semantic tokens (`--background`, `--primary`, `--accent`,
   `--border`, `--ring`…) onto the DRS colours: cream background, green primary/ring, a 10% green tint for
   hover/selected, maroon destructive, ink-20% borders. Animations come from `tw-animate-css`.
-- `src/components/ui/`: `select.tsx` (Radix Select), `dialog.tsx`, `dropdown-menu.tsx`, `popover.tsx`,
-  `toast.tsx`.
+- `src/components/ui/`: `select.tsx` (Radix Select), `date-picker.tsx` + `calendar.tsx` (react-day-picker in
+  a Radix Popover), `checkbox.tsx`, `dialog.tsx`, `dropdown-menu.tsx`, `popover.tsx`, `toast.tsx`,
+  `search-input.tsx`, `disclosure.tsx`. No native select/date/checkbox controls remain; number spinners and
+  the browser's search/autofill decorations are styled away in `globals.css`.
+- **DatePicker**: `<DatePicker value="YYYY-MM-DD" onChange />` (or `type: "date"` in `FieldGrid`/`LineItems`,
+  `FormDate` in custom forms). Same collision-aware popup behaviour as the Select.
+- **Sidebar**: sections are Radix Collapsibles; the one holding the current page opens itself, and your
+  open/closed choices are remembered in `localStorage` (`drs.nav.groups`).
 - **Select**: every dropdown in the app is `<Select options={[{ value, label }]} value onChange />`; inside
   react-hook-form use `FormSelect` (or a `FieldGrid` field with `type: "select"`). Numbers stay numbers.
   The list opens at the trigger's width, flips above or shifts sideways so it is never cut off at a
