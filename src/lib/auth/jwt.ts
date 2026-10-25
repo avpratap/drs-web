@@ -29,3 +29,8 @@ export function isCustomerToken(token: string | undefined | null): boolean {
   const role = decodeJwt(token)?.role;
   return !!role && (CUSTOMER_ROLES as readonly string[]).includes(role);
 }
+
+/** B2B subscribers (shops on standing orders): the only role that sees the business pages. */
+export function isSubscriberToken(token: string | undefined | null): boolean {
+  return decodeJwt(token)?.role === "subscriber";
+}

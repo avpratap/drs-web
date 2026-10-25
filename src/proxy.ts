@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { isAdminToken, isCustomerToken } from "@/lib/auth/jwt";
+import { isAdminToken, isCustomerToken, isSubscriberToken } from "@/lib/auth/jwt";
 import { ADMIN_LOGIN_PATH, CUSTOMER_LOGIN_PATH, zoneOf } from "@/lib/auth/zones";
 
 const ACCESS_COOKIE = "drs_at";
@@ -14,7 +14,7 @@ function toLogin(req: NextRequest, loginPath: string, token: string | undefined,
 
 /**
  * Route gate with three zones (see lib/auth/zones): public storefront, signed-in customer
- * pages, and the admin console. Roles are read from the (httpOnly) access cookie for routing
+ * pages (the B2B ones for subscribers only), and the admin console. Roles are read from the (httpOnly) access cookie for routing
  * only — the backend enforces roles on every API call, and expired tokens are rotated by the
  * client on the first 401.
  */
@@ -36,6 +36,12 @@ export function proxy(req: NextRequest) {
     case "customer":
       return token && isCustomerToken(token)
         ? NextResponse.next()
+        : toLogin(req, CUSTOMER_LOGIN_PATH, isAdminToken(token) ? undefined : token, "/account");
+    case "subscriber":
+      if (token && isSubscriberToken(token)) return NextResponse.next();
+      // Signed in as a retail customer: the business pages simply aren't theirs.
+      return token && isCustomerToken(token)
+        ? NextResponse.redirect(new URL("/account", req.url))
         : toLogin(req, CUSTOMER_LOGIN_PATH, isAdminToken(token) ? undefined : token, "/account");
     default:
       return NextResponse.next();

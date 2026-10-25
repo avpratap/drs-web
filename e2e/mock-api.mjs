@@ -1080,7 +1080,202 @@ function seed() {
       },
     ],
   };
+  db.b2b = seedB2b();
   return db;
+}
+
+// B2B subscriber (phone 9000000001): two shops, one on a standing order, deliveries and credit.
+const addDaysIso = (iso, n) => {
+  const [y, m, d] = iso.split("-").map(Number);
+  return new Date(Date.UTC(y, m - 1, d + n)).toISOString().slice(0, 10);
+};
+function seedB2b() {
+  const tomorrow = addDaysIso(today, 1);
+  const shopBase = { account_id: 60, state: "Delhi", status: "active" };
+  const invoice = (n, total, date, extra = {}) => ({
+    id: 600 + n,
+    invoice_no: `DRS/2026-27/B${String(n).padStart(3, "0")}`,
+    fy: "2026-27",
+    account_id: 60,
+    delivery_order_id: 700 + n,
+    order_id: null,
+    invoice_date: date,
+    seller_gstin: "08AAACD1234F1Z5",
+    buyer_gstin: "07AABCS1429B1ZB",
+    place_of_supply: "Delhi",
+    is_interstate: true,
+    taxable_value: total,
+    cgst: 0,
+    sgst: 0,
+    igst: 0,
+    total,
+    is_credit_note: false,
+    is_partial: false,
+    original_invoice_id: null,
+    status: "issued",
+    lines: [],
+    ...extra,
+  });
+  return {
+    shops: [
+      {
+        id: 701,
+        name: "Sharma Sweets, Karol Bagh",
+        address: "14 Ajmal Khan Road",
+        pincode: "110005",
+        ...shopBase,
+      },
+      {
+        id: 702,
+        name: "Sharma Sweets, Lajpat Nagar",
+        address: "B-22 Central Market",
+        pincode: "110024",
+        ...shopBase,
+      },
+    ],
+    subs: [
+      {
+        id: 801,
+        shop_id: 701,
+        account_id: 60,
+        status: "active",
+        start_date: "2026-09-01",
+        end_date: null,
+        items: [
+          {
+            id: 9001,
+            product_id: 1,
+            default_qty: 20000,
+            frequency: "daily",
+            interval_days: null,
+            days_of_week: null,
+            active: true,
+          },
+          {
+            id: 9002,
+            product_id: 2,
+            default_qty: 4000,
+            frequency: "weekly",
+            interval_days: null,
+            days_of_week: "1,3,5",
+            active: true,
+          },
+        ],
+      },
+    ],
+    overrides: [],
+    deliveries: [
+      {
+        id: 711,
+        delivery_date: today,
+        shop_id: 701,
+        shop_name: "Sharma Sweets, Karol Bagh",
+        origin: "subscription",
+        status: "delivered",
+        failure_reason: null,
+        subtotal: 1320,
+        total: 1320,
+        amount_due: 0,
+        items: [
+          {
+            product_id: 1,
+            qty_planned: 20000,
+            qty_delivered: 20000,
+            unit_price: 0.066,
+            line_total: 1320,
+            status: "delivered",
+          },
+        ],
+      },
+      {
+        id: 712,
+        delivery_date: tomorrow,
+        shop_id: 701,
+        shop_name: "Sharma Sweets, Karol Bagh",
+        origin: "subscription",
+        status: "generated",
+        failure_reason: null,
+        subtotal: 1320,
+        total: 1320,
+        amount_due: 0,
+        items: [
+          {
+            product_id: 1,
+            qty_planned: 20000,
+            qty_delivered: 0,
+            unit_price: 0.066,
+            line_total: 1320,
+            status: "pending",
+          },
+        ],
+      },
+      {
+        id: 713,
+        delivery_date: tomorrow,
+        shop_id: 702,
+        shop_name: "Sharma Sweets, Lajpat Nagar",
+        origin: "one_time",
+        status: "generated",
+        failure_reason: null,
+        subtotal: 660,
+        total: 660,
+        amount_due: 660,
+        items: [
+          {
+            product_id: 1,
+            qty_planned: 10000,
+            qty_delivered: 0,
+            unit_price: 0.066,
+            line_total: 660,
+            status: "pending",
+          },
+        ],
+      },
+    ],
+    invoices: [
+      invoice(1, 1320, addDaysIso(today, -1)),
+      invoice(2, 1320, today),
+      invoice(3, 120, today, { is_credit_note: true, original_invoice_id: 601, delivery_order_id: null }),
+    ],
+    credit: [
+      {
+        id: 3,
+        entry_type: "credit_note",
+        amount: 120,
+        balance_after: 1520,
+        ref_type: "invoice",
+        ref_id: 603,
+        created_at: iso(),
+      },
+      {
+        id: 2,
+        entry_type: "charge",
+        amount: 1320,
+        balance_after: 1640,
+        ref_type: "delivery_order",
+        ref_id: 711,
+        created_at: iso(),
+      },
+      {
+        id: 1,
+        entry_type: "payment",
+        amount: 1000,
+        balance_after: 320,
+        ref_type: "payment",
+        ref_id: 1,
+        created_at: iso(),
+      },
+      {
+        id: 0,
+        entry_type: "charge",
+        amount: 1320,
+        balance_after: 1320,
+        ref_type: "delivery_order",
+        ref_id: 710,
+        created_at: iso(),
+      },
+    ],
+  };
 }
 
 let db = seed();
@@ -1100,6 +1295,8 @@ const byStatus = (rows, q, key = "status_filter") =>
 const find = (rows, rid) => rows.find((r) => r.id === Number(rid));
 
 const routes = [];
+/** Returned by a handler to let a later route (e.g. the admin one) take the request. */
+const NEXT = Symbol("next");
 const on = (method, pattern, fn) =>
   routes.push({ method, re: new RegExp(`^${pattern.replace(/:(\w+)/g, "(?<$1>[^/]+)")}$`), fn });
 
@@ -1111,7 +1308,9 @@ on("POST", "/api/v1/auth/otp/verify", (req, res, { body }) =>
   body.otp !== "123456"
     ? send(res, 401, { detail: "Invalid or expired OTP" })
     : send(res, 200, {
-        access_token: token(body.phone === "9000000000" ? "customer" : "admin"),
+        access_token: token(
+          body.phone === "9000000000" ? "customer" : body.phone === "9000000001" ? "subscriber" : "admin",
+        ),
         refresh_token: `rt-${id()}`,
         token_type: "bearer",
       }),
@@ -1478,6 +1677,163 @@ on("GET", "/api/v1/billing/transactions", (req, res, { q, headers }) => {
     "access-control-expose-headers": "X-Total-Count",
   });
 });
+// --- B2B self-service (subscriber role); other callers fall through to the routes below ---
+const SUBSCRIBER = () => `Bearer ${token("subscriber")}`;
+const isSubscriber = (headers) => headers.authorization === SUBSCRIBER();
+const b2bSub = (sid) => db.b2b.subs.find((s) => s.id === Number(sid));
+const subOut = (s) => Object.fromEntries(Object.entries(s).filter(([k]) => k !== "items"));
+const subDetail = (s) => ({ ...subOut(s), items: s.items });
+const cadenceMatch = (it, sub, date) => {
+  if (it.frequency === "weekly") {
+    const [y, m, d] = date.split("-").map(Number);
+    const dow = new Date(Date.UTC(y, m - 1, d)).getUTCDay() || 7;
+    return (it.days_of_week ?? "").split(",").map(Number).includes(dow);
+  }
+  if (it.frequency === "alternate") {
+    const days = Math.round((Date.parse(date) - Date.parse(sub.start_date)) / 86400000);
+    return days % (it.interval_days ?? 2) === 0;
+  }
+  return true;
+};
+on("GET", "/api/v1/shops", (req, res, { q, headers }) =>
+  isSubscriber(headers) ? page(res, db.b2b.shops, q) : page(res, [], q),
+);
+on("POST", "/api/v1/shops", (req, res, { body, headers }) => {
+  if (!isSubscriber(headers)) return send(res, 403, { detail: "Only subscribers can add shops" });
+  if (!body.name?.trim()) return send(res, 422, { detail: "name is required" });
+  const shop = {
+    id: id(),
+    account_id: 60,
+    name: body.name,
+    address: body.address ?? null,
+    state: body.state ?? null,
+    pincode: body.pincode ?? null,
+    status: "active",
+  };
+  db.b2b.shops.push(shop);
+  send(res, 200, shop);
+});
+on("GET", "/api/v1/subscriptions", (req, res, { q, headers }) =>
+  page(res, isSubscriber(headers) ? db.b2b.subs.map(subOut) : [], q),
+);
+on("POST", "/api/v1/subscriptions", (req, res, { body, headers }) => {
+  if (!isSubscriber(headers)) return send(res, 403, { detail: "Only subscribers manage subscriptions" });
+  const shop = db.b2b.shops.find((x) => x.id === body.shop_id);
+  if (!shop) return send(res, 404, { detail: "Shop not found" });
+  if (shop.status !== "active") return send(res, 409, { detail: "Shop is not active" });
+  let sub = db.b2b.subs.find((x) => x.shop_id === shop.id);
+  if (!sub) {
+    sub = {
+      id: id(),
+      shop_id: shop.id,
+      account_id: 60,
+      status: "active",
+      start_date: today,
+      end_date: null,
+      items: [],
+    };
+    db.b2b.subs.push(sub);
+  } else if (sub.status === "cancelled")
+    Object.assign(sub, { status: "active", start_date: today, end_date: null });
+  send(res, 200, subOut(sub));
+});
+on("GET", "/api/v1/subscriptions/:sid", (req, res, { p, headers }) => {
+  const s = isSubscriber(headers) && b2bSub(p.sid);
+  return s ? send(res, 200, subDetail(s)) : send(res, 404, { detail: "Subscription not found" });
+});
+on("PUT", "/api/v1/subscriptions/:sid/items", (req, res, { p, body, headers }) => {
+  if (!isSubscriber(headers)) return NEXT;
+  const s = b2bSub(p.sid);
+  if (!s) return send(res, 404, { detail: "Subscription not found" });
+  if (new Set(body.map((i) => i.product_id)).size !== body.length)
+    return send(res, 422, { detail: "Each product may appear only once" });
+  const bad = body.find((i) => !find(db.products, i.product_id)?.is_subscribable);
+  if (bad) return send(res, 422, { detail: `Product(s) not available: [${bad.product_id}]` });
+  const old = new Map(s.items.map((i) => [i.product_id, i]));
+  s.items = [
+    ...body.map((i) => ({
+      interval_days: null,
+      days_of_week: null,
+      ...i,
+      id: old.get(i.product_id)?.id ?? id(),
+      active: true,
+    })),
+    ...s.items
+      .filter((i) => !body.some((b) => b.product_id === i.product_id))
+      .map((i) => ({ ...i, active: false })),
+  ];
+  send(res, 200, subDetail(s));
+});
+on("POST", "/api/v1/subscriptions/:sid/overrides", (req, res, { p, body, headers }) => {
+  const s = isSubscriber(headers) && b2bSub(p.sid);
+  if (!s) return send(res, 404, { detail: "Subscription not found" });
+  if (!(body.for_date > today))
+    return send(res, 422, { detail: "You can only modify tomorrow or a later date" });
+  const item = s.items.find((i) => i.product_id === body.product_id && i.active);
+  if (!item) return send(res, 404, { detail: "Product not in this subscription" });
+  db.b2b.overrides = db.b2b.overrides.filter((o) => !(o.item_id === item.id && o.for_date === body.for_date));
+  db.b2b.overrides.push({ item_id: item.id, for_date: body.for_date, qty: body.override_qty });
+  send(res, 200, {
+    detail: "override saved",
+    product_id: body.product_id,
+    for_date: body.for_date,
+    qty: body.override_qty,
+  });
+});
+on("GET", "/api/v1/subscriptions/:sid/plan", (req, res, { p, q, headers }) => {
+  const s = isSubscriber(headers) && b2bSub(p.sid);
+  if (!s) return send(res, 404, { detail: "Subscription not found" });
+  const date = q.get("date") ?? addDaysIso(today, 1);
+  const lines = [];
+  if (s.status === "active" && date >= s.start_date)
+    for (const it of s.items.filter((i) => i.active)) {
+      const ov = db.b2b.overrides.find((o) => o.item_id === it.id && o.for_date === date);
+      const qty = ov ? ov.qty : cadenceMatch(it, s, date) ? it.default_qty : 0;
+      if (qty > 0) lines.push({ product_id: it.product_id, qty });
+    }
+  send(res, 200, { for_date: date, lines });
+});
+on("POST", "/api/v1/subscriptions/:sid/:act", (req, res, { p, headers }) => {
+  if (!isSubscriber(headers)) return NEXT;
+  const s = b2bSub(p.sid);
+  if (!s) return send(res, 404, { detail: "Subscription not found" });
+  const [to, from] = {
+    pause: ["paused", ["active"]],
+    resume: ["active", ["paused"]],
+    cancel: ["cancelled", ["active", "paused"]],
+  }[p.act];
+  if (s.status !== to && !from.includes(s.status))
+    return send(res, 409, { detail: `Cannot ${to} a ${s.status} subscription` });
+  s.status = to;
+  if (to === "cancelled") s.end_date = today;
+  send(res, 200, subOut(s));
+});
+on("GET", "/api/v1/delivery/orders", (req, res, { q, headers }) => {
+  if (!isSubscriber(headers)) return NEXT;
+  const date = q.get("date") ?? addDaysIso(today, 1);
+  page(
+    res,
+    db.b2b.deliveries.filter((d) => d.delivery_date === date),
+    q,
+  );
+});
+on("GET", "/api/v1/invoices", (req, res, { q, headers }) => {
+  if (!isSubscriber(headers)) return NEXT;
+  page(res, [...db.b2b.invoices].reverse(), q);
+});
+on("GET", "/api/v1/invoices/:iid/pdf", (req, res, { p, headers }) => {
+  if (!isSubscriber(headers)) return NEXT;
+  const i = find(db.b2b.invoices, p.iid);
+  if (!i) return send(res, 404, { detail: "Invoice not found" });
+  send(res, 200, {
+    invoice_no: i.invoice_no,
+    pdf_url: `/files/private/invoices/${i.id}.pdf?exp=4102444800&sig=mock`,
+  });
+});
+on("GET", "/api/v1/billing/credit-statement", (req, res, { q, headers }) =>
+  page(res, isSubscriber(headers) ? db.b2b.credit : [], q),
+);
+
 // --- customer engagement (loyalty, gift cards, wishlist, support, inbox, DPDP) ---
 on("GET", "/api/v1/loyalty", (req, res) =>
   send(res, 200, { account_id: 50, points_balance: db.custLoyalty.balance, recent: db.custLoyalty.ledger }),
@@ -2638,7 +2994,9 @@ createServer(async (req, res) => {
     const m = r.re.exec(url.pathname);
     if (!m) continue;
     try {
-      return r.fn(req, res, { p: m.groups ?? {}, q: url.searchParams, body, headers: req.headers });
+      const out = r.fn(req, res, { p: m.groups ?? {}, q: url.searchParams, body, headers: req.headers });
+      if (out === NEXT) continue;
+      return out;
     } catch (e) {
       return send(res, 500, { detail: String(e) });
     }
