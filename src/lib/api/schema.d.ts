@@ -1409,7 +1409,10 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    /** List Delivery Assignments */
+    /**
+     * List Delivery Assignments
+     * @description Driver <-> shop assignments, newest first, with driver and shop names.
+     */
     get: operations["list_delivery_assignments"];
     put?: never;
     /** Assign Delivery */
@@ -4382,6 +4385,31 @@ export interface components {
        * @default adjust
        */
       reason: string;
+    };
+    /** AdminDeliveryAssignmentRow */
+    AdminDeliveryAssignmentRow: {
+      /** Id */
+      id: number;
+      /** Delivery Id */
+      delivery_id: number;
+      /** Shop Id */
+      shop_id: number;
+      /** Active */
+      active: boolean;
+      /** Driver Name */
+      driver_name?: string | null;
+      /** Driver Phone */
+      driver_phone?: string | null;
+      /** Driver Status */
+      driver_status?: string | null;
+      /** Shop Name */
+      shop_name?: string | null;
+      /** Shop Pincode */
+      shop_pincode?: string | null;
+      /** Shop Status */
+      shop_status?: string | null;
+      /** Created At */
+      created_at?: string | null;
     };
     /** AdminRMADetailOut */
     AdminRMADetailOut: {
@@ -10829,6 +10857,7 @@ export interface operations {
       query?: {
         delivery_id?: number | null;
         shop_id?: number | null;
+        active?: boolean | null;
         limit?: number;
         offset?: number;
       };
@@ -10844,7 +10873,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json": components["schemas"]["DeliveryAssignmentOut"][];
+          "application/json": components["schemas"]["AdminDeliveryAssignmentRow"][];
         };
       };
       /** @description Validation Error */

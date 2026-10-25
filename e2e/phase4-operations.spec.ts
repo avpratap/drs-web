@@ -81,6 +81,38 @@ test("shops: set price tier and assign a driver", async ({ admin: page }) => {
   await expect(page.getByRole("table", { name: "Delivery drivers" })).toContainText("Suresh (driver)");
 });
 
+test("driver assignments: assign, unassign, then reassign", async ({ admin: page }) => {
+  await visit(page, "/delivery-assignments", "Driver assignments");
+  const table = page.getByRole("table");
+  await expect(table).toContainText("Ramesh (driver)");
+  await expect(table).toContainText("Sharma Sweets");
+
+  await page.getByRole("button", { name: "Assign driver" }).click();
+  const assign = page.getByRole("dialog", { name: "Assign driver" });
+  await assign.getByLabel(/driver/i).selectOption({ label: "Suresh (driver) · 9999900004" });
+  await assign.getByLabel(/shop/i).selectOption({ label: "Verma residence · 302001" });
+  await assign.getByRole("button", { name: "Assign driver" }).click();
+  await expect(page.getByText("Driver assigned", { exact: true })).toBeVisible();
+  await expect(table).toContainText("Verma residence");
+
+  await page.getByRole("button", { name: "Unassign Ramesh (driver) from Sharma Sweets" }).click();
+  await page
+    .getByRole("dialog", { name: /unassign ramesh \(driver\) from sharma sweets/i })
+    .getByRole("button", { name: "Unassign" })
+    .click();
+  await expect(page.getByText("Driver unassigned")).toBeVisible();
+  await expect(table).not.toContainText("Sharma Sweets");
+
+  await page.getByLabel("Status", { exact: true }).selectOption({ label: "Removed" });
+  await page.getByRole("button", { name: "Reassign Ramesh (driver) to Sharma Sweets" }).click();
+  await page
+    .getByRole("dialog", { name: /reassign ramesh \(driver\) to sharma sweets/i })
+    .getByRole("button", { name: "Reassign" })
+    .click();
+  await expect(page.getByText("Driver reassigned")).toBeVisible();
+  await expect(page.getByText("No assignments match.")).toBeVisible();
+});
+
 test("cutoff: status, manual run and history", async ({ admin: page }) => {
   await visit(page, "/cutoff", "Cutoff runs");
   await expect(page.getByText("Not run yet")).toBeVisible();

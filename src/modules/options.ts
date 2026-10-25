@@ -37,5 +37,9 @@ export const OPTIONS = {
   ],
   userRole: opts("admin", "customer", "subscriber", "delivery"),
   userStatus: opts("active", "suspended", "erased"),
+  assignmentState: [
+    { value: "true", label: "Assigned" },
+    { value: "false", label: "Removed" },
+  ],
   cutoffStatus: opts("generating", "frozen", "partial", "failed"),
 } as const;

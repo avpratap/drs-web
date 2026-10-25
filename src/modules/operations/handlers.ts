@@ -1,6 +1,14 @@
 import { api } from "@/lib/api/browser";
 import type { components } from "@/lib/api/client";
-import { filterNumber, filterValue, num, pagedList, unwrap, type Handlers } from "@/lib/api/resource";
+import {
+  filterBool,
+  filterNumber,
+  filterValue,
+  num,
+  pagedList,
+  unwrap,
+  type Handlers,
+} from "@/lib/api/resource";
 
 type S = components["schemas"];
 
@@ -62,6 +70,21 @@ export const operationsHandlers: Handlers = {
         api.PATCH("/api/v1/admin/shops/{shop_id}", {
           params: { path: { shop_id: num(id) } },
           body: v as S["ShopPatch"],
+        }),
+      ),
+  },
+  "delivery-assignments": {
+    list: ({ pagination, filters }) =>
+      pagedList(pagination, (page) =>
+        api.GET("/api/v1/admin/delivery-assignments", {
+          params: {
+            query: {
+              ...page,
+              delivery_id: filterNumber(filters, "delivery_id"),
+              shop_id: filterNumber(filters, "shop_id"),
+              active: filterBool(filters, "active"),
+            },
+          },
         }),
       ),
   },

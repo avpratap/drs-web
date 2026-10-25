@@ -4694,6 +4694,7 @@
           "management"
         ],
         "summary": "List Delivery Assignments",
+        "description": "Driver <-> shop assignments, newest first, with driver and shop names.",
         "operationId": "list_delivery_assignments",
         "security": [
           {
@@ -4734,6 +4735,22 @@
             }
           },
           {
+            "name": "active",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Active"
+            }
+          },
+          {
             "name": "limit",
             "in": "query",
             "required": false,
@@ -4765,7 +4782,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/DeliveryAssignmentOut"
+                    "$ref": "#/components/schemas/AdminDeliveryAssignmentRow"
                   },
                   "title": "Response List Delivery Assignments"
                 }
@@ -16123,6 +16140,112 @@
           "points"
         ],
         "title": "AdjustPointsIn"
+      },
+      "AdminDeliveryAssignmentRow": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "delivery_id": {
+            "type": "integer",
+            "title": "Delivery Id"
+          },
+          "shop_id": {
+            "type": "integer",
+            "title": "Shop Id"
+          },
+          "active": {
+            "type": "boolean",
+            "title": "Active"
+          },
+          "driver_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Driver Name"
+          },
+          "driver_phone": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Driver Phone"
+          },
+          "driver_status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Driver Status"
+          },
+          "shop_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Shop Name"
+          },
+          "shop_pincode": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Shop Pincode"
+          },
+          "shop_status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Shop Status"
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "delivery_id",
+          "shop_id",
+          "active"
+        ],
+        "title": "AdminDeliveryAssignmentRow"
       },
       "AdminRMADetailOut": {
         "properties": {

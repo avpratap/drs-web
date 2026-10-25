@@ -34,6 +34,7 @@ const BLURBS: Record<string, string> = {
   "/returns": "Approve, reject and refund customer returns.",
   "/subscriptions": "Standing orders: lines, pause, resume, cancel.",
   "/shops": "Delivery points: price tier and assigned drivers.",
+  "/delivery-assignments": "Which driver serves which shop: assign, reassign, remove.",
   "/users": "Customers, subscribers, drivers and admins.",
 };
 

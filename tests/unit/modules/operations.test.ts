@@ -70,6 +70,20 @@ describe("operations handlers", () => {
     expect(status.data).toMatchObject({ id: "status", cutoff_hour: 23 });
   });
 
+  it("delivery-assignments maps driver, shop and active filters", async () => {
+    const api = mockApi([{ path: "/api/v1/admin/delivery-assignments", body: [] }]);
+    await dataProvider.getList({
+      resource: "delivery-assignments",
+      filters: [
+        { field: "delivery_id", operator: "eq", value: "8" },
+        { field: "shop_id", operator: "eq", value: "3" },
+        { field: "active", operator: "eq", value: "false" },
+      ],
+    });
+    const q = api.calls[0].query;
+    expect([q.get("delivery_id"), q.get("shop_id"), q.get("active")]).toEqual(["8", "3", "false"]);
+  });
+
   it("actions hit the right endpoints with the right bodies", async () => {
     const api = mockApi([
       { method: "POST", path: /\/api\/v1\/admin\/returns\/5\/(approve|reject|refund)/, body: {} },

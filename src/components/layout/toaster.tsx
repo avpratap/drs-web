@@ -4,8 +4,11 @@ import { useSyncExternalStore } from "react";
 import { cn } from "@/lib/cn";
 import { toastStore } from "@/providers/notification-provider";
 
+const noToasts: never[] = [];
+const serverToasts = () => noToasts;
+
 export function Toaster() {
-  const toasts = useSyncExternalStore(toastStore.subscribe, toastStore.get, () => []);
+  const toasts = useSyncExternalStore(toastStore.subscribe, toastStore.get, serverToasts);
   return (
     <div
       aria-live="polite"

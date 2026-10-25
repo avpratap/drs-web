@@ -930,6 +930,7 @@ on("GET", "/api/v1/delivery/summary", (req, res, { q }) => {
 });
 on("GET", "/api/v1/admin/delivery-orders/:did/fulfillment", (req, res, { p }) => {
   const o = find(db.deliveries, p.did);
+  if (!o) return send(res, 404, { detail: "Delivery order not found" });
   const cash = db.cash[o.id] ?? [];
   send(res, 200, {
     order: o,
@@ -1175,6 +1176,7 @@ on("GET", "/api/v1/admin/shops", (req, res, { q }) => {
 });
 on("GET", "/api/v1/admin/shops/:sid", (req, res, { p }) => {
   const s = find(db.shops, p.sid);
+  if (!s) return send(res, 404, { detail: "Shop not found" });
   const drivers = db.assignments
     .filter((a) => a.shop_id === s.id)
     .map((a) => {
@@ -1204,8 +1206,31 @@ on("POST", "/api/v1/admin/delivery-assignments", (req, res, { body }) => {
   else db.assignments.push({ id: id(), ...body, active: true });
   send(res, 200, existing ?? db.assignments.at(-1));
 });
+on("GET", "/api/v1/admin/delivery-assignments", (req, res, { q }) => {
+  let rows = [...db.assignments].sort((a, b) => b.id - a.id);
+  if (q.get("delivery_id")) rows = rows.filter((a) => a.delivery_id === Number(q.get("delivery_id")));
+  if (q.get("shop_id")) rows = rows.filter((a) => a.shop_id === Number(q.get("shop_id")));
+  if (q.get("active")) rows = rows.filter((a) => a.active === (q.get("active") === "true"));
+  const named = rows.map((a) => {
+    const u = db.users.find((x) => x.id === a.delivery_id);
+    const s = db.shops.find((x) => x.id === a.shop_id);
+    return {
+      ...a,
+      driver_name: u?.full_name ?? null,
+      driver_phone: u?.phone ?? null,
+      driver_status: u?.status ?? null,
+      shop_name: s?.name ?? null,
+      shop_pincode: s?.pincode ?? null,
+      shop_status: s?.status ?? null,
+      created_at: a.created_at ?? iso(),
+    };
+  });
+  page(res, named, q);
+});
 on("DELETE", "/api/v1/admin/delivery-assignments/:aid", (req, res, { p }) => {
-  find(db.assignments, p.aid).active = false;
+  const a = find(db.assignments, p.aid);
+  if (!a) return send(res, 404, { detail: "Assignment not found" });
+  a.active = false;
   send(res, 204);
 });
 on("GET", "/api/v1/admin/users", (req, res, { q }) => {

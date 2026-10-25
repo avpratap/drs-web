@@ -21,7 +21,7 @@ export const viewport: Viewport = { themeColor: "#0D4C3C", width: "device-width"
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={poppins.variable}>
+    <html lang="en" className={poppins.variable} suppressHydrationWarning>
       <body>
         <Suspense>
           <RefineProvider>{children}</RefineProvider>

@@ -38,6 +38,7 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [
       { href: "/delivery", label: "Daily deliveries" },
       { href: "/cutoff", label: "Cutoff runs" },
+      { href: "/delivery-assignments", label: "Driver assignments" },
       { href: "/orders", label: "Orders" },
       { href: "/returns", label: "Returns (RMA)" },
     ],
