@@ -6835,6 +6835,37 @@
         ]
       }
     },
+    "/api/v1/admin/catalog/unpriced-packs": {
+      "get": {
+        "tags": [
+          "management"
+        ],
+        "summary": "Admin Unpriced Packs",
+        "description": "Every ACTIVE sellable pack the B2C storefront shows as \"price unavailable\": no\nRETAIL price row applies at its pack size today (none configured, none valid today,\nor min_qty above the pack size \u2014 e.g. min_qty 1 vs a 0.5 L pack).",
+        "operationId": "admin_unpriced_packs",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/UnpricedPackOut"
+                  },
+                  "type": "array",
+                  "title": "Response Admin Unpriced Packs"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
     "/api/v1/admin/locations": {
       "post": {
         "tags": [
@@ -22743,6 +22774,17 @@
             "type": "string",
             "title": "Status"
           },
+          "from_price": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "From Price"
+          },
           "avg_rating": {
             "type": "number",
             "title": "Avg Rating",
@@ -22914,6 +22956,17 @@
           "status": {
             "type": "string",
             "title": "Status"
+          },
+          "from_price": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "From Price"
           },
           "avg_rating": {
             "type": "number",
@@ -26270,6 +26323,67 @@
         ],
         "title": "TransferOut"
       },
+      "UnpricedPackOut": {
+        "properties": {
+          "product_id": {
+            "type": "integer",
+            "title": "Product Id"
+          },
+          "product_sku": {
+            "type": "string",
+            "title": "Product Sku"
+          },
+          "variant_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Variant Id"
+          },
+          "variant_sku": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Variant Sku"
+          },
+          "label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Label"
+          },
+          "pack_size": {
+            "type": "number",
+            "title": "Pack Size"
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason"
+          }
+        },
+        "type": "object",
+        "required": [
+          "product_id",
+          "product_sku",
+          "pack_size",
+          "reason"
+        ],
+        "title": "UnpricedPackOut"
+      },
       "UnreadCountOut": {
         "properties": {
           "unread": {
@@ -26605,6 +26719,33 @@
           "sort_order": {
             "type": "integer",
             "title": "Sort Order"
+          },
+          "selling_price": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Selling Price"
+          },
+          "price_available": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Price Available"
+          },
+          "show_mrp_strike": {
+            "type": "boolean",
+            "title": "Show Mrp Strike",
+            "default": false
           }
         },
         "type": "object",

@@ -1889,6 +1889,28 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/admin/catalog/unpriced-packs": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Admin Unpriced Packs
+     * @description Every ACTIVE sellable pack the B2C storefront shows as "price unavailable": no
+     *     RETAIL price row applies at its pack size today (none configured, none valid today,
+     *     or min_qty above the pack size — e.g. min_qty 1 vs a 0.5 L pack).
+     */
+    get: operations["admin_unpriced_packs"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/admin/locations": {
     parameters: {
       query?: never;
@@ -6518,6 +6540,8 @@ export interface components {
       id: number;
       /** Status */
       status: string;
+      /** From Price */
+      from_price?: number | null;
       /**
        * Avg Rating
        * @default 0
@@ -6585,6 +6609,8 @@ export interface components {
       id: number;
       /** Status */
       status: string;
+      /** From Price */
+      from_price?: number | null;
       /**
        * Avg Rating
        * @default 0
@@ -7652,6 +7678,23 @@ export interface components {
        */
       items: components["schemas"]["TransferItemOut"][];
     };
+    /** UnpricedPackOut */
+    UnpricedPackOut: {
+      /** Product Id */
+      product_id: number;
+      /** Product Sku */
+      product_sku: string;
+      /** Variant Id */
+      variant_id?: number | null;
+      /** Variant Sku */
+      variant_sku?: string | null;
+      /** Label */
+      label?: string | null;
+      /** Pack Size */
+      pack_size: number;
+      /** Reason */
+      reason: string;
+    };
     /** UnreadCountOut */
     UnreadCountOut: {
       /** Unread */
@@ -7767,6 +7810,15 @@ export interface components {
       status: string;
       /** Sort Order */
       sort_order: number;
+      /** Selling Price */
+      selling_price?: number | null;
+      /** Price Available */
+      price_available?: boolean | null;
+      /**
+       * Show Mrp Strike
+       * @default false
+       */
+      show_mrp_strike: boolean;
     };
     /** VariantUpdate */
     VariantUpdate: {
@@ -12143,6 +12195,26 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["ReportsSummaryOut"];
+        };
+      };
+    };
+  };
+  admin_unpriced_packs: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["UnpricedPackOut"][];
         };
       };
     };
