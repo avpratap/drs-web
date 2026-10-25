@@ -16,10 +16,10 @@ test("scrollbars are thin with a transparent track; sidebar only scrolls when it
   expect(css.width).toBe("thin");
   expect(css.overflowY).toBe("auto"); // a scrollbar appears only on overflow
   // Light, translucent thumb on the green sidebar; transparent track.
-  expect(css.color).toMatch(/^rgba\(244, 234, 222, 0\.\d+\) transparent$/);
+  expect(css.color).toMatch(/^rgba\(244, 234, 222, 0\.\d+\) (transparent|rgba\(0, 0, 0, 0\))$/);
 
   const main = await page.locator("main").evaluate((n) => getComputedStyle(n).scrollbarColor);
-  expect(main).toMatch(/^rgba\(30, 26, 30, 0\.\d+\) transparent$/);
+  expect(main).toMatch(/^rgba\(30, 26, 30, 0\.\d+\) (transparent|rgba\(0, 0, 0, 0\))$/);
 
   // With everything collapsed the nav fits: no scrolling.
   const fits = await nav.evaluate((n) => n.scrollHeight <= n.clientHeight + 1);

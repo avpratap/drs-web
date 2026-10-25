@@ -15,8 +15,8 @@ test("dialogs and menus opened from right-aligned actions columns render left-al
   let dialog = page.getByRole("dialog");
   for (const el of [
     dialog.getByRole("heading").first(),
-    dialog.locator("p").first(),
-    dialog.getByText("Role", { exact: true }),
+    dialog.getByText(/signs the user out/),
+    dialog.locator("label").first(),
   ])
     expect(await align(el)).toBe("left");
   // A Select list opened inside that dialog.
@@ -33,7 +33,7 @@ test("dialogs and menus opened from right-aligned actions columns render left-al
     .click();
   dialog = page.getByRole("dialog");
   expect(await align(dialog.getByRole("heading"))).toBe("left");
-  expect(await align(dialog.locator("p").first())).toBe("left");
+  expect(await align(dialog.getByText(/remaining balance/))).toBe("left");
   await dialog.getByRole("button", { name: "Cancel" }).click();
 
   // ActionDialog with fields from the Loyalty actions column; DatePicker inside Gift-card issue.

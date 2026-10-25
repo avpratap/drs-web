@@ -656,7 +656,7 @@ function seed() {
       },
     ],
     webhooks: [{ id: 1, event_type: "payment.success", url: "https://erp.example/hooks/drs", active: true }],
-    deliveries: [
+    webhookDeliveries: [
       {
         id: 1,
         webhook_id: 1,
@@ -1512,7 +1512,7 @@ on("DELETE", "/api/v1/admin/outbound-webhooks/:hid", (req, res, { p }) => {
   send(res, 204);
 });
 on("GET", "/api/v1/admin/outbound-webhooks/:hid/deliveries", (req, res, { p, q }) =>
-  page(res, db.deliveries.filter((d) => d.webhook_id === Number(p.hid)).reverse(), q),
+  page(res, db.webhookDeliveries.filter((d) => d.webhook_id === Number(p.hid)).reverse(), q),
 );
 on("POST", "/api/v1/admin/outbound-webhooks/:hid/test", (req, res, { p }) => {
   const h = find(db.webhooks, p.hid);
@@ -1525,7 +1525,7 @@ on("POST", "/api/v1/admin/outbound-webhooks/:hid/test", (req, res, { p }) => {
     attempts: 1,
     response_code: 200,
   };
-  db.deliveries.push(d);
+  db.webhookDeliveries.push(d);
   send(res, 200, d);
 });
 on("GET", "/api/v1/admin/ml/churn", (req, res, { q }) => {
@@ -1600,6 +1600,20 @@ on("GET", "/api/v1/invoices/:iid/pdf", (req, res, { p }) => {
   send(res, 200, {
     invoice_no: i.invoice_no,
     pdf_url: `/files/private/invoices/${i.id}.pdf?exp=4102444800&sig=mock`,
+  });
+});
+on("GET", "/api/v1/orders/:oid", (req, res, { p }) => {
+  const o = find(db.orders, p.oid);
+  if (!o) return send(res, 404, { detail: "Order not found" });
+  send(res, 200, {
+    order_type: "one_time",
+    subtotal: o.total,
+    discount: 0,
+    tax_total: 0,
+    total_incl_tax: o.total,
+    coupon_code: null,
+    items: [{ product_id: 2, qty: 10, unit_price: 33, gst_rate: 5, line_total: 330 }],
+    ...o,
   });
 });
 on("POST", "/api/v1/orders/:oid/invoice", (req, res, { p }) => {

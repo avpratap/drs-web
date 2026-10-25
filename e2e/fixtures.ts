@@ -77,3 +77,10 @@ export async function pickDate(trigger: Locator, iso: string) {
   await expect(dialog).toBeHidden();
   await expect(trigger).toHaveAttribute("data-value", iso);
 }
+
+/**
+ * A toast, by its text. Radix Toast also mirrors each message into a screen-reader live
+ * region, so match inside the toast viewport only.
+ */
+export const toast = (page: Page, text: string | RegExp, opts?: { exact?: boolean }) =>
+  page.getByRole("region", { name: /notifications/i }).getByText(text, opts);

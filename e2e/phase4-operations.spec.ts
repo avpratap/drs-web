@@ -1,4 +1,4 @@
-import { choose, expect, test, visit } from "./fixtures";
+import { choose, expect, test, toast, visit } from "./fixtures";
 
 test("returns: approve a request, then refund an approved one as store credit", async ({ admin: page }) => {
   await visit(page, "/returns", "Returns (RMA)");
@@ -9,7 +9,7 @@ test("returns: approve a request, then refund an approved one as store credit", 
     .getByRole("dialog", { name: /approve rma-0001/i })
     .getByRole("button", { name: "Approve" })
     .click();
-  await expect(page.getByText("Return approved")).toBeVisible();
+  await expect(toast(page, "Return approved")).toBeVisible();
 
   await page.goto("/returns/2");
   await page.getByRole("button", { name: "Refund" }).click();
@@ -20,7 +20,7 @@ test("returns: approve a request, then refund an approved one as store credit", 
   await expect(dialog.getByText(/at most 33/)).toBeVisible();
   await dialog.getByLabel(/refund amount/i).fill("33");
   await dialog.getByRole("button", { name: "Refund" }).click();
-  await expect(page.getByText("Refund credited to the wallet")).toBeVisible();
+  await expect(toast(page, "Refund credited to the wallet")).toBeVisible();
   await expect(page.getByRole("table", { name: "Store credit paid" })).toContainText("+₹33.00");
 });
 
@@ -30,7 +30,7 @@ test("returns: reject with a note", async ({ admin: page }) => {
   const dialog = page.getByRole("dialog", { name: /reject rma-0001/i });
   await dialog.getByLabel(/reason for rejecting/i).fill("Outside the return window");
   await dialog.getByRole("button", { name: "Reject" }).click();
-  await expect(page.getByText("Return rejected")).toBeVisible();
+  await expect(toast(page, "Return rejected")).toBeVisible();
   await expect(page.locator("dd").filter({ hasText: "Outside the return window" })).toBeVisible();
 });
 
@@ -49,7 +49,7 @@ test("subscriptions: edit standing-order lines, then pause", async ({ admin: pag
   await expect(page.getByText("Weekdays 1–7, comma separated")).toBeVisible();
   await page.getByLabel("Days (Mon=1) (line 2)").fill("6,7");
   await page.getByRole("button", { name: "Save standing order" }).click();
-  await expect(page.getByText("Standing order saved")).toBeVisible();
+  await expect(toast(page, "Standing order saved")).toBeVisible();
   const table = page.getByRole("table", { name: "Standing order" });
   await expect(table).toContainText("Sat, Sun");
 
@@ -58,7 +58,7 @@ test("subscriptions: edit standing-order lines, then pause", async ({ admin: pag
     .getByRole("dialog", { name: /pause deliveries/i })
     .getByRole("button", { name: "Pause" })
     .click();
-  await expect(page.getByText("Subscription paused")).toBeVisible();
+  await expect(toast(page, "Subscription paused")).toBeVisible();
   await expect(page.getByRole("button", { name: "Resume" })).toBeVisible();
 });
 
@@ -70,14 +70,14 @@ test("shops: set price tier and assign a driver", async ({ admin: page }) => {
   const tier = page.getByRole("dialog", { name: "Set price tier" });
   await choose(tier.getByLabel(/price tier/i), { label: "Retail (RETAIL)" });
   await tier.getByRole("button", { name: "Set price tier" }).click();
-  await expect(page.getByText("Price tier set")).toBeVisible();
+  await expect(toast(page, "Price tier set")).toBeVisible();
   await expect(page.locator("dd").filter({ hasText: /^Retail$/ })).toBeVisible();
 
   await page.getByRole("button", { name: "Assign driver" }).click();
   const assign = page.getByRole("dialog", { name: "Assign driver" });
   await choose(assign.getByLabel(/driver/i), { label: "Suresh (driver) · 9999900004" });
   await assign.getByRole("button", { name: "Assign driver" }).click();
-  await expect(page.getByText("Driver assigned", { exact: true })).toBeVisible();
+  await expect(toast(page, "Driver assigned", { exact: true })).toBeVisible();
   await expect(page.getByRole("table", { name: "Delivery drivers" })).toContainText("Suresh (driver)");
 });
 
@@ -92,7 +92,7 @@ test("driver assignments: assign, unassign, then reassign", async ({ admin: page
   await choose(assign.getByLabel(/driver/i), { label: "Suresh (driver) · 9999900004" });
   await choose(assign.getByLabel(/shop/i), { label: "Verma residence · 302001" });
   await assign.getByRole("button", { name: "Assign driver" }).click();
-  await expect(page.getByText("Driver assigned", { exact: true })).toBeVisible();
+  await expect(toast(page, "Driver assigned", { exact: true })).toBeVisible();
   await expect(table).toContainText("Verma residence");
 
   await page.getByRole("button", { name: "Unassign Ramesh (driver) from Sharma Sweets" }).click();
@@ -100,7 +100,7 @@ test("driver assignments: assign, unassign, then reassign", async ({ admin: page
     .getByRole("dialog", { name: /unassign ramesh \(driver\) from sharma sweets/i })
     .getByRole("button", { name: "Unassign" })
     .click();
-  await expect(page.getByText("Driver unassigned")).toBeVisible();
+  await expect(toast(page, "Driver unassigned")).toBeVisible();
   await expect(table).not.toContainText("Sharma Sweets");
 
   await choose(page.getByLabel("Status", { exact: true }), { label: "Removed" });
@@ -109,7 +109,7 @@ test("driver assignments: assign, unassign, then reassign", async ({ admin: page
     .getByRole("dialog", { name: /reassign ramesh \(driver\) to sharma sweets/i })
     .getByRole("button", { name: "Reassign" })
     .click();
-  await expect(page.getByText("Driver reassigned")).toBeVisible();
+  await expect(toast(page, "Driver reassigned")).toBeVisible();
   await expect(page.getByText("No assignments match.")).toBeVisible();
 });
 
@@ -121,7 +121,7 @@ test("cutoff: status, manual run and history", async ({ admin: page }) => {
     .getByRole("dialog", { name: "Run the cutoff" })
     .getByRole("button", { name: "Run cutoff now" })
     .click();
-  await expect(page.getByText("Cutoff run finished")).toBeVisible();
+  await expect(toast(page, "Cutoff run finished")).toBeVisible();
   await expect(page.getByText("Not run yet")).toHaveCount(0);
   await expect(page.getByRole("table", { name: "Cutoff run history" }).getByRole("row")).toHaveCount(3);
 });
@@ -142,6 +142,6 @@ test("locations: a duplicate name is refused with a clear message", async ({ adm
   await page.goto("/locations/create");
   await page.getByLabel(/^Name/).fill("jaipur PLANT");
   await page.getByRole("button", { name: "Create location" }).click();
-  await expect(page.getByText("A location with this name already exists")).toBeVisible();
+  await expect(toast(page, "A location with this name already exists")).toBeVisible();
   await expect(page).toHaveURL(/\/locations\/create$/);
 });

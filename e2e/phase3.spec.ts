@@ -1,4 +1,4 @@
-import { choose, expect, test, visit } from "./fixtures";
+import { choose, expect, test, toast, visit } from "./fixtures";
 
 test("reports: KPIs, charts with tables, range switch", async ({ admin: page }) => {
   await visit(page, "/reports", "Reports");
@@ -40,10 +40,10 @@ test("support: reply to a ticket and resolve it", async ({ admin: page }) => {
   await page.getByRole("link", { name: /^Milk was sour/ }).click();
   await page.getByLabel(/reply to customer/i).fill("Sorry — a fresh pouch is on tomorrow's route.");
   await page.getByRole("button", { name: "Send reply" }).click();
-  await expect(page.getByText("Reply sent")).toBeVisible();
+  await expect(toast(page, "Reply sent")).toBeVisible();
   await expect(page.getByText("Sorry — a fresh pouch is on tomorrow's route.")).toBeVisible();
   await choose(page.getByLabel("Change status"), "resolved");
-  await expect(page.getByText("Ticket resolved")).toBeVisible();
+  await expect(toast(page, "Ticket resolved")).toBeVisible();
 });
 
 test("ratings: approve and reply", async ({ admin: page }) => {
@@ -53,9 +53,9 @@ test("ratings: approve and reply", async ({ admin: page }) => {
   const dialog = page.getByRole("dialog", { name: "Public reply" });
   await dialog.getByLabel(/^Reply/).fill("Thank you!");
   await dialog.getByRole("button", { name: "Reply" }).click();
-  await expect(page.getByText("Reply saved")).toBeVisible();
+  await expect(toast(page, "Reply saved")).toBeVisible();
   await table.getByRole("button", { name: "Approve review 1" }).click();
-  await expect(page.getByText("Review approved")).toBeVisible();
+  await expect(toast(page, "Review approved")).toBeVisible();
 });
 
 test("coupons: create and deactivate", async ({ admin: page }) => {
@@ -71,7 +71,7 @@ test("coupons: create and deactivate", async ({ admin: page }) => {
     .getByRole("dialog", { name: /deactivate diwali15/i })
     .getByRole("button", { name: "Deactivate" })
     .click();
-  await expect(page.getByText("Coupon deactivated")).toBeVisible();
+  await expect(toast(page, "Coupon deactivated")).toBeVisible();
 });
 
 test("audit log and feature flags", async ({ admin: page }) => {

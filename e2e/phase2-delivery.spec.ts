@@ -1,4 +1,4 @@
-import { choose, expect, test, visit } from "./fixtures";
+import { choose, expect, test, toast, visit } from "./fixtures";
 
 test("daily deliveries: summary, stops, POD and cash", async ({ admin: page }) => {
   await visit(page, "/delivery", "Daily deliveries");
@@ -17,7 +17,7 @@ test("mark a pending stop as failed", async ({ admin: page }) => {
   const dialog = page.getByRole("dialog", { name: /mark this stop as failed/i });
   await choose(dialog.getByLabel(/reason/i), "customer_unavailable");
   await dialog.getByRole("button", { name: "Mark failed" }).click();
-  await expect(page.getByText("Stop marked failed")).toBeVisible();
+  await expect(toast(page, "Stop marked failed")).toBeVisible();
   await expect(page.locator("dd").filter({ hasText: "Customer unavailable" })).toBeVisible();
 });
 

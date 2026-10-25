@@ -1,4 +1,4 @@
-import { choose, expect, pickDate, test, visit } from "./fixtures";
+import { choose, expect, pickDate, test, toast, visit } from "./fixtures";
 
 test("stock: low-stock flag, reorder suggestion and an adjustment", async ({ admin: page }) => {
   await visit(page, "/stock", "Stock");
@@ -13,7 +13,7 @@ test("stock: low-stock flag, reorder suggestion and an adjustment", async ({ adm
   await dialog.getByLabel(/^Change/).fill("-20");
   await choose(dialog.getByLabel(/^Reason/), "adjustment");
   await dialog.getByRole("button", { name: "Adjust stock" }).click();
-  await expect(page.getByText("Stock adjusted")).toBeVisible();
+  await expect(toast(page, "Stock adjusted")).toBeVisible();
   await page.getByRole("tab", { name: "All stock" }).click();
   await expect(
     page.getByRole("table", { name: "Stock levels" }).getByRole("row", { name: /Full Cream Milk/ }),
@@ -36,7 +36,7 @@ test("batches are FEFO and a new batch can be received", async ({ admin: page })
   await expect(dialog.getByText("Expiry is before manufacture")).toBeVisible();
   await pickDate(dialog.getByLabel(/^Expiry/), "2027-04-20");
   await dialog.getByRole("button", { name: "Receive batch" }).click();
-  await expect(page.getByText("Batch received")).toBeVisible();
+  await expect(toast(page, "Batch received")).toBeVisible();
   await expect(page.getByRole("table", { name: "Batches (FEFO)" })).toContainText("GHE-2410");
 });
 
@@ -56,14 +56,14 @@ test("purchase order: create → place → receive (GRN)", async ({ admin: page 
     .getByRole("dialog", { name: "Place order" })
     .getByRole("button", { name: "Place order" })
     .click();
-  await expect(page.getByText("Purchase order placed")).toBeVisible();
+  await expect(toast(page, "Purchase order placed")).toBeVisible();
 
   await page.getByRole("button", { name: "Receive goods" }).click();
   const grn = page.getByRole("dialog", { name: /goods receipt/i });
   await expect(grn.getByLabel("Qty received (line 1)")).toHaveValue("200");
   await grn.getByLabel("Batch no. (line 1)").fill("mlk-po-1");
   await grn.getByRole("button", { name: "Receive goods" }).click();
-  await expect(page.getByText("Goods received")).toBeVisible();
+  await expect(toast(page, /Goods received/)).toBeVisible();
   await expect(page.locator("dd").filter({ hasText: /^Received$/ })).toBeVisible();
 });
 
@@ -72,7 +72,7 @@ test("transfer: dispatch a draft", async ({ admin: page }) => {
   await page.getByRole("link", { name: /^TR-0001/ }).click();
   await page.getByRole("button", { name: "Dispatch" }).click();
   await page.getByRole("dialog", { name: "Dispatch" }).getByRole("button", { name: "Dispatch" }).click();
-  await expect(page.getByText("Transfer dispatched")).toBeVisible();
+  await expect(toast(page, "Transfer dispatched")).toBeVisible();
   await expect(page.getByRole("button", { name: "Receive" })).toBeVisible();
 });
 
