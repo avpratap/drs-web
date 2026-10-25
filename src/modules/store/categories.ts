@@ -56,4 +56,21 @@ export function categoryMeta(slug: string): CategoryMeta & { slug: string } {
 }
 
 export const categoryHref = (slug: string) => `/products?category=${encodeURIComponent(slug)}`;
-export const productHref = (id: number) => `/products/${id}`;
+const kebab = (s: string) =>
+  s
+    .toLowerCase()
+    .normalize("NFKD")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+
+/** Product URLs are `/products/{id}-{name}`: the id is the key, the name is for people and SEO. */
+export const productSlug = (p: { id: number; name: string }) =>
+  [p.id, kebab(p.name)].filter(Boolean).join("-");
+export const productHref = (p: { id: number; name: string }) => `/products/${productSlug(p)}`;
+
+/** The product id at the front of a slug ("12-a2-desi-ghee" -> 12), or null when it has none. */
+export function productIdFromSlug(slug: string): number | null {
+  const m = /^(\d+)(?:-|$)/.exec(slug);
+  const id = m ? Number(m[1]) : NaN;
+  return Number.isSafeInteger(id) && id > 0 ? id : null;
+}

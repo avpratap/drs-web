@@ -44,7 +44,7 @@ export function SectionHeading({
   );
 }
 
-function Unavailable({ what }: { what: string }) {
+export function Unavailable({ what }: { what: string }) {
   return (
     <p className="rounded-2xl border border-dashed border-drs-ink/20 bg-drs-white/60 px-6 py-10 text-center text-sm text-drs-ink/75">
       We couldn&apos;t load {what} just now. Please refresh in a moment.
@@ -52,7 +52,7 @@ function Unavailable({ what }: { what: string }) {
   );
 }
 
-const pulse = "animate-pulse rounded-2xl bg-drs-ink/[0.06] motion-reduce:animate-none";
+export const pulse = "animate-pulse rounded-2xl bg-drs-ink/[0.06] motion-reduce:animate-none";
 
 export function CategoryGridSkeleton() {
   return (
@@ -96,6 +96,25 @@ export async function CategoryGrid() {
           </li>
         );
       })}
+    </ul>
+  );
+}
+
+/** Placeholder product tiles for the shop grid while results stream in. */
+export function ProductGridSkeleton({ count = 8 }: { count?: number }) {
+  return (
+    <ul aria-hidden className="grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-5 lg:grid-cols-4">
+      {Array.from({ length: count }, (_, i) => (
+        <li key={i} className="overflow-hidden rounded-2xl border border-drs-ink/5 bg-drs-white">
+          <div className={cn(pulse, "aspect-[4/3] rounded-none")} />
+          <div className="space-y-2 p-4">
+            <div className={cn(pulse, "h-3 w-1/3")} />
+            <div className={cn(pulse, "h-4 w-4/5")} />
+            <div className={cn(pulse, "h-3 w-1/4")} />
+            <div className={cn(pulse, "mt-4 h-5 w-1/2")} />
+          </div>
+        </li>
+      ))}
     </ul>
   );
 }

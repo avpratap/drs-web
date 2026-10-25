@@ -25,7 +25,19 @@ export function packLabel(size: number, uom: string): string {
   }
 }
 
-/** Storefront product tile: image (or an on-brand illustration), category, name, pack and rating. */
+const inr = new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 2 });
+const inrWhole = new Intl.NumberFormat("en-IN", {
+  style: "currency",
+  currency: "INR",
+  maximumFractionDigits: 0,
+});
+
+/** "₹66", "₹33.50": whole rupees drop the paise. Prices are GST-inclusive. */
+export function rupees(n: number): string {
+  return Number.isInteger(n) ? inrWhole.format(n) : inr.format(n);
+}
+
+/** Storefront product tile: image (or an on-brand illustration), category, name, pack, "from" price and rating. */
 export function ProductCard({ product, className }: { product: StoreProduct; className?: string }) {
   const meta = categoryMeta(product.category ?? "");
   const Icon = meta.icon;
@@ -54,13 +66,13 @@ export function ProductCard({ product, className }: { product: StoreProduct; cla
         ) : (
           <span
             aria-hidden
-            className="grid size-20 place-items-center rounded-full bg-drs-white/80 shadow-sm"
+            className="grid size-14 place-items-center rounded-full bg-drs-white/80 shadow-sm sm:size-20"
           >
-            <Icon className="size-9 text-drs-green" strokeWidth={1.5} />
+            <Icon className="size-7 text-drs-green sm:size-9" strokeWidth={1.5} />
           </span>
         )}
         {product.is_subscribable && (
-          <span className="absolute top-3 left-3 inline-flex items-center gap-1 rounded-full bg-drs-white/95 px-2.5 py-1 text-[0.6875rem] font-semibold text-drs-green shadow-sm">
+          <span className="absolute top-2 left-2 inline-flex sm:top-3 sm:left-3 items-center gap-1 rounded-full bg-drs-white/95 px-2.5 py-1 text-[0.6875rem] font-semibold text-drs-green shadow-sm">
             <RepeatIcon aria-hidden className="size-3" strokeWidth={2.25} />
             Subscribe
           </span>
@@ -71,17 +83,25 @@ export function ProductCard({ product, className }: { product: StoreProduct; cla
           {meta.label}
         </p>
         <h3 className="text-[0.9375rem] leading-snug font-semibold text-drs-ink">
-          <Link href={productHref(product.id)} className="after:absolute after:inset-0 hover:text-drs-green">
+          <Link href={productHref(product)} className="after:absolute after:inset-0 hover:text-drs-green">
             {product.name}
           </Link>
         </h3>
-        <div className="mt-auto flex items-center justify-between pt-2 text-sm">
-          <span className="whitespace-nowrap text-drs-ink/75">
-            {packLabel(product.pack_size, product.uom)}
-          </span>
+        <p className="text-sm whitespace-nowrap text-drs-ink/75">
+          {packLabel(product.pack_size, product.uom)}
+        </p>
+        <div className="mt-auto flex flex-wrap items-end justify-between gap-x-3 gap-y-1 pt-3">
+          {product.from_price != null ? (
+            <p className="leading-none text-drs-ink">
+              <span className="text-xs text-drs-ink/75">From </span>
+              <span className="text-lg font-semibold text-drs-green">{rupees(product.from_price)}</span>
+            </p>
+          ) : (
+            <p className="text-sm font-medium text-drs-ink/75">Price on request</p>
+          )}
           {product.rating_count > 0 && (
             <span
-              className="inline-flex items-center gap-1 font-medium text-drs-ink"
+              className="inline-flex items-center gap-1 text-sm font-medium text-drs-ink"
               aria-label={`Rated ${product.avg_rating.toFixed(1)} out of 5 from ${product.rating_count} reviews`}
             >
               <StarIcon aria-hidden className="size-3.5 fill-drs-gold text-drs-gold" />

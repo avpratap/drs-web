@@ -73,20 +73,134 @@ function seed() {
         avg_rating: 0,
         rating_count: 0,
       },
+      {
+        id: 5,
+        sku: "CURD-FRESH-400",
+        name: "Farm Fresh Curd",
+        description: "Thick, set overnight in small batches.",
+        uom: "g",
+        pack_size: 400,
+        gst_rate: 5,
+        hsn_code: "0403",
+        category: "curd",
+        status: "active",
+        is_subscribable: false,
+        perishable: true,
+        avg_rating: 0,
+        rating_count: 0,
+      },
     ],
     variants: [
+      // selling_price = RETAIL unit price x pack_size, GST-inclusive (what the cart charges).
       {
         id: 1,
         product_id: 1,
         sku: "MILK-FC-1L",
         label: "1 L",
-        pack_size: 1,
+        pack_size: 1000,
         price: 66,
         mrp: 68,
+        selling_price: 66,
+        status: "active",
+        sort_order: 2,
+      },
+      {
+        id: 2,
+        product_id: 1,
+        sku: "MILK-FC-500",
+        label: "500 ml",
+        pack_size: 500,
+        price: 34,
+        mrp: 34,
+        selling_price: 34,
         status: "active",
         sort_order: 1,
       },
+      {
+        id: 3,
+        product_id: 2,
+        sku: "BTRMLK-200",
+        label: "200 ml",
+        pack_size: 200,
+        price: 15,
+        mrp: 20,
+        selling_price: 15,
+        status: "active",
+        sort_order: 1,
+      },
+      {
+        id: 4,
+        product_id: 2,
+        sku: "BTRMLK-1200",
+        label: "Pack of 6 (1.2 L)",
+        pack_size: 1200,
+        price: 84,
+        mrp: 120,
+        selling_price: null,
+        status: "active",
+        sort_order: 2,
+      },
+      {
+        id: 5,
+        product_id: 3,
+        sku: "GHEE-500",
+        label: "500 ml",
+        pack_size: 0.5,
+        price: 469,
+        mrp: null,
+        selling_price: 469,
+        status: "active",
+        sort_order: 1,
+      },
+      {
+        id: 6,
+        product_id: 3,
+        sku: "GHEE-1L",
+        label: "1 L",
+        pack_size: 1,
+        price: 899,
+        mrp: 999,
+        selling_price: 899,
+        status: "active",
+        sort_order: 2,
+      },
     ],
+    // Approved storefront reviews (public), kept apart from the admin moderation queue.
+    reviews: [
+      {
+        id: 101,
+        product_id: 3,
+        stars: 5,
+        comment: "Grainy, aromatic — tastes like home.",
+        verified_purchase: true,
+        helpful_count: 12,
+      },
+      {
+        id: 102,
+        product_id: 3,
+        stars: 4,
+        comment: "Lovely ghee, a little pricey.",
+        verified_purchase: true,
+        helpful_count: 4,
+      },
+      {
+        id: 104,
+        product_id: 2,
+        stars: 4,
+        comment: "Perfectly spiced, great after lunch.",
+        verified_purchase: false,
+        helpful_count: 0,
+      },
+      {
+        id: 103,
+        product_id: 1,
+        stars: 5,
+        comment: "Fresh every single morning.",
+        verified_purchase: true,
+        helpful_count: 7,
+      },
+    ],
+    carts: {},
     tiers: [
       { id: 1, code: "RETAIL", name: "Retail", tier_type: "retail" },
       { id: 2, code: "HORECA", name: "Hotels & restaurants", tier_type: "b2b" },
@@ -785,12 +899,80 @@ on("GET", "/api/v1/products/categories", (req, res) =>
     ),
   ]),
 );
+// Storefront price of a pack: the variant's selling_price (null => price unavailable).
+const pricedVariants = (pid) =>
+  db.variants
+    .filter((v) => v.product_id === Number(pid) && v.status === "active")
+    .sort((a, b) => a.sort_order - b.sort_order)
+    .map((v) => ({
+      ...v,
+      price_available: v.selling_price != null,
+      show_mrp_strike: v.selling_price != null && v.mrp != null && v.mrp > v.selling_price,
+    }));
+const fromPrice = (pid) => {
+  const known = pricedVariants(pid)
+    .map((v) => v.selling_price)
+    .filter((x) => x != null);
+  return known.length ? Math.min(...known) : null;
+};
+const publicProduct = (x) => ({ ...x, from_price: fromPrice(x.id) });
+const SORTS = {
+  newest: (a, b) => b.id - a.id,
+  rating: (a, b) => b.avg_rating - a.avg_rating,
+  name: (a, b) => a.name.localeCompare(b.name),
+};
 on("GET", "/api/v1/products", (req, res, { q }) => {
   let rows = db.products.filter((x) => x.status === "active");
   if (q.get("category")) rows = rows.filter((x) => x.category === q.get("category"));
-  if (q.get("sort") === "rating") rows = [...rows].sort((a, b) => b.avg_rating - a.avg_rating);
+  const term = q.get("q")?.toLowerCase();
+  if (term) rows = rows.filter((x) => x.name.toLowerCase().includes(term));
+  rows = [...rows].sort(SORTS[q.get("sort")] ?? ((a, b) => a.id - b.id));
+  const offset = Number(q.get("offset") ?? 0);
   const limit = Number(q.get("limit") ?? 50);
-  send(res, 200, rows.slice(0, limit));
+  send(res, 200, rows.slice(offset, offset + limit).map(publicProduct));
+});
+on("GET", "/api/v1/products/:pid/full", (req, res, { p }) => {
+  const x = find(db.products, p.pid);
+  if (!x || x.status !== "active") return send(res, 404, { detail: "Product not found" });
+  send(res, 200, { ...publicProduct(x), variants: pricedVariants(x.id) });
+});
+on("GET", "/api/v1/products/:pid/ratings", (req, res, { p }) => {
+  // Summary matches the product's own avg_rating/rating_count; the list is the latest few.
+  const prod = find(db.products, p.pid);
+  const rows = db.reviews.filter((r) => r.product_id === Number(p.pid));
+  const count = prod?.rating_count ?? 0;
+  const split = [0.02, 0.02, 0.06, 0.2]; // 1..4 stars; 5 stars takes the rest
+  const distribution = Object.fromEntries(split.map((f, i) => [String(i + 1), Math.round(count * f)]));
+  distribution["5"] = count - Object.values(distribution).reduce((a, b) => a + b, 0);
+  send(res, 200, {
+    product_id: Number(p.pid),
+    count,
+    average: prod?.avg_rating ?? 0,
+    distribution,
+    ratings: rows.map((r) => ({ ...r, user_id: null, mine: false, status: "approved", admin_reply: null })),
+  });
+});
+// Customer cart: unit price = cheapest per-unit retail price, so qty = pack_size charges selling_price.
+const cartOf = (headers) => {
+  const key = headers.authorization ?? "anon";
+  db.carts[key] ??= { id: Object.keys(db.carts).length + 1, status: "open", items: [] };
+  const c = db.carts[key];
+  return { ...c, subtotal: c.items.reduce((n, i) => n + i.line_total, 0) };
+};
+on("GET", "/api/v1/cart", (req, res, { headers }) => send(res, 200, cartOf(headers)));
+on("POST", "/api/v1/cart/items", (req, res, { body, headers }) => {
+  const prod = find(db.products, body.product_id);
+  const priced = pricedVariants(body.product_id).filter((v) => v.selling_price != null);
+  if (!prod || !priced.length || !(body.qty > 0))
+    return send(res, 422, { detail: "This product can't be added right now." });
+  const unit = Math.min(...priced.map((v) => v.selling_price / v.pack_size));
+  cartOf(headers);
+  const cart = db.carts[headers.authorization ?? "anon"];
+  const line = cart.items.find((i) => i.product_id === prod.id);
+  if (line) line.qty += body.qty;
+  else cart.items.push({ id: id(), product_id: prod.id, qty: body.qty, unit_price: unit, line_total: 0 });
+  cart.items.forEach((i) => (i.line_total = Math.round(i.unit_price * i.qty * 100) / 100));
+  send(res, 200, cartOf(headers));
 });
 on("GET", "/api/v1/products/:pid", (req, res, { p }) =>
   find(db.products, p.pid)
@@ -1693,8 +1875,7 @@ createServer(async (req, res) => {
   const isAuth = url.pathname.startsWith("/api/v1/auth/") && url.pathname !== "/api/v1/auth/me";
   const signedFile = url.pathname.startsWith("/files/");
   const publicCatalogue =
-    req.method === "GET" &&
-    (url.pathname === "/api/v1/products" || url.pathname === "/api/v1/products/categories");
+    req.method === "GET" && /^\/api\/v1\/products(\/categories|\/\d+\/(full|ratings))?$/.test(url.pathname);
   if (
     !isAuth &&
     !signedFile &&

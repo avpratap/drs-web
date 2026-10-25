@@ -16,7 +16,7 @@ test("home: hero, categories and featured products from the public API (indexabl
   const featured = page.getByRole("list", { name: "Featured products" });
   await expect(featured.getByRole("link", { name: "Full Cream Milk" })).toHaveAttribute(
     "href",
-    "/products/1",
+    "/products/1-full-cream-milk",
   );
   await expect(featured).toContainText("500 ml");
   // Storefront is indexable; no admin chrome or noindex here.

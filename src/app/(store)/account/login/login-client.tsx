@@ -2,6 +2,7 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { LoginForm } from "@/components/auth/login-form";
+import { useCart } from "@/components/store/cart";
 import { safeNext } from "@/lib/auth/zones";
 
 const ERRORS: Record<string, string> = {
@@ -23,6 +24,7 @@ async function post(url: string, body: unknown) {
 export function AccountLoginClient() {
   const params = useSearchParams();
   const router = useRouter();
+  const cart = useCart();
   const next = safeNext(params.get("next"), "customer", "/");
   return (
     <LoginForm
@@ -31,6 +33,7 @@ export function AccountLoginClient() {
       verifyOtp={async (phone, otp) => {
         const r = await post("/api/store-auth/otp/verify", { phone, otp });
         if (!r.ok) return { ok: false, message: r.data.detail ?? "Could not verify the code." };
+        void cart.refresh(); // the header count now reflects their saved cart
         router.replace(next);
         router.refresh();
         return { ok: true };

@@ -2,7 +2,7 @@
 
 import { MenuIcon, SearchIcon, ShoppingBagIcon, UserRoundIcon, XIcon } from "lucide-react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { useCart } from "./cart";
@@ -78,7 +78,8 @@ export function SearchForm({ className, id = "store-search" }: { className?: str
 /** Mobile navigation drawer (below lg). */
 export function MobileMenu() {
   const [open, setOpen] = useState(false);
-  const pathname = usePathname();
+  // Read when opened (not via usePathname) so the header can prerender on dynamic routes.
+  const [pathname, setPathname] = useState("");
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
@@ -97,7 +98,10 @@ export function MobileMenu() {
         aria-label="Open menu"
         aria-expanded={open}
         aria-controls="store-menu"
-        onClick={() => setOpen(true)}
+        onClick={() => {
+          setPathname(window.location.pathname);
+          setOpen(true);
+        }}
       >
         <MenuIcon aria-hidden className="size-6" strokeWidth={1.75} />
       </button>
