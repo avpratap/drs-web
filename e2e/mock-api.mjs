@@ -75,7 +75,7 @@ function seed() {
       },
       {
         id: 5,
-        sku: "CURD-400",
+        sku: "CURD-FRESH-400",
         name: "Farm Fresh Curd",
         description: "Thick, set overnight in small batches.",
         uom: "g",
