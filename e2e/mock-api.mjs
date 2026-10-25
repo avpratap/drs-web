@@ -91,7 +91,8 @@ function seed() {
       },
     ],
     variants: [
-      // selling_price = RETAIL unit price x pack_size, GST-inclusive (what the cart charges).
+      // selling_price = RETAIL unit price x pack_size, GST-inclusive (what the cart charges):
+      // linear in pack size, like the backend (milk ₹0.066/ml, buttermilk ₹0.075/ml, ghee ₹899/L).
       {
         id: 1,
         product_id: 1,
@@ -110,9 +111,9 @@ function seed() {
         sku: "MILK-FC-500",
         label: "500 ml",
         pack_size: 500,
-        price: 34,
+        price: 33,
         mrp: 34,
-        selling_price: 34,
+        selling_price: 33,
         status: "active",
         sort_order: 1,
       },
@@ -146,9 +147,9 @@ function seed() {
         sku: "GHEE-500",
         label: "500 ml",
         pack_size: 0.5,
-        price: 469,
+        price: 449.5,
         mrp: null,
-        selling_price: 469,
+        selling_price: 449.5,
         status: "active",
         sort_order: 1,
       },
@@ -201,6 +202,9 @@ function seed() {
       },
     ],
     carts: {},
+    addresses: [],
+    idem: {}, // Idempotency-Key -> stored response (checkout / payment create)
+    onlinePayments: [],
     tiers: [
       { id: 1, code: "RETAIL", name: "Retail", tier_type: "retail" },
       { id: 2, code: "HORECA", name: "Hotels & restaurants", tier_type: "b2b" },
@@ -973,6 +977,207 @@ on("POST", "/api/v1/cart/items", (req, res, { body, headers }) => {
   else cart.items.push({ id: id(), product_id: prod.id, qty: body.qty, unit_price: unit, line_total: 0 });
   cart.items.forEach((i) => (i.line_total = Math.round(i.unit_price * i.qty * 100) / 100));
   send(res, 200, cartOf(headers));
+});
+// Customer-owned rows carry the owner's token in `owner`; never sent back.
+const withoutOwner = (row) => Object.fromEntries(Object.entries(row).filter(([k]) => k !== "owner"));
+const myCart = (headers) => {
+  cartOf(headers);
+  return db.carts[headers.authorization ?? "anon"];
+};
+const reprice = (cart) =>
+  cart.items.forEach((i) => (i.line_total = Math.round(i.unit_price * i.qty * 100) / 100));
+const round2 = (n) => Math.round(n * 100) / 100;
+on("PATCH", "/api/v1/cart/items/:iid", (req, res, { p, body, headers }) => {
+  const cart = myCart(headers);
+  const line = cart.items.find((i) => i.id === Number(p.iid));
+  if (!line) return send(res, 404, { detail: "Cart item not found" });
+  if (!(body.qty > 0)) return send(res, 422, { detail: "Quantity must be more than 0" });
+  line.qty = body.qty;
+  reprice(cart);
+  send(res, 200, cartOf(headers));
+});
+on("DELETE", "/api/v1/cart/items/:iid", (req, res, { p, headers }) => {
+  const cart = myCart(headers);
+  cart.items = cart.items.filter((i) => i.id !== Number(p.iid));
+  send(res, 200, cartOf(headers));
+});
+// Coupons: flat/percent with a minimum order value, like the backend's preview.
+const couponDiscount = (code, subtotal) => {
+  const c = db.coupons.find((x) => x.code.toUpperCase() === String(code).trim().toUpperCase() && x.active);
+  if (!c) return { error: "This coupon code isn't valid." };
+  if (c.min_order_value && subtotal < c.min_order_value)
+    return { error: `Add ₹${c.min_order_value - subtotal} more to use ${c.code}.` };
+  const raw = c.discount_type === "percent" ? (subtotal * c.value) / 100 : c.value;
+  return { discount: round2(Math.min(raw, c.max_discount ?? raw, subtotal)) };
+};
+on("POST", "/api/v1/cart/coupon-preview", (req, res, { body, headers }) => {
+  const { subtotal } = cartOf(headers);
+  const r = couponDiscount(body.code, subtotal);
+  if (r.error) return send(res, 422, { detail: r.error });
+  send(res, 200, { code: body.code, discount: r.discount, final_total: round2(subtotal - r.discount) });
+});
+const quoteOf = (headers, couponCode) => {
+  const cart = cartOf(headers);
+  let discount = 0;
+  if (couponCode) {
+    const r = couponDiscount(couponCode, cart.subtotal);
+    if (r.error) return { error: r.error };
+    discount = r.discount;
+  }
+  const total = round2(cart.subtotal - discount);
+  const factor = cart.subtotal > 0 ? total / cart.subtotal : 1;
+  const items = cart.items.map((i) => {
+    const rate = find(db.products, i.product_id)?.gst_rate ?? 0;
+    const charged = round2(i.line_total * factor);
+    return { ...i, gst_rate: rate, gst_amount: round2(charged - charged / (1 + rate / 100)) };
+  });
+  const tax_total = round2(items.reduce((n, i) => n + i.gst_amount, 0));
+  return { items, subtotal: cart.subtotal, discount, tax_total, total, total_incl_tax: total };
+};
+// Serviceability (public): Jaipur pincodes (302xxx) are served next morning; 999999 is not.
+const serviceability = (pin) =>
+  pin === "999999" || !/^\d{6}$/.test(pin)
+    ? { serviceable: false, etd_days: null, courier: null, rate: null }
+    : { serviceable: true, etd_days: pin.startsWith("302") ? 1 : 3, courier: "DRS Fleet", rate: 0 };
+on("GET", "/api/v1/shipping/serviceability", (req, res, { q }) => {
+  if (!/^\d{6}$/.test(q.get("pincode") ?? "")) return send(res, 422, { detail: "Enter a 6-digit pincode" });
+  send(res, 200, serviceability(q.get("pincode")));
+});
+on("POST", "/api/v1/cart/quote", (req, res, { body, headers }) => {
+  const qt = quoteOf(headers, body.coupon_code);
+  if (qt.error) return send(res, 422, { detail: qt.error });
+  const svc = body.pincode ? serviceability(body.pincode) : null;
+  send(res, 200, {
+    ...qt,
+    serviceable: svc?.serviceable ?? null,
+    etd_days: svc?.etd_days ?? null,
+    shipping_rate: svc?.rate ?? null,
+  });
+});
+on("GET", "/api/v1/addresses", (req, res, { headers }) =>
+  send(res, 200, db.addresses.filter((a) => a.owner === headers.authorization).map(withoutOwner)),
+);
+on("POST", "/api/v1/addresses", (req, res, { body, headers }) => {
+  if (!body.line1 || !body.city || !body.state || !/^\d{6}$/.test(body.pincode ?? ""))
+    return send(res, 422, { detail: "Please complete the address." });
+  const mine = db.addresses.filter((a) => a.owner === headers.authorization);
+  const a = {
+    id: id(),
+    account_id: 50,
+    country: "IN",
+    status: "active",
+    label: null,
+    contact_name: null,
+    contact_phone: null,
+    line2: null,
+    landmark: null,
+    ...body,
+    is_default: body.is_default || mine.length === 0,
+    owner: headers.authorization,
+  };
+  if (a.is_default) mine.forEach((m) => (m.is_default = false));
+  db.addresses.push(a);
+  send(res, 201, withoutOwner(a));
+});
+// Replays the stored response for a repeated Idempotency-Key (like the backend).
+const idempotent = (headers, res, fn) => {
+  const key = headers["idempotency-key"];
+  if (!key) return send(res, 400, { detail: "Idempotency-Key header required" });
+  if (db.idem[key]) return send(res, db.idem[key].status, db.idem[key].body);
+  const out = fn();
+  if (out.status < 500) db.idem[key] = out;
+  send(res, out.status, out.body);
+};
+const orderView = withoutOwner;
+on("POST", "/api/v1/cart/checkout", (req, res, { body, headers }) =>
+  idempotent(headers, res, () => {
+    if (body.address === "FAIL-ONCE" && !db.failedOnce) {
+      db.failedOnce = true;
+      return { status: 503, body: { detail: "Temporarily unavailable" } };
+    }
+    const cart = myCart(headers);
+    if (!cart.items.length) return { status: 422, body: { detail: "Cart is empty" } };
+    const qt = quoteOf(headers, body.coupon_code);
+    if (qt.error) return { status: 422, body: { detail: qt.error } };
+    const oid = id();
+    const order = {
+      id: oid,
+      order_no: `DRS-${String(oid).padStart(6, "0")}`,
+      account_id: 50,
+      shop_id: 1,
+      order_type: "one_time",
+      status: "created",
+      payment_status: "pending",
+      subtotal: qt.subtotal,
+      discount: qt.discount,
+      coupon_code: body.coupon_code ?? null,
+      total: qt.total,
+      tax_total: qt.tax_total,
+      total_incl_tax: qt.total,
+      items: qt.items.map((i) => ({
+        product_id: i.product_id,
+        qty: i.qty,
+        unit_price: i.unit_price,
+        line_total: i.line_total,
+        gst_rate: i.gst_rate,
+        gst_amount: i.gst_amount,
+        price_incl_tax: i.unit_price,
+      })),
+      owner: headers.authorization,
+      address: body.address,
+      pincode: body.pincode,
+    };
+    db.orders.push(order);
+    db.carts[headers.authorization ?? "anon"] = { id: cart.id + 1, status: "open", items: [] };
+    return { status: 200, body: orderView(order) };
+  }),
+);
+on("GET", "/api/v1/orders", (req, res, { headers }) =>
+  send(
+    res,
+    200,
+    db.orders
+      .filter((o) => o.owner && o.owner === headers.authorization)
+      .sort((a, b) => b.id - a.id)
+      .map(orderView),
+  ),
+);
+on("GET", "/api/v1/orders/:oid/tracking", (req, res, { p, headers }) => {
+  const o = find(db.orders, p.oid);
+  if (!o || (o.owner && o.owner !== headers.authorization))
+    return send(res, 404, { detail: "Order not found" });
+  send(res, 200, {
+    order_id: o.id,
+    order_no: o.order_no,
+    status: o.status,
+    payment_status: o.payment_status,
+    shipments: o.shipments ?? [],
+  });
+});
+on("POST", "/api/v1/payments/create", (req, res, { body, headers }) =>
+  idempotent(headers, res, () => {
+    const o = find(db.orders, body.order_id);
+    if (body.purpose !== "order_payment" || !o || o.owner !== headers.authorization)
+      return { status: 404, body: { detail: "Order not found" } };
+    if (o.payment_status === "paid") return { status: 409, body: { detail: "Order already paid" } };
+    const pay = { id: id(), gateway_order_id: `order_dev_${id()}`, order_id: o.id, status: "initiated" };
+    db.onlinePayments.push(pay);
+    // Dev stub (no Razorpay keys): empty key_id, verify accepts signature "dev".
+    return {
+      status: 200,
+      body: { payment_id: pay.id, gateway_order_id: pay.gateway_order_id, amount: o.total, key_id: "" },
+    };
+  }),
+);
+on("POST", "/api/v1/payments/verify", (req, res, { body }) => {
+  const pay = db.onlinePayments.find((x) => x.gateway_order_id === body.gateway_order_id);
+  if (!pay) return send(res, 404, { detail: "Payment not found" });
+  if (body.signature !== "dev") return send(res, 400, { detail: "Signature verification failed" });
+  pay.status = "success";
+  const o = find(db.orders, pay.order_id);
+  o.payment_status = "paid";
+  o.status = "confirmed";
+  send(res, 200, { detail: "payment successful", payment_id: pay.id, status: "success" });
 });
 on("GET", "/api/v1/products/:pid", (req, res, { p }) =>
   find(db.products, p.pid)
@@ -1802,9 +2007,11 @@ on("GET", "/api/v1/invoices/:iid/pdf", (req, res, { p }) => {
     pdf_url: `/files/private/invoices/${i.id}.pdf?exp=4102444800&sig=mock`,
   });
 });
-on("GET", "/api/v1/orders/:oid", (req, res, { p }) => {
+on("GET", "/api/v1/orders/:oid", (req, res, { p, headers }) => {
   const o = find(db.orders, p.oid);
-  if (!o) return send(res, 404, { detail: "Order not found" });
+  if (!o || (o.owner && o.owner !== headers.authorization))
+    return send(res, 404, { detail: "Order not found" });
+  if (o.owner) return send(res, 200, orderView(o));
   send(res, 200, {
     order_type: "one_time",
     subtotal: o.total,
@@ -1875,7 +2082,9 @@ createServer(async (req, res) => {
   const isAuth = url.pathname.startsWith("/api/v1/auth/") && url.pathname !== "/api/v1/auth/me";
   const signedFile = url.pathname.startsWith("/files/");
   const publicCatalogue =
-    req.method === "GET" && /^\/api\/v1\/products(\/categories|\/\d+\/(full|ratings))?$/.test(url.pathname);
+    req.method === "GET" &&
+    (/^\/api\/v1\/products(\/categories|\/\d+\/(full|ratings))?$/.test(url.pathname) ||
+      url.pathname === "/api/v1/shipping/serviceability");
   if (
     !isAuth &&
     !signedFile &&

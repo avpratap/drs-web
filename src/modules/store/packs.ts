@@ -28,3 +28,21 @@ export function packOptions(p: StoreProductFull): PackOption[] {
     },
   ];
 }
+
+/** How a cart/order line reads: its smallest buyable pack, and how many of them it holds. */
+export type LinePack = { label: string; size: number; packs: number | null; packPrice: number };
+
+export function linePack(p: StoreProductFull | null | undefined, qty: number, unitPrice: number): LinePack {
+  const opts = p ? packOptions(p) : [];
+  const priced = opts.filter((o) => o.price != null);
+  const step = [...(priced.length ? priced : opts)].sort((a, b) => a.packSize - b.packSize)[0];
+  const size = step?.packSize ?? qty;
+  const ratio = size > 0 ? qty / size : 1;
+  const whole = Math.round(ratio);
+  return {
+    label: step?.label ?? (p ? packLabel(qty, p.uom) : String(qty)),
+    size,
+    packs: Math.abs(ratio - whole) < 1e-6 && whole > 0 ? whole : null,
+    packPrice: Math.round(unitPrice * size * 100) / 100,
+  };
+}
