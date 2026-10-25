@@ -590,6 +590,50 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/billing/transactions": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * My Wallet Transactions
+     * @description The caller's full wallet ledger, newest first (`?limit=&offset=`, total in
+     *     `X-Total-Count`). Read-only and scoped to the caller's own account.
+     */
+    get: operations["my_wallet_transactions"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/billing/credit-statement": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * My Credit Statement
+     * @description Line-item statement for an account on credit terms (B2B postpaid): every charge,
+     *     payment and credit note with the running outstanding, newest first (`?limit=&offset=`,
+     *     total in `X-Total-Count`). Scoped to the caller's own account; an account that was
+     *     never on credit simply has no lines.
+     */
+    get: operations["my_credit_statement"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/billing/admin/topup": {
     parameters: {
       query?: never;
@@ -2362,7 +2406,12 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    /** Serviceability */
+    /**
+     * Serviceability
+     * @description No login required (the answer doesn't depend on who asks). Anonymous traffic is
+     *     bounded by the global per-IP rate limit, and answers are cached briefly so repeated
+     *     lookups don't each cost a courier API call.
+     */
     get: operations["check_serviceability"];
     put?: never;
     post?: never;
@@ -5103,6 +5152,29 @@ export interface components {
       /** Final Total */
       final_total: number;
     };
+    /**
+     * CreditLedgerLineOut
+     * @description One line of a B2B credit-terms statement (append-only receivables ledger).
+     */
+    CreditLedgerLineOut: {
+      /** Id */
+      id: number;
+      /** Entry Type */
+      entry_type: string;
+      /** Amount */
+      amount: number;
+      /** Balance After */
+      balance_after: number;
+      /** Ref Type */
+      ref_type?: string | null;
+      /** Ref Id */
+      ref_id?: number | null;
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at: string;
+    };
     /** CreditNoteIn */
     CreditNoteIn: {
       /** Reason */
@@ -7729,6 +7801,29 @@ export interface components {
       /** Wallet Balance */
       wallet_balance: number;
     };
+    /**
+     * WalletTxnLineOut
+     * @description One line of the customer's wallet ledger (append-only).
+     */
+    WalletTxnLineOut: {
+      /** Id */
+      id: number;
+      /** Txn Type */
+      txn_type: string;
+      /** Amount */
+      amount: number;
+      /** Balance After */
+      balance_after: number;
+      /** Ref Type */
+      ref_type?: string | null;
+      /** Ref Id */
+      ref_id?: number | null;
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at: string;
+    };
     /** WalletTxnOut */
     WalletTxnOut: {
       /** Txn Type */
@@ -8624,7 +8719,9 @@ export interface operations {
   create_order: {
     parameters: {
       query?: never;
-      header?: never;
+      header?: {
+        "Idempotency-Key"?: string | null;
+      };
       path?: never;
       cookie?: never;
     };
@@ -9060,6 +9157,70 @@ export interface operations {
       };
     };
   };
+  my_wallet_transactions: {
+    parameters: {
+      query?: {
+        limit?: number;
+        offset?: number;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["WalletTxnLineOut"][];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  my_credit_statement: {
+    parameters: {
+      query?: {
+        limit?: number;
+        offset?: number;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["CreditLedgerLineOut"][];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
   wallet_topup: {
     parameters: {
       query?: never;
@@ -9151,7 +9312,9 @@ export interface operations {
   create_payment: {
     parameters: {
       query?: never;
-      header?: never;
+      header?: {
+        "Idempotency-Key"?: string | null;
+      };
       path?: never;
       cookie?: never;
     };
@@ -13532,7 +13695,9 @@ export interface operations {
   checkout_cart: {
     parameters: {
       query?: never;
-      header?: never;
+      header?: {
+        "Idempotency-Key"?: string | null;
+      };
       path?: never;
       cookie?: never;
     };
