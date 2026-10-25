@@ -88,7 +88,10 @@ export function ActionDialog({
           {label}
         </Button>
       </DialogTrigger>
-      <DialogContent showClose={false} className={cn("block p-0", wide ? "max-w-[56rem]" : "max-w-[34rem]")}>
+      <DialogContent
+        showClose={false}
+        className={cn("block p-0 text-left", wide ? "max-w-[56rem]" : "max-w-[34rem]")}
+      >
         <form onSubmit={submit} noValidate className="p-5 md:p-6">
           <DialogTitle className={confirmVariant === "danger" ? "text-drs-maroon" : undefined}>
             {title ?? label}

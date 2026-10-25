@@ -7,7 +7,6 @@ import { cn } from "@/lib/utils";
 import { Calendar } from "./calendar";
 import { PopoverContent } from "./popover";
 import { triggerClass } from "./select";
-import { swallowDialogCancel, useDialogContainer } from "./use-dialog-container";
 
 /** "2026-10-25" <-> local Date (no timezone shifts: dates are calendar days, not instants). */
 export function parseIsoDate(v: string | null | undefined): Date | undefined {
@@ -47,9 +46,8 @@ export type DatePickerProps = {
 
 /**
  * On-brand date field: an input-styled trigger with a calendar icon that opens a Calendar in a
- * Radix Popover. Collision-aware like the Select (flips/shifts to stay on-screen), portals into
- * an enclosing native modal <dialog>, Esc closes only the calendar and focus returns to the
- * trigger. The value stays an ISO date string, exactly what <input type="date"> produced.
+ * Radix Popover. Collision-aware like the Select (flips/shifts to stay on-screen); Esc closes
+ * only the calendar (also inside a dialog) and focus returns to the trigger. The value stays an ISO date string, exactly what <input type="date"> produced.
  */
 export function DatePicker({
   value,
@@ -68,7 +66,6 @@ export function DatePicker({
 }: DatePickerProps) {
   const triggerRef = useRef<HTMLButtonElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
-  const { container, resolve } = useDialogContainer(triggerRef);
   const [open, setOpen] = useState(false);
   const selected = parseIsoDate(value);
   const lo = parseIsoDate(min);
@@ -76,7 +73,6 @@ export function DatePicker({
   const today = new Date();
 
   const setOpenState = (next: boolean) => {
-    if (next) resolve();
     setOpen(next);
     if (!next) onBlur?.();
   };
@@ -107,10 +103,8 @@ export function DatePicker({
       </PopoverPrimitive.Trigger>
       <PopoverContent
         ref={contentRef}
-        container={container}
         aria-label="Choose date"
         className="w-auto p-0"
-        onEscapeKeyDown={swallowDialogCancel}
         onOpenAutoFocus={(e) => {
           // Land on the selected day (else today) instead of the first nav button.
           e.preventDefault();

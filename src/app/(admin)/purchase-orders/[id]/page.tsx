@@ -111,7 +111,10 @@ export default function PurchaseOrderShowPage() {
                         label: "Expiry",
                         type: "date",
                         validate: (v, row) =>
-                          !v || !row.mfg_date || String(v) >= String(row.mfg_date) || "Expiry is before manufacture",
+                          !v ||
+                          !row.mfg_date ||
+                          String(v) >= String(row.mfg_date) ||
+                          "Expiry is before manufacture",
                       },
                     ]}
                   />

@@ -594,32 +594,118 @@ function seed() {
       },
     ],
     giftCards: [
-      { id: 1, code: "DRS-GIFT-7Q2K", initial_amount: 500, balance: 320, status: "active", issued_to_account_id: 1, expires_at: "2027-03-31" },
-      { id: 2, code: "DRS-GIFT-9XW4", initial_amount: 1000, balance: 0, status: "redeemed", issued_to_account_id: null, expires_at: null },
+      {
+        id: 1,
+        code: "DRS-GIFT-7Q2K",
+        initial_amount: 500,
+        balance: 320,
+        status: "active",
+        issued_to_account_id: 1,
+        expires_at: "2027-03-31",
+      },
+      {
+        id: 2,
+        code: "DRS-GIFT-9XW4",
+        initial_amount: 1000,
+        balance: 0,
+        status: "redeemed",
+        issued_to_account_id: null,
+        expires_at: null,
+      },
     ],
     loyalty: [
       { account_id: 2, points_balance: 1840 },
       { account_id: 1, points_balance: 260 },
     ],
     notifications: [
-      { id: 501, user_id: 11, event_type: "payment.success", channel: "whatsapp", category: "transactional", status: "sent", skip_reason: null, provider_message_id: "wamid.1", body: "Payment of ₹330 received for ORD-0007.", attempts: 1 },
-      { id: 502, user_id: 12, event_type: "wallet.low", channel: "sms", category: "transactional", status: "failed", skip_reason: null, provider_message_id: null, body: "Your DRS wallet is running low.", attempts: 3 },
-      { id: 503, user_id: 11, event_type: "marketing.promo", channel: "whatsapp", category: "marketing", status: "skipped", skip_reason: "opted_out", provider_message_id: null, body: null, attempts: 0 },
+      {
+        id: 501,
+        user_id: 11,
+        event_type: "payment.success",
+        channel: "whatsapp",
+        category: "transactional",
+        status: "sent",
+        skip_reason: null,
+        provider_message_id: "wamid.1",
+        body: "Payment of ₹330 received for ORD-0007.",
+        attempts: 1,
+      },
+      {
+        id: 502,
+        user_id: 12,
+        event_type: "wallet.low",
+        channel: "sms",
+        category: "transactional",
+        status: "failed",
+        skip_reason: null,
+        provider_message_id: null,
+        body: "Your DRS wallet is running low.",
+        attempts: 3,
+      },
+      {
+        id: 503,
+        user_id: 11,
+        event_type: "marketing.promo",
+        channel: "whatsapp",
+        category: "marketing",
+        status: "skipped",
+        skip_reason: "opted_out",
+        provider_message_id: null,
+        body: null,
+        attempts: 0,
+      },
     ],
     webhooks: [{ id: 1, event_type: "payment.success", url: "https://erp.example/hooks/drs", active: true }],
-    deliveries: [{ id: 1, webhook_id: 1, event_type: "payment.success", status: "delivered", attempts: 1, response_code: 200 }],
+    deliveries: [
+      {
+        id: 1,
+        webhook_id: 1,
+        event_type: "payment.success",
+        status: "delivered",
+        attempts: 1,
+        response_code: 200,
+      },
+    ],
     churn: [
       { account_id: 2, score: 0.82, risk: "high" },
       { account_id: 1, score: 0.35, risk: "medium" },
     ],
     invoices: [
       {
-        id: 1, invoice_no: "DRS/2026-27/0001", fy: "2026-27", account_id: 1, delivery_order_id: null, order_id: 7,
-        invoice_date: today, seller_gstin: "08AAACD1234F1Z5", buyer_gstin: null, place_of_supply: "Rajasthan",
-        is_interstate: false, taxable_value: 314.29, cgst: 7.86, sgst: 7.85, igst: 0, total: 330, is_credit_note: false,
-        is_partial: false, original_invoice_id: null, status: "issued",
+        id: 1,
+        invoice_no: "DRS/2026-27/0001",
+        fy: "2026-27",
+        account_id: 1,
+        delivery_order_id: null,
+        order_id: 7,
+        invoice_date: today,
+        seller_gstin: "08AAACD1234F1Z5",
+        buyer_gstin: null,
+        place_of_supply: "Rajasthan",
+        is_interstate: false,
+        taxable_value: 314.29,
+        cgst: 7.86,
+        sgst: 7.85,
+        igst: 0,
+        total: 330,
+        is_credit_note: false,
+        is_partial: false,
+        original_invoice_id: null,
+        status: "issued",
         lines: [
-          { product_id: 2, hsn_code: "0403", description: "Masala Buttermilk 200 ml", qty: 10, unit_price: 31.43, taxable_value: 314.29, gst_rate: 5, cgst: 7.86, sgst: 7.85, igst: 0, line_total: 330 },
+          {
+            product_id: 2,
+            hsn_code: "0403",
+            description: "Masala Buttermilk 200 ml",
+            qty: 10,
+            unit_price: 31.43,
+            taxable_value: 314.29,
+            gst_rate: 5,
+            cgst: 7.86,
+            sgst: 7.85,
+            igst: 0,
+            line_total: 330,
+          },
         ],
       },
     ],
@@ -1350,17 +1436,27 @@ on("POST", "/api/v1/admin/gift-cards/:cid/void", (req, res, { p }) => {
   send(res, 200, c);
 });
 on("GET", "/api/v1/admin/loyalty", (req, res, { q }) =>
-  page(res, [...db.loyalty].sort((a, b) => b.points_balance - a.points_balance), q),
+  page(
+    res,
+    [...db.loyalty].sort((a, b) => b.points_balance - a.points_balance),
+    q,
+  ),
 );
 on("POST", "/api/v1/admin/loyalty/:aid/adjust", (req, res, { p, body }) => {
   let row = db.loyalty.find((l) => l.account_id === Number(p.aid));
   if (!row) db.loyalty.push((row = { account_id: Number(p.aid), points_balance: 0 }));
   if (row.points_balance + body.points < 0) return send(res, 409, { detail: "Insufficient points" });
   row.points_balance += body.points;
-  send(res, 200, { ...row, recent: [{ delta: body.points, reason: body.reason ?? "adjust", balance_after: row.points_balance }] });
+  send(res, 200, {
+    ...row,
+    recent: [{ delta: body.points, reason: body.reason ?? "adjust", balance_after: row.points_balance }],
+  });
 });
 on("GET", "/api/v1/admin/notifications", (req, res, { q }) => {
-  let rows = byStatus([...db.notifications].sort((a, b) => b.id - a.id), q);
+  let rows = byStatus(
+    [...db.notifications].sort((a, b) => b.id - a.id),
+    q,
+  );
   if (q.get("user_id")) rows = rows.filter((n) => n.user_id === Number(q.get("user_id")));
   // Like the backend: no X-Total-Count on this list.
   const limit = Number(q.get("limit") ?? 50);
@@ -1376,7 +1472,18 @@ on("POST", "/api/v1/admin/notifications/:nid/resend", (req, res, { p }) => {
 });
 on("POST", "/api/v1/admin/notifications/test", (req, res, { body }) => {
   const created = ["whatsapp", "push"].map((channel) => {
-    const n = { id: id(), user_id: body.user_id, event_type: body.event_type, channel, category: "transactional", status: "queued", skip_reason: null, provider_message_id: null, body: `Test: ${body.event_type}`, attempts: 0 };
+    const n = {
+      id: id(),
+      user_id: body.user_id,
+      event_type: body.event_type,
+      channel,
+      category: "transactional",
+      status: "queued",
+      skip_reason: null,
+      provider_message_id: null,
+      body: `Test: ${body.event_type}`,
+      attempts: 0,
+    };
     db.notifications.push(n);
     return { id: n.id, channel, status: "queued", skip_reason: null };
   });
@@ -1396,7 +1503,8 @@ on("POST", "/api/v1/admin/outbound-webhooks", (req, res, { body }) => {
 on("PATCH", "/api/v1/admin/outbound-webhooks/:hid", (req, res, { p, body }) => {
   const h = find(db.webhooks, p.hid);
   if (!h) return send(res, 404, { detail: "Webhook not found" });
-  for (const k of ["event_type", "url", "active"]) if (body[k] !== undefined && body[k] !== null) h[k] = body[k];
+  for (const k of ["event_type", "url", "active"])
+    if (body[k] !== undefined && body[k] !== null) h[k] = body[k];
   send(res, 200, h);
 });
 on("DELETE", "/api/v1/admin/outbound-webhooks/:hid", (req, res, { p }) => {
@@ -1409,13 +1517,24 @@ on("GET", "/api/v1/admin/outbound-webhooks/:hid/deliveries", (req, res, { p, q }
 on("POST", "/api/v1/admin/outbound-webhooks/:hid/test", (req, res, { p }) => {
   const h = find(db.webhooks, p.hid);
   if (!h) return send(res, 404, { detail: "Webhook not found" });
-  const d = { id: id(), webhook_id: h.id, event_type: h.event_type, status: "delivered", attempts: 1, response_code: 200 };
+  const d = {
+    id: id(),
+    webhook_id: h.id,
+    event_type: h.event_type,
+    status: "delivered",
+    attempts: 1,
+    response_code: 200,
+  };
   db.deliveries.push(d);
   send(res, 200, d);
 });
 on("GET", "/api/v1/admin/ml/churn", (req, res, { q }) => {
   const risk = q.get("risk");
-  page(res, db.churn.filter((c) => !risk || c.risk === risk).sort((a, b) => b.score - a.score), q);
+  page(
+    res,
+    db.churn.filter((c) => !risk || c.risk === risk).sort((a, b) => b.score - a.score),
+    q,
+  );
 });
 on("POST", "/api/v1/admin/ml/churn/score", (req, res) => {
   db.churn.push({ account_id: 3, score: 0.12, risk: "low" });
@@ -1429,9 +1548,33 @@ on("GET", "/api/v1/admin/forecast", (req, res, { q }) => {
     for_date: d,
     history_days: h,
     plan: [
-      { product_id: 1, product_name: "Full Cream Milk", committed_qty: 240, forecast_variable_qty: 36.5, safety_qty: 12, recommended_production: 288.5, method: "seasonal_naive" },
-      { product_id: 2, product_name: "Masala Buttermilk", committed_qty: 80, forecast_variable_qty: 22, safety_qty: 8, recommended_production: 110, method: "moving_average" },
-      { product_id: 3, product_name: "A2 Desi Ghee", committed_qty: 0, forecast_variable_qty: 4.2, safety_qty: 2, recommended_production: 6.2, method: "croston" },
+      {
+        product_id: 1,
+        product_name: "Full Cream Milk",
+        committed_qty: 240,
+        forecast_variable_qty: 36.5,
+        safety_qty: 12,
+        recommended_production: 288.5,
+        method: "seasonal_naive",
+      },
+      {
+        product_id: 2,
+        product_name: "Masala Buttermilk",
+        committed_qty: 80,
+        forecast_variable_qty: 22,
+        safety_qty: 8,
+        recommended_production: 110,
+        method: "moving_average",
+      },
+      {
+        product_id: 3,
+        product_name: "A2 Desi Ghee",
+        committed_qty: 0,
+        forecast_variable_qty: 4.2,
+        safety_qty: 2,
+        recommended_production: 6.2,
+        method: "croston",
+      },
     ],
   });
 });
@@ -1454,7 +1597,10 @@ on("GET", "/api/v1/invoices/:iid", (req, res, { p }) => {
 on("GET", "/api/v1/invoices/:iid/pdf", (req, res, { p }) => {
   const i = find(db.invoices, p.iid);
   if (!i) return send(res, 404, { detail: "Invoice not found" });
-  send(res, 200, { invoice_no: i.invoice_no, pdf_url: `/files/private/invoices/${i.id}.pdf?exp=4102444800&sig=mock` });
+  send(res, 200, {
+    invoice_no: i.invoice_no,
+    pdf_url: `/files/private/invoices/${i.id}.pdf?exp=4102444800&sig=mock`,
+  });
 });
 on("POST", "/api/v1/orders/:oid/invoice", (req, res, { p }) => {
   const o = find(db.orders, p.oid);
@@ -1463,7 +1609,14 @@ on("POST", "/api/v1/orders/:oid/invoice", (req, res, { p }) => {
     return send(res, 409, { detail: "Invoice is available only after the order is paid" });
   let inv = db.invoices.find((i) => i.order_id === o.id);
   if (!inv) {
-    inv = { ...db.invoices[0], id: id(), invoice_no: `DRS/2026-27/${String(db.invoices.length + 1).padStart(4, "0")}`, order_id: o.id, account_id: o.account_id, total: o.total };
+    inv = {
+      ...db.invoices[0],
+      id: id(),
+      invoice_no: `DRS/2026-27/${String(db.invoices.length + 1).padStart(4, "0")}`,
+      order_id: o.id,
+      account_id: o.account_id,
+      total: o.total,
+    };
     db.invoices.push(inv);
   }
   send(res, 200, inv);
@@ -1507,7 +1660,12 @@ createServer(async (req, res) => {
   }
   const isAuth = url.pathname.startsWith("/api/v1/auth/") && url.pathname !== "/api/v1/auth/me";
   const signedFile = url.pathname.startsWith("/files/");
-  if (!isAuth && !signedFile && url.pathname !== "/__reset" && !req.headers.authorization?.startsWith("Bearer "))
+  if (
+    !isAuth &&
+    !signedFile &&
+    url.pathname !== "/__reset" &&
+    !req.headers.authorization?.startsWith("Bearer ")
+  )
     return send(res, 401, { detail: "Not authenticated" });
   for (const r of routes) {
     if (r.method !== req.method) continue;
