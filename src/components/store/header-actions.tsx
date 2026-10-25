@@ -34,7 +34,8 @@ export function CartButton() {
 
 export function AccountButton() {
   return (
-    <Link href="/account" className={iconBtn} aria-label="Your account">
+    // No prefetch: /account redirects signed-out visitors to sign-in, so there's nothing to warm.
+    <Link href="/account" prefetch={false} className={iconBtn} aria-label="Your account">
       <UserRoundIcon aria-hidden className="size-5.5" strokeWidth={1.75} />
     </Link>
   );
@@ -148,6 +149,7 @@ export function MobileMenu() {
               ))}
               <Link
                 href="/account"
+                prefetch={false}
                 onClick={() => setOpen(false)}
                 className="mt-2 flex min-h-12 items-center rounded-lg border-t border-drs-ink/10 px-3 text-base font-medium text-drs-ink hover:bg-drs-green/5"
               >

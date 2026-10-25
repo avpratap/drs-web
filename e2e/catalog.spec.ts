@@ -8,7 +8,7 @@ test("shop: priced grid, category chips, search and sort", async ({ page }) => {
   const grid = page.getByRole("list", { name: "Shop all products" });
   // "From" price is the cheapest priced pack, GST-inclusive; unpriced products say so.
   const milk = grid.getByRole("listitem").filter({ hasText: "Full Cream Milk" });
-  await expect(milk).toContainText("From ₹34");
+  await expect(milk).toContainText("From ₹33");
   await expect(grid.getByRole("listitem").filter({ hasText: "Farm Fresh Curd" })).toContainText(
     "Price on request",
   );

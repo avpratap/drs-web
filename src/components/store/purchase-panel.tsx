@@ -1,11 +1,12 @@
 "use client";
 
-import { CheckCircle2Icon, MinusIcon, PlusIcon, ShoppingBagIcon } from "lucide-react";
+import { CheckCircle2Icon, ShoppingBagIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useId, useState } from "react";
 import { cn } from "@/lib/utils";
 import { useCart } from "./cart";
 import { rupees } from "./product-card";
+import { Stepper } from "./stepper";
 
 /** One buyable pack. `price` is the GST-inclusive selling price of ONE pack (null = unavailable). */
 export type PackOption = {
@@ -150,33 +151,15 @@ export function PurchasePanel({ productId, options }: { productId: number; optio
           <span id={`${groupId}-qty`} className="mb-2.5 block text-sm font-semibold text-drs-ink">
             Packs
           </span>
-          <div
-            role="group"
+          <Stepper
             aria-labelledby={`${groupId}-qty`}
-            className="inline-flex items-center rounded-full border border-drs-ink/20 bg-drs-white"
-          >
-            <button
-              type="button"
-              aria-label="Fewer packs"
-              disabled={packs <= 1 || !buyable}
-              onClick={() => setPacks((n) => Math.max(1, n - 1))}
-              className="grid size-11 place-items-center rounded-full text-drs-green transition-colors hover:bg-drs-green/10 disabled:text-drs-ink/30 disabled:hover:bg-transparent"
-            >
-              <MinusIcon aria-hidden className="size-4" />
-            </button>
-            <output aria-live="polite" className="min-w-10 text-center text-base font-semibold text-drs-ink">
-              {packs}
-            </output>
-            <button
-              type="button"
-              aria-label="More packs"
-              disabled={packs >= MAX_PACKS || !buyable}
-              onClick={() => setPacks((n) => Math.min(MAX_PACKS, n + 1))}
-              className="grid size-11 place-items-center rounded-full text-drs-green transition-colors hover:bg-drs-green/10 disabled:text-drs-ink/30 disabled:hover:bg-transparent"
-            >
-              <PlusIcon aria-hidden className="size-4" />
-            </button>
-          </div>
+            value={packs}
+            max={MAX_PACKS}
+            onChange={setPacks}
+            disabled={!buyable}
+            decreaseLabel="Fewer packs"
+            increaseLabel="More packs"
+          />
         </div>
         <button
           type="button"
