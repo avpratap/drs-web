@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
+import { cn } from "@/lib/cn";
 import { isIndianMobile, normalizeIndianMobile } from "@/lib/phone";
 
 export type RequestOtp = (
@@ -61,13 +62,26 @@ export function LoginForm({
     <form onSubmit={onPhone} noValidate className="flex flex-col gap-5">
       <Field label="Mobile number" error={error} hint="We'll text you a 6-digit code." required>
         {(p) => (
-          <div className="flex">
-            <span className="inline-flex items-center rounded-l-lg border border-r-0 border-drs-ink/20 bg-drs-cream px-3 text-sm text-drs-ink/80">
+          // The prefix + input are one bordered group so the focus ring wraps both,
+          // not just the number field.
+          <div
+            className={cn(
+              "flex overflow-hidden rounded-lg border bg-drs-white transition-colors",
+              "focus-within:outline focus-within:outline-2 focus-within:outline-offset-2",
+              p["aria-invalid"]
+                ? "border-drs-maroon focus-within:border-drs-maroon focus-within:outline-drs-maroon"
+                : "border-drs-ink/20 hover:border-drs-green/50 focus-within:border-drs-green focus-within:outline-drs-green",
+            )}
+          >
+            <span className="inline-flex items-center border-r border-drs-ink/20 bg-drs-cream px-3 text-sm text-drs-ink/80">
               +91
             </span>
             <input
               {...p}
-              className={`${p.className} rounded-l-none`}
+              className={cn(
+                p.className,
+                "min-w-0 flex-1 rounded-none border-0 bg-transparent hover:border-transparent focus-visible:border-transparent focus-visible:outline-none",
+              )}
               type="tel"
               inputMode="numeric"
               autoComplete="tel-national"
