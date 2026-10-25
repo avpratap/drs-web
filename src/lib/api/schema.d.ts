@@ -753,6 +753,46 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/admin/cutoff/runs": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * List Cutoff Runs
+     * @description Cutoff batch history, newest first (filter by status / delivery-date range).
+     */
+    get: operations["list_cutoff_runs"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/admin/cutoff/status": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Cutoff Status
+     * @description When the next cutoff is, whether tomorrow is already frozen, and the last run.
+     */
+    get: operations["cutoff_status"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/admin/notifications/test": {
     parameters: {
       query?: never;
@@ -1369,7 +1409,10 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    /** List Delivery Assignments */
+    /**
+     * List Delivery Assignments
+     * @description Driver <-> shop assignments, newest first, with driver and shop names.
+     */
     get: operations["list_delivery_assignments"];
     put?: never;
     /** Assign Delivery */
@@ -1717,7 +1760,11 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    get?: never;
+    /**
+     * Admin Get Shop
+     * @description One shop with its owner, price tier, standing order and assigned drivers.
+     */
+    get: operations["admin_get_shop"];
     put?: never;
     post?: never;
     delete?: never;
@@ -2579,6 +2626,27 @@ export interface paths {
     };
     /** Admin List Returns */
     get: operations["admin_list_returns"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/admin/returns/{rr_id}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Admin Get Return
+     * @description One return with its order, customer, refund limits and the refund it produced:
+     *     the store-credit wallet entry and any GST credit notes on the order.
+     */
+    get: operations["admin_get_return"];
     put?: never;
     post?: never;
     delete?: never;
@@ -3980,6 +4048,40 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/admin/subscriptions": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Admin List Subscriptions */
+    get: operations["admin_list_subscriptions"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/admin/subscriptions/{sub_id}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Admin Get Subscription */
+    get: operations["admin_get_subscription"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/uploads": {
     parameters: {
       query?: never;
@@ -4283,6 +4385,231 @@ export interface components {
        * @default adjust
        */
       reason: string;
+    };
+    /** AdminDeliveryAssignmentRow */
+    AdminDeliveryAssignmentRow: {
+      /** Id */
+      id: number;
+      /** Delivery Id */
+      delivery_id: number;
+      /** Shop Id */
+      shop_id: number;
+      /** Active */
+      active: boolean;
+      /** Driver Name */
+      driver_name?: string | null;
+      /** Driver Phone */
+      driver_phone?: string | null;
+      /** Driver Status */
+      driver_status?: string | null;
+      /** Shop Name */
+      shop_name?: string | null;
+      /** Shop Pincode */
+      shop_pincode?: string | null;
+      /** Shop Status */
+      shop_status?: string | null;
+      /** Created At */
+      created_at?: string | null;
+    };
+    /** AdminRMADetailOut */
+    AdminRMADetailOut: {
+      /** Id */
+      id: number;
+      /** Rma No */
+      rma_no: string;
+      /** Order Id */
+      order_id: number;
+      /** Account Id */
+      account_id: number;
+      /** Status */
+      status: string;
+      /** Reason */
+      reason?: string | null;
+      /** Resolution */
+      resolution?: string | null;
+      /** Refund Amount */
+      refund_amount: number;
+      /**
+       * Items
+       * @default []
+       */
+      items: components["schemas"]["RMAItemOut"][];
+      /** Created At */
+      created_at?: string | null;
+      /** Order No */
+      order_no?: string | null;
+      /** Order Total */
+      order_total?: number | null;
+      /** Order Payment Status */
+      order_payment_status?: string | null;
+      /** Customer Name */
+      customer_name?: string | null;
+      /** Customer Phone */
+      customer_phone?: string | null;
+      /**
+       * Returned Value
+       * @default 0
+       */
+      returned_value: number;
+      /**
+       * Refundable Headroom
+       * @default 0
+       */
+      refundable_headroom: number;
+      /**
+       * Refund Credits
+       * @default []
+       */
+      refund_credits: components["schemas"]["RMARefundCreditOut"][];
+      /**
+       * Credit Notes
+       * @default []
+       */
+      credit_notes: components["schemas"]["RMACreditNoteOut"][];
+    };
+    /** AdminShopDetail */
+    AdminShopDetail: {
+      /** Id */
+      id: number;
+      /** Account Id */
+      account_id: number;
+      /** Name */
+      name: string;
+      /** Address */
+      address?: string | null;
+      /** State */
+      state?: string | null;
+      /** Pincode */
+      pincode?: string | null;
+      /** Status */
+      status: string;
+      /** Price Tier Id */
+      price_tier_id?: number | null;
+      /**
+       * Is Home
+       * @default false
+       */
+      is_home: boolean;
+      /** Customer Name */
+      customer_name?: string | null;
+      /** Customer Phone */
+      customer_phone?: string | null;
+      /** Subscription Id */
+      subscription_id?: number | null;
+      /** Subscription Status */
+      subscription_status?: string | null;
+      /**
+       * Drivers
+       * @default []
+       */
+      drivers: components["schemas"]["ShopDriverOut"][];
+    };
+    /** AdminShopRow */
+    AdminShopRow: {
+      /** Id */
+      id: number;
+      /** Account Id */
+      account_id: number;
+      /** Name */
+      name: string;
+      /** Address */
+      address?: string | null;
+      /** State */
+      state?: string | null;
+      /** Pincode */
+      pincode?: string | null;
+      /** Status */
+      status: string;
+      /** Price Tier Id */
+      price_tier_id?: number | null;
+      /**
+       * Is Home
+       * @default false
+       */
+      is_home: boolean;
+      /** Customer Name */
+      customer_name?: string | null;
+      /** Customer Phone */
+      customer_phone?: string | null;
+      /** Subscription Id */
+      subscription_id?: number | null;
+      /** Subscription Status */
+      subscription_status?: string | null;
+    };
+    /** AdminSubscriptionDetail */
+    AdminSubscriptionDetail: {
+      /** Id */
+      id: number;
+      /** Shop Id */
+      shop_id: number;
+      /** Account Id */
+      account_id: number;
+      /** Status */
+      status: string;
+      /**
+       * Start Date
+       * Format: date
+       */
+      start_date: string;
+      /** End Date */
+      end_date?: string | null;
+      /** Shop Name */
+      shop_name?: string | null;
+      /** Customer Name */
+      customer_name?: string | null;
+      /** Customer Phone */
+      customer_phone?: string | null;
+      /**
+       * Item Count
+       * @default 0
+       */
+      item_count: number;
+      /** Created At */
+      created_at?: string | null;
+      /** Shop Address */
+      shop_address?: string | null;
+      /** Shop Pincode */
+      shop_pincode?: string | null;
+      /** Shop Status */
+      shop_status?: string | null;
+      /** Price Tier Id */
+      price_tier_id?: number | null;
+      /**
+       * Items
+       * @default []
+       */
+      items: components["schemas"]["ItemOut"][];
+    };
+    /** AdminSubscriptionRow */
+    AdminSubscriptionRow: {
+      /** Id */
+      id: number;
+      /** Shop Id */
+      shop_id: number;
+      /** Account Id */
+      account_id: number;
+      /** Status */
+      status: string;
+      /**
+       * Start Date
+       * Format: date
+       */
+      start_date: string;
+      /** End Date */
+      end_date?: string | null;
+      /** Shop Name */
+      shop_name?: string | null;
+      /** Customer Name */
+      customer_name?: string | null;
+      /** Customer Phone */
+      customer_phone?: string | null;
+      /**
+       * Item Count
+       * @default 0
+       */
+      item_count: number;
+      /** Created At */
+      created_at?: string | null;
     };
     /** AiAnswerOut */
     AiAnswerOut: {
@@ -4818,6 +5145,55 @@ export interface components {
        * @default 0
        */
       failed: number;
+    };
+    /** CutoffRunOut */
+    CutoffRunOut: {
+      /** Id */
+      id: number;
+      /**
+       * For Delivery Date
+       * Format: date
+       */
+      for_delivery_date: string;
+      /** Status */
+      status: string;
+      /** Orders Generated */
+      orders_generated: number;
+      /**
+       * Started At
+       * Format: date-time
+       */
+      started_at: string;
+      /** Finished At */
+      finished_at?: string | null;
+      /** Duration Seconds */
+      duration_seconds?: number | null;
+    };
+    /** CutoffStatusOut */
+    CutoffStatusOut: {
+      /** Timezone */
+      timezone: string;
+      /** Cutoff Hour */
+      cutoff_hour: number;
+      /**
+       * Now
+       * Format: date-time
+       */
+      now: string;
+      /**
+       * Next Cutoff At
+       * Format: date-time
+       */
+      next_cutoff_at: string;
+      /**
+       * Next Delivery Date
+       * Format: date
+       */
+      next_delivery_date: string;
+      tomorrow_run?: components["schemas"]["CutoffRunOut"] | null;
+      last_run?: components["schemas"]["CutoffRunOut"] | null;
+      /** Standing Changes Frozen */
+      standing_changes_frozen: boolean;
     };
     /**
      * DataExportOut
@@ -6451,6 +6827,20 @@ export interface components {
       /** Reason */
       reason?: string | null;
     };
+    /** RMACreditNoteOut */
+    RMACreditNoteOut: {
+      /** Id */
+      id: number;
+      /** Invoice No */
+      invoice_no: string;
+      /**
+       * Invoice Date
+       * Format: date
+       */
+      invoice_date: string;
+      /** Total */
+      total: number;
+    };
     /** RMAItemIn */
     RMAItemIn: {
       /** Product Id */
@@ -6492,6 +6882,25 @@ export interface components {
        * @default []
        */
       items: components["schemas"]["RMAItemOut"][];
+      /** Created At */
+      created_at?: string | null;
+    };
+    /**
+     * RMARefundCreditOut
+     * @description Store credit paid for a return (a wallet ledger row with ref_type='rma').
+     */
+    RMARefundCreditOut: {
+      /** Id */
+      id: number;
+      /** Amount */
+      amount: number;
+      /** Balance After */
+      balance_after: number;
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at: string;
     };
     /** RatingAdminOut */
     RatingAdminOut: {
@@ -6805,6 +7214,19 @@ export interface components {
       state?: string | null;
       /** Pincode */
       pincode?: string | null;
+    };
+    /** ShopDriverOut */
+    ShopDriverOut: {
+      /** Assignment Id */
+      assignment_id: number;
+      /** Delivery Id */
+      delivery_id: number;
+      /** Full Name */
+      full_name?: string | null;
+      /** Phone */
+      phone: string;
+      /** Active */
+      active: boolean;
     };
     /** ShopOut */
     ShopOut: {
@@ -8916,6 +9338,61 @@ export interface operations {
       };
     };
   };
+  list_cutoff_runs: {
+    parameters: {
+      query?: {
+        status_filter?: string | null;
+        date_from?: string | null;
+        date_to?: string | null;
+        limit?: number;
+        offset?: number;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["CutoffRunOut"][];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  cutoff_status: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["CutoffStatusOut"];
+        };
+      };
+    };
+  };
   emit_test_notification: {
     parameters: {
       query?: never;
@@ -10380,6 +10857,7 @@ export interface operations {
       query?: {
         delivery_id?: number | null;
         shop_id?: number | null;
+        active?: boolean | null;
         limit?: number;
         offset?: number;
       };
@@ -10395,7 +10873,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json": components["schemas"]["DeliveryAssignmentOut"][];
+          "application/json": components["schemas"]["AdminDeliveryAssignmentRow"][];
         };
       };
       /** @description Validation Error */
@@ -10890,6 +11368,8 @@ export interface operations {
       query?: {
         role?: string | null;
         status_filter?: string | null;
+        /** @description Phone or name contains */
+        q?: string | null;
         limit?: number;
         offset?: number;
       };
@@ -11289,6 +11769,11 @@ export interface operations {
   admin_list_shops: {
     parameters: {
       query?: {
+        status_filter?: string | null;
+        account_id?: number | null;
+        price_tier_id?: number | null;
+        /** @description Name or pincode contains */
+        q?: string | null;
         limit?: number;
         offset?: number;
       };
@@ -11304,7 +11789,38 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json": components["schemas"]["ShopOut"][];
+          "application/json": components["schemas"]["AdminShopRow"][];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  admin_get_shop: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        shop_id: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["AdminShopDetail"];
         };
       };
       /** @description Validation Error */
@@ -13177,6 +13693,8 @@ export interface operations {
     parameters: {
       query?: {
         status_filter?: string | null;
+        account_id?: number | null;
+        order_id?: number | null;
         limit?: number;
         offset?: number;
       };
@@ -13193,6 +13711,37 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["RMAOut"][];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  admin_get_return: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        rr_id: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["AdminRMADetailOut"];
         };
       };
       /** @description Validation Error */
@@ -16121,6 +16670,72 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["FulfillmentOut"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  admin_list_subscriptions: {
+    parameters: {
+      query?: {
+        status_filter?: string | null;
+        account_id?: number | null;
+        shop_id?: number | null;
+        limit?: number;
+        offset?: number;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["AdminSubscriptionRow"][];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  admin_get_subscription: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        sub_id: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["AdminSubscriptionDetail"];
         };
       };
       /** @description Validation Error */

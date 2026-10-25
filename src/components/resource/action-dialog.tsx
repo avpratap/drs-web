@@ -30,6 +30,7 @@ export function ActionDialog({
   children,
   toBody,
   wide,
+  ariaLabel,
 }: {
   label: string;
   title?: string;
@@ -49,6 +50,8 @@ export function ActionDialog({
   /** Build the request body from raw values (defaults to the fields' payload). */
   toBody?: (values: Record<string, unknown>) => Record<string, unknown>;
   wide?: boolean;
+  /** Accessible name for the trigger when its visible label is ambiguous (e.g. "Edit" per row). */
+  ariaLabel?: string;
 }) {
   const ref = useRef<HTMLDialogElement>(null);
   const titleId = useId();
@@ -79,6 +82,7 @@ export function ActionDialog({
         variant={variant}
         className={triggerClassName}
         disabled={disabled}
+        aria-label={ariaLabel}
         onClick={() => ref.current?.showModal()}
       >
         {label}

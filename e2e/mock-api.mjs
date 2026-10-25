@@ -454,6 +454,145 @@ function seed() {
       { key: "checkout.upi_intent", enabled: false, description: "UPI intent flow at checkout" },
       { key: "b2b.credit", enabled: true, description: "Postpaid credit for B2B" },
     ],
+    rmas: [
+      {
+        id: 1,
+        rma_no: "RMA-0001",
+        order_id: 7,
+        account_id: 1,
+        status: "requested",
+        reason: "Pouch leaked",
+        resolution: null,
+        refund_amount: 0,
+        items: [{ product_id: 1, qty: 2, reason: "leaking" }],
+        created_at: iso(),
+      },
+      {
+        id: 2,
+        rma_no: "RMA-0002",
+        order_id: 7,
+        account_id: 1,
+        status: "approved",
+        reason: "Sour",
+        resolution: null,
+        refund_amount: 0,
+        items: [{ product_id: 1, qty: 1, reason: "sour" }],
+        created_at: iso(),
+      },
+    ],
+    shops: [
+      {
+        id: 2,
+        account_id: 2,
+        name: "Sharma Sweets",
+        address: "MI Road",
+        state: "Rajasthan",
+        pincode: "302001",
+        status: "active",
+        price_tier_id: 2,
+        is_home: false,
+      },
+      {
+        id: 3,
+        account_id: 1,
+        name: "Verma residence",
+        address: "C-Scheme",
+        state: "Rajasthan",
+        pincode: "302001",
+        status: "active",
+        price_tier_id: null,
+        is_home: true,
+      },
+    ],
+    users: [
+      { id: 1, phone: "9876500001", full_name: "Asha Admin", email: null, role: "admin", status: "active" },
+      {
+        id: 11,
+        phone: "9876543210",
+        full_name: "Asha Verma",
+        email: "asha@example.in",
+        role: "customer",
+        status: "active",
+      },
+      {
+        id: 12,
+        phone: "9811111111",
+        full_name: "Hotel Shree",
+        email: null,
+        role: "subscriber",
+        status: "active",
+      },
+      {
+        id: 21,
+        phone: "9999900003",
+        full_name: "Ramesh (driver)",
+        email: null,
+        role: "delivery",
+        status: "active",
+      },
+      {
+        id: 22,
+        phone: "9999900004",
+        full_name: "Suresh (driver)",
+        email: null,
+        role: "delivery",
+        status: "active",
+      },
+    ],
+    assignments: [{ id: 1, delivery_id: 21, shop_id: 2, active: true }],
+    subs: [
+      {
+        id: 1,
+        shop_id: 2,
+        account_id: 2,
+        status: "active",
+        start_date: "2026-09-01",
+        end_date: null,
+        created_at: iso(),
+        items: [
+          {
+            id: 1,
+            product_id: 1,
+            default_qty: 10,
+            frequency: "daily",
+            interval_days: null,
+            days_of_week: null,
+            active: true,
+          },
+        ],
+      },
+      {
+        id: 2,
+        shop_id: 3,
+        account_id: 1,
+        status: "paused",
+        start_date: "2026-09-15",
+        end_date: null,
+        created_at: iso(),
+        items: [
+          {
+            id: 2,
+            product_id: 2,
+            default_qty: 2,
+            frequency: "alternate",
+            interval_days: 2,
+            days_of_week: null,
+            active: true,
+          },
+        ],
+      },
+    ],
+    cutoffRuns: [
+      {
+        id: 1,
+        for_delivery_date: today,
+        status: "frozen",
+        orders_generated: 2,
+        started_at: iso(new Date(Date.now() - 12 * 3600e3)),
+        finished_at: iso(new Date(Date.now() - 12 * 3600e3 + 4000)),
+        duration_seconds: 4,
+      },
+    ],
   };
   return db;
 }
@@ -651,6 +790,10 @@ on("POST", "/api/v1/payments/refunds/:rid/reconcile", (req, res, { p, body }) =>
 // --- inventory ---
 on("GET", "/api/v1/admin/locations", (req, res, { q }) => page(res, db.locations, q));
 on("POST", "/api/v1/admin/locations", (req, res, { body }) => {
+  const name = String(body.name ?? "").trim();
+  if (db.locations.some((x) => x.name.toLowerCase() === name.toLowerCase()))
+    return send(res, 409, { detail: "A location with this name already exists" });
+  body.name = name;
   const l = { id: id(), status: "active", is_default: false, driver_user_id: null, state: null, ...body };
   db.locations.push(l);
   send(res, 200, l);
@@ -787,6 +930,7 @@ on("GET", "/api/v1/delivery/summary", (req, res, { q }) => {
 });
 on("GET", "/api/v1/admin/delivery-orders/:did/fulfillment", (req, res, { p }) => {
   const o = find(db.deliveries, p.did);
+  if (!o) return send(res, 404, { detail: "Delivery order not found" });
   const cash = db.cash[o.id] ?? [];
   send(res, 200, {
     order: o,
@@ -919,6 +1063,221 @@ on("POST", "/api/v1/admin/coupons", (req, res, { body }) => {
 on("POST", "/api/v1/admin/coupons/:cid/deactivate", (req, res, { p }) =>
   send(res, 200, Object.assign(find(db.coupons, p.cid), { active: false })),
 );
+
+// --- returns / subscriptions / shops / users / cutoff ---
+const owner = (accountId) => {
+  const a = db.accounts.find((x) => x.id === accountId);
+  return { name: a?.full_name ?? null, phone: a?.phone ?? null };
+};
+const rmaDetail = (r) => {
+  const credits = db.walletTx[r.account_id].filter((t) => t.ref_type === "rma" && t.ref_id === r.id);
+  const refunded = db.rmas.filter((x) => x.order_id === r.order_id).reduce((a, x) => a + x.refund_amount, 0);
+  return {
+    ...r,
+    order_no: "ORD-0007",
+    order_total: 330,
+    order_payment_status: "paid",
+    customer_name: owner(r.account_id).name,
+    customer_phone: owner(r.account_id).phone,
+    returned_value: r.items.reduce((a, i) => a + i.qty * 33, 0),
+    refundable_headroom: Math.max(0, 330 - refunded),
+    refund_credits: credits.map((t) => ({
+      id: t.id,
+      amount: t.amount,
+      balance_after: t.balance_after,
+      created_at: t.created_at,
+    })),
+    credit_notes: [],
+  };
+};
+on("GET", "/api/v1/admin/returns", (req, res, { q }) => page(res, byStatus(db.rmas, q), q));
+on("GET", "/api/v1/admin/returns/:rid", (req, res, { p }) => send(res, 200, rmaDetail(find(db.rmas, p.rid))));
+on("POST", "/api/v1/admin/returns/:rid/:act", (req, res, { p, body }) => {
+  const r = find(db.rmas, p.rid);
+  if (p.act === "approve") r.status = "approved";
+  if (p.act === "reject") Object.assign(r, { status: "rejected", resolution: body.note ?? null });
+  if (p.act === "refund") {
+    const d = rmaDetail(r);
+    if (body.amount > Math.min(d.returned_value, d.refundable_headroom))
+      return send(res, 422, { detail: "Refund exceeds returned value" });
+    db.wallet[r.account_id] += body.amount;
+    db.walletTx[r.account_id].push({
+      id: id(),
+      entry_type: "refund",
+      amount: body.amount,
+      balance_after: db.wallet[r.account_id],
+      ref_type: "rma",
+      ref_id: r.id,
+      created_at: iso(),
+    });
+    Object.assign(r, { status: "refunded", refund_amount: body.amount });
+  }
+  send(res, 200, r);
+});
+
+const subRow = (s) => {
+  const shop = db.shops.find((x) => x.id === s.shop_id);
+  const o = owner(s.account_id);
+  return {
+    ...s,
+    shop_name: shop?.name ?? null,
+    customer_name: o.name,
+    customer_phone: o.phone,
+    item_count: s.items.filter((i) => i.active).length,
+  };
+};
+on("GET", "/api/v1/admin/subscriptions", (req, res, { q }) => {
+  let rows = byStatus(db.subs, q);
+  if (q.get("shop_id")) rows = rows.filter((s) => s.shop_id === Number(q.get("shop_id")));
+  page(res, rows.map(subRow), q);
+});
+on("GET", "/api/v1/admin/subscriptions/:sid", (req, res, { p }) => {
+  const s = find(db.subs, p.sid);
+  const shop = db.shops.find((x) => x.id === s.shop_id);
+  send(res, 200, {
+    ...subRow(s),
+    shop_address: shop.address,
+    shop_pincode: shop.pincode,
+    shop_status: shop.status,
+    price_tier_id: shop.price_tier_id,
+  });
+});
+on("PUT", "/api/v1/subscriptions/:sid/items", (req, res, { p, body }) => {
+  const s = find(db.subs, p.sid);
+  if (new Set(body.map((i) => i.product_id)).size !== body.length)
+    return send(res, 422, { detail: "Each product may appear only once" });
+  s.items = body.map((i) => ({ id: id(), interval_days: null, days_of_week: null, ...i, active: true }));
+  send(res, 200, s);
+});
+on("POST", "/api/v1/subscriptions/:sid/:act", (req, res, { p }) => {
+  const s = find(db.subs, p.sid);
+  s.status = { pause: "paused", resume: "active", cancel: "cancelled" }[p.act];
+  send(res, 200, s);
+});
+
+const shopRow = (s) => {
+  const sub = db.subs.find((x) => x.shop_id === s.id);
+  const o = owner(s.account_id);
+  return {
+    ...s,
+    customer_name: o.name,
+    customer_phone: o.phone,
+    subscription_id: sub?.id ?? null,
+    subscription_status: sub?.status ?? null,
+  };
+};
+on("GET", "/api/v1/admin/shops", (req, res, { q }) => {
+  let rows = db.shops;
+  if (q.get("status_filter")) rows = rows.filter((s) => s.status === q.get("status_filter"));
+  const term = q.get("q")?.toLowerCase();
+  if (term)
+    rows = rows.filter((s) => s.name.toLowerCase().includes(term) || (s.pincode ?? "").includes(term));
+  page(res, rows.map(shopRow), q);
+});
+on("GET", "/api/v1/admin/shops/:sid", (req, res, { p }) => {
+  const s = find(db.shops, p.sid);
+  if (!s) return send(res, 404, { detail: "Shop not found" });
+  const drivers = db.assignments
+    .filter((a) => a.shop_id === s.id)
+    .map((a) => {
+      const u = db.users.find((x) => x.id === a.delivery_id);
+      return {
+        assignment_id: a.id,
+        delivery_id: u.id,
+        full_name: u.full_name,
+        phone: u.phone,
+        active: a.active,
+      };
+    });
+  send(res, 200, { ...shopRow(s), drivers });
+});
+on("PATCH", "/api/v1/admin/shops/:sid", (req, res, { p, body }) =>
+  send(res, 200, Object.assign(find(db.shops, p.sid), body)),
+);
+on("POST", "/api/v1/admin/shops/:sid/tier", (req, res, { p, body }) => {
+  find(db.shops, p.sid).price_tier_id = body.price_tier_id;
+  send(res, 200, { detail: "tier set", shop_id: Number(p.sid), price_tier_id: body.price_tier_id });
+});
+on("POST", "/api/v1/admin/delivery-assignments", (req, res, { body }) => {
+  const existing = db.assignments.find(
+    (a) => a.shop_id === body.shop_id && a.delivery_id === body.delivery_id,
+  );
+  if (existing) existing.active = true;
+  else db.assignments.push({ id: id(), ...body, active: true });
+  send(res, 200, existing ?? db.assignments.at(-1));
+});
+on("GET", "/api/v1/admin/delivery-assignments", (req, res, { q }) => {
+  let rows = [...db.assignments].sort((a, b) => b.id - a.id);
+  if (q.get("delivery_id")) rows = rows.filter((a) => a.delivery_id === Number(q.get("delivery_id")));
+  if (q.get("shop_id")) rows = rows.filter((a) => a.shop_id === Number(q.get("shop_id")));
+  if (q.get("active")) rows = rows.filter((a) => a.active === (q.get("active") === "true"));
+  const named = rows.map((a) => {
+    const u = db.users.find((x) => x.id === a.delivery_id);
+    const s = db.shops.find((x) => x.id === a.shop_id);
+    return {
+      ...a,
+      driver_name: u?.full_name ?? null,
+      driver_phone: u?.phone ?? null,
+      driver_status: u?.status ?? null,
+      shop_name: s?.name ?? null,
+      shop_pincode: s?.pincode ?? null,
+      shop_status: s?.status ?? null,
+      created_at: a.created_at ?? iso(),
+    };
+  });
+  page(res, named, q);
+});
+on("DELETE", "/api/v1/admin/delivery-assignments/:aid", (req, res, { p }) => {
+  const a = find(db.assignments, p.aid);
+  if (!a) return send(res, 404, { detail: "Assignment not found" });
+  a.active = false;
+  send(res, 204);
+});
+on("GET", "/api/v1/admin/users", (req, res, { q }) => {
+  let rows = db.users;
+  if (q.get("role")) rows = rows.filter((u) => u.role === q.get("role"));
+  if (q.get("status_filter")) rows = rows.filter((u) => u.status === q.get("status_filter"));
+  const term = q.get("q")?.toLowerCase();
+  if (term)
+    rows = rows.filter((u) => u.phone.includes(term) || (u.full_name ?? "").toLowerCase().includes(term));
+  page(res, rows, q);
+});
+on("PATCH", "/api/v1/admin/users/:uid", (req, res, { p, body }) =>
+  send(res, 200, Object.assign(find(db.users, p.uid), body)),
+);
+on("GET", "/api/v1/admin/cutoff/runs", (req, res, { q }) =>
+  page(res, [...byStatus(db.cutoffRuns, q)].reverse(), q),
+);
+on("GET", "/api/v1/admin/cutoff/status", (req, res) => {
+  const tomorrow = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Kolkata" }).format(
+    new Date(Date.now() + 86400e3),
+  );
+  const tRun = [...db.cutoffRuns].reverse().find((r) => r.for_delivery_date === tomorrow) ?? null;
+  send(res, 200, {
+    timezone: "Asia/Kolkata",
+    cutoff_hour: 23,
+    now: iso(),
+    next_cutoff_at: iso(new Date(Date.now() + 6 * 3600e3)),
+    next_delivery_date: tomorrow,
+    tomorrow_run: tRun,
+    last_run: db.cutoffRuns.at(-1) ?? null,
+    standing_changes_frozen: false,
+  });
+});
+on("POST", "/api/v1/admin/cutoff/run", (req, res, { q }) => {
+  const date = q.get("date");
+  const run = {
+    id: id(),
+    for_delivery_date: date,
+    status: "frozen",
+    orders_generated: db.subs.filter((s) => s.status === "active").length,
+    started_at: iso(),
+    finished_at: iso(),
+    duration_seconds: 1.2,
+  };
+  db.cutoffRuns.push(run);
+  send(res, 200, { schedule_run_id: run.id, delivery_date: date, orders_generated: run.orders_generated });
+});
 
 // --- system ---
 on("GET", "/api/v1/admin/audit-log", (req, res, { q }) => page(res, db.audit, q));

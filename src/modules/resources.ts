@@ -49,4 +49,10 @@ export const resources: ResourceProps[] = [
   crud("coupons", "/coupons", "Coupons", { create: true, edit: true, show: true }),
   crud("audit-log", "/audit-log", "Audit log"),
   crud("feature-flags", "/feature-flags", "Feature flags"),
+  crud("returns", "/returns", "Returns", { show: true }),
+  crud("subscriptions", "/subscriptions", "Subscriptions", { show: true }),
+  crud("shops", "/shops", "Shops", { show: true }),
+  crud("users", "/users", "Users & staff"),
+  crud("delivery-assignments", "/delivery-assignments", "Driver assignments"),
+  crud("cutoff-runs", "/cutoff", "Cutoff runs"),
 ];
