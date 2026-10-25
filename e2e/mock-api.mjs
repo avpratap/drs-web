@@ -225,6 +225,100 @@ function seed() {
       quiet_hours_start: null,
       quiet_hours_end: null,
     },
+    custLoyalty: {
+      balance: 120,
+      ledger: [
+        { delta: 50, reason: "order", balance_after: 120 },
+        { delta: -30, reason: "redeem", balance_after: 70 },
+        { delta: 100, reason: "referral", balance_after: 100 },
+      ],
+      referral: { code: "ASHA2026", reward_points: 100, status: "active" },
+      redeemedReferral: false,
+    },
+    custGiftCards: [
+      {
+        code: "DRSGIFT500",
+        initial_amount: 500,
+        balance: 300,
+        status: "active",
+        expires_at: "2027-03-31",
+        mine: true,
+      },
+      {
+        code: "WELCOME250",
+        initial_amount: 250,
+        balance: 250,
+        status: "active",
+        expires_at: null,
+        mine: false,
+      },
+    ],
+    custWishlist: [3],
+    custTickets: [
+      {
+        id: 40,
+        ticket_no: "TKT-000040",
+        subject: "Paneer was delivered late",
+        category: "delivery",
+        status: "pending",
+        priority: "normal",
+        messages: [
+          {
+            id: 1,
+            sender_role: "customer",
+            body: "My paneer came at 9 am instead of 7.",
+            attachment_url: null,
+          },
+          {
+            id: 2,
+            sender_role: "agent",
+            body: "Sorry about that! We've spoken to the route team.",
+            attachment_url: null,
+          },
+        ],
+      },
+    ],
+    custNotifications: [
+      {
+        id: 71,
+        event_type: "order_delivered",
+        channel: "push",
+        category: "order",
+        body: "Your order DRS-000880 was delivered.",
+        status: "sent",
+        created_at: "2026-10-24T02:10:00Z",
+        read_at: null,
+      },
+      {
+        id: 72,
+        event_type: "wallet_low",
+        channel: "push",
+        category: "billing",
+        body: "Your wallet is below ₹300. Top up to keep deliveries coming.",
+        status: "sent",
+        created_at: "2026-10-23T08:00:00Z",
+        read_at: null,
+      },
+      {
+        id: 73,
+        event_type: "offer",
+        channel: "push",
+        category: "marketing",
+        body: "Ghee week: 10% off A2 ghee.",
+        status: "sent",
+        created_at: "2026-10-20T06:00:00Z",
+        read_at: "2026-10-20T07:00:00Z",
+      },
+    ],
+    custConsents: {
+      data_processing: "granted",
+      whatsapp_optin: "granted",
+      marketing_sms: "withdrawn",
+      marketing_email: "withdrawn",
+      marketing_push: "granted",
+      marketing_whatsapp: "withdrawn",
+    },
+    custErased: false,
     custWallet: {
       balance: 250,
       txns: Array.from({ length: 23 }, (_, i) => ({
@@ -1300,6 +1394,146 @@ on("GET", "/api/v1/billing/transactions", (req, res, { q, headers }) => {
   send(res, 200, rows.slice(offset, offset + limit), {
     "x-total-count": String(rows.length),
     "access-control-expose-headers": "X-Total-Count",
+  });
+});
+// --- customer engagement (loyalty, gift cards, wishlist, support, inbox, DPDP) ---
+on("GET", "/api/v1/loyalty", (req, res) =>
+  send(res, 200, { account_id: 50, points_balance: db.custLoyalty.balance, recent: db.custLoyalty.ledger }),
+);
+on("GET", "/api/v1/loyalty/referral-code", (req, res) => send(res, 200, db.custLoyalty.referral));
+on("POST", "/api/v1/loyalty/referral/redeem", (req, res, { body }) => {
+  const code = String(body.code ?? "")
+    .trim()
+    .toUpperCase();
+  if (code === db.custLoyalty.referral.code)
+    return send(res, 422, { detail: "You can't use your own referral code" });
+  if (db.custLoyalty.redeemedReferral)
+    return send(res, 409, { detail: "You've already used a referral code" });
+  if (code !== "FRIEND100") return send(res, 404, { detail: "Referral code not found" });
+  db.custLoyalty.redeemedReferral = true;
+  send(res, 200, { detail: "Referral redeemed; the referrer is rewarded on your first paid order", code });
+});
+const giftView = (g) => Object.fromEntries(Object.entries(g).filter(([k]) => k !== "mine"));
+on("GET", "/api/v1/loyalty/gift-cards", (req, res) =>
+  send(res, 200, db.custGiftCards.filter((g) => g.mine).map(giftView)),
+);
+on("GET", "/api/v1/loyalty/gift-cards/:code/balance", (req, res, { p }) => {
+  const g = db.custGiftCards.find((x) => x.code === decodeURIComponent(p.code).toUpperCase());
+  return g ? send(res, 200, giftView(g)) : send(res, 404, { detail: "Gift card not found" });
+});
+on("POST", "/api/v1/loyalty/gift-cards/redeem", (req, res, { body }) => {
+  const g = db.custGiftCards.find((x) => x.code === String(body.code ?? "").toUpperCase());
+  if (!g) return send(res, 404, { detail: "Gift card not found" });
+  if (g.status !== "active") return send(res, 409, { detail: `Gift card is ${g.status}` });
+  if (!(body.amount > 0)) return send(res, 422, { detail: "amount must be > 0" });
+  if (body.amount > g.balance) return send(res, 422, { detail: "Amount exceeds gift-card balance" });
+  g.balance = round2(g.balance - body.amount);
+  g.mine = true;
+  if (g.balance === 0) g.status = "redeemed";
+  db.custWallet.balance = round2(db.custWallet.balance + body.amount);
+  db.custWallet.txns.unshift({
+    id: id(),
+    txn_type: "giftcard",
+    amount: body.amount,
+    balance_after: db.custWallet.balance,
+    ref_type: "gift_card_txn",
+    ref_id: id(),
+    created_at: new Date().toISOString(),
+  });
+  send(res, 200, giftView(g));
+});
+const wishlistView = () => db.custWishlist.map((product_id) => ({ product_id }));
+on("GET", "/api/v1/wishlist", (req, res) => send(res, 200, wishlistView()));
+on("POST", "/api/v1/wishlist", (req, res, { body }) => {
+  const prod = find(db.products, body.product_id);
+  if (!prod || prod.status !== "active") return send(res, 404, { detail: "Product not found" });
+  if (!db.custWishlist.includes(prod.id)) db.custWishlist.push(prod.id);
+  send(res, 200, wishlistView());
+});
+on("DELETE", "/api/v1/wishlist/:pid", (req, res, { p }) => {
+  db.custWishlist = db.custWishlist.filter((x) => x !== Number(p.pid));
+  send(res, 204);
+});
+on("GET", "/api/v1/support/tickets", (req, res) =>
+  send(
+    res,
+    200,
+    [...db.custTickets].sort((a, b) => b.id - a.id),
+  ),
+);
+on("POST", "/api/v1/support/tickets", (req, res, { body }) => {
+  if (!body.subject?.trim() || !body.body?.trim())
+    return send(res, 422, { detail: "Subject and message are required" });
+  const tid = id();
+  const t = {
+    id: tid,
+    ticket_no: `TKT-${String(tid).padStart(6, "0")}`,
+    subject: body.subject.trim(),
+    category: body.category ?? "other",
+    status: "open",
+    priority: "normal",
+    messages: [{ id: id(), sender_role: "customer", body: body.body.trim(), attachment_url: null }],
+  };
+  db.custTickets.push(t);
+  send(res, 200, t);
+});
+on("GET", "/api/v1/support/tickets/:tid", (req, res, { p }) => {
+  const t = find(db.custTickets, p.tid);
+  return t ? send(res, 200, t) : send(res, 404, { detail: "Ticket not found" });
+});
+on("POST", "/api/v1/support/tickets/:tid/messages", (req, res, { p, body }) => {
+  const t = find(db.custTickets, p.tid);
+  if (!t) return send(res, 404, { detail: "Ticket not found" });
+  if (!body.body?.trim()) return send(res, 422, { detail: "Write a message" });
+  t.messages.push({ id: id(), sender_role: "customer", body: body.body.trim(), attachment_url: null });
+  if (t.status !== "open") t.status = "open";
+  send(res, 200, t);
+});
+on("GET", "/api/v1/notifications/unread-count", (req, res) =>
+  send(res, 200, { unread: db.custNotifications.filter((n) => !n.read_at).length }),
+);
+on("GET", "/api/v1/notifications", (req, res, { q }) => {
+  const rows =
+    q.get("unread_only") === "true" ? db.custNotifications.filter((n) => !n.read_at) : db.custNotifications;
+  send(res, 200, rows);
+});
+on("POST", "/api/v1/notifications/read-all", (req, res) => {
+  db.custNotifications.forEach((n) => (n.read_at ??= new Date().toISOString()));
+  send(res, 200, { unread: 0 });
+});
+on("POST", "/api/v1/notifications/:nid/read", (req, res, { p }) => {
+  const n = find(db.custNotifications, p.nid);
+  if (!n) return send(res, 404, { detail: "Notification not found" });
+  n.read_at ??= new Date().toISOString();
+  send(res, 200, n);
+});
+on("GET", "/api/v1/consents", (req, res) => send(res, 200, db.custConsents));
+on("POST", "/api/v1/consents", (req, res, { body }) => {
+  db.custConsents[body.purpose] = body.action;
+  send(res, 201, {
+    id: id(),
+    purpose: body.purpose,
+    action: body.action,
+    source: "web",
+    created_at: new Date().toISOString(),
+  });
+});
+on("GET", "/api/v1/account/export", (req, res) =>
+  send(res, 200, {
+    user: { id: 50, phone: "9000000000", role: "customer" },
+    profile: db.custProfile,
+    addresses: db.addresses.filter((a) => a.owner === CUSTOMER()).map(withoutOwner),
+    payment_methods: [],
+    orders: db.orders.filter((o) => o.owner === CUSTOMER()).map(withoutOwner),
+  }),
+);
+on("POST", "/api/v1/account/erase", (req, res, { body }) => {
+  if (body.otp !== "123456") return send(res, 403, { detail: "Invalid or expired OTP" });
+  db.custErased = true;
+  send(res, 200, {
+    detail: "Account erased",
+    user_id: 50,
+    retained: "Tax invoices and payment records are kept for 8 years as required by law.",
   });
 });
 on("POST", "/api/v1/payments/create", (req, res, { body, headers }) =>

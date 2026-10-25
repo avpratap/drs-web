@@ -2,6 +2,7 @@ import { RepeatIcon, StarIcon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { WishlistButton } from "./engagement";
 import { categoryMeta, productHref } from "@/modules/store/categories";
 import type { StoreProduct } from "@/modules/store/catalog";
 
@@ -71,6 +72,11 @@ export function ProductCard({ product, className }: { product: StoreProduct; cla
             <Icon className="size-7 text-drs-green sm:size-9" strokeWidth={1.5} />
           </span>
         )}
+        <WishlistButton
+          productId={product.id}
+          productName={product.name}
+          className="absolute top-2 right-2 sm:top-3 sm:right-3"
+        />
         {product.is_subscribable && (
           <span className="absolute top-2 left-2 inline-flex sm:top-3 sm:left-3 items-center gap-1 rounded-full bg-drs-white/95 px-2.5 py-1 text-[0.6875rem] font-semibold text-drs-green shadow-sm">
             <RepeatIcon aria-hidden className="size-3" strokeWidth={2.25} />

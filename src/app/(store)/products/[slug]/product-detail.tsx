@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound, permanentRedirect } from "next/navigation";
 import { Suspense } from "react";
+import { WishlistButton } from "@/components/store/engagement";
 import { PurchasePanel } from "@/components/store/purchase-panel";
 import { Unavailable } from "@/components/store/sections";
 import { cn } from "@/lib/utils";
@@ -108,7 +109,8 @@ export async function ProductDetail({ params }: { params: Promise<{ slug: string
               </span>
             </a>
           )}
-          <div aria-hidden className="mt-3 mb-6 h-0.5 w-10 rounded bg-drs-gold" />
+          <WishlistButton productId={p.id} productName={p.name} variant="full" className="mt-3 self-start" />
+          <div aria-hidden className="mt-4 mb-6 h-0.5 w-10 rounded bg-drs-gold" />
 
           <PurchasePanel productId={p.id} options={options} />
 

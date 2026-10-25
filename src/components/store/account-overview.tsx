@@ -2,9 +2,11 @@
 
 import {
   ChevronRightIcon,
+  LifeBuoyIcon,
   MapPinIcon,
   PackageIcon,
   RepeatIcon,
+  SparklesIcon,
   UserRoundIcon,
   WalletIcon,
 } from "lucide-react";
@@ -179,6 +181,18 @@ export function AccountOverview() {
         </h2>
         <ul className="grid gap-3 sm:grid-cols-2">
           {[
+            {
+              href: "/account/rewards",
+              icon: SparklesIcon,
+              title: "Rewards",
+              body: `${home.loyalty_points.toLocaleString("en-IN")} points · refer a friend`,
+            },
+            {
+              href: "/account/support",
+              icon: LifeBuoyIcon,
+              title: "Help & support",
+              body: "We usually reply within hours",
+            },
             {
               href: "/account/addresses",
               icon: MapPinIcon,
