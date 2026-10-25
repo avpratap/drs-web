@@ -106,7 +106,7 @@ describe("misc", () => {
       "System",
     ]);
     expect(NAV.length).toBeGreaterThanOrEqual(40);
-    expect(isActive("/purchase-orders/4", "/purchase-orders")).toBe(true);
-    expect(isActive("/products", "/")).toBe(false);
+    expect(isActive("/admin/purchase-orders/4", "/admin/purchase-orders")).toBe(true);
+    expect(isActive("/admin/products", "/admin")).toBe(false);
   });
 });

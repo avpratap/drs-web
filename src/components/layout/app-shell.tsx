@@ -3,6 +3,7 @@
 import { useGetIdentity, useLogout } from "@refinedev/core";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { ADMIN_HOME } from "./nav";
 import { SidebarNav } from "./sidebar-nav";
 import { Toaster } from "./toaster";
 
@@ -13,7 +14,7 @@ function initials(name?: string): string {
 
 function Brand() {
   return (
-    <Link href="/" className="flex items-center gap-3 rounded-md px-2 py-1">
+    <Link href={ADMIN_HOME} className="flex items-center gap-3 rounded-md px-2 py-1">
       <span
         aria-hidden
         className="grid size-9 place-items-center rounded-full border border-drs-gold text-sm font-semibold text-drs-cream"

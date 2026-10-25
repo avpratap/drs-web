@@ -1,12 +1,12 @@
 import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
-import ArticlesPage from "@/app/(admin)/articles/page";
-import AuditLogPage from "@/app/(admin)/audit-log/page";
-import CouponCreatePage from "@/app/(admin)/coupons/create/page";
-import FeatureFlagsPage from "@/app/(admin)/feature-flags/page";
-import RatingsPage from "@/app/(admin)/ratings/page";
-import TicketShowPage from "@/app/(admin)/tickets/[id]/page";
+import ArticlesPage from "@/app/admin/(dashboard)/articles/page";
+import AuditLogPage from "@/app/admin/(dashboard)/audit-log/page";
+import CouponCreatePage from "@/app/admin/(dashboard)/coupons/create/page";
+import FeatureFlagsPage from "@/app/admin/(dashboard)/feature-flags/page";
+import RatingsPage from "@/app/admin/(dashboard)/ratings/page";
+import TicketShowPage from "@/app/admin/(dashboard)/tickets/[id]/page";
 import { nav } from "../../setup";
 import { mockApi, renderWithRefine, pick } from "../../helpers";
 

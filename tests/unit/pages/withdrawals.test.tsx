@@ -1,7 +1,7 @@
 import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
-import WithdrawalsPage from "@/app/(admin)/withdrawals/page";
+import WithdrawalsPage from "@/app/admin/(dashboard)/withdrawals/page";
 import { mockApi, renderWithRefine } from "../../helpers";
 
 describe("Withdrawals page", () => {

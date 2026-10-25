@@ -2,7 +2,7 @@ import { Refine } from "@refinedev/core";
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
-import DeliveryAssignmentsPage from "@/app/(admin)/delivery-assignments/page";
+import DeliveryAssignmentsPage from "@/app/admin/(dashboard)/delivery-assignments/page";
 import { AuthGuard } from "@/components/layout/auth-guard";
 import { authProvider } from "@/providers/auth-provider";
 import { dataProvider, mockApi, renderWithRefine, optionLabels, pick } from "../../helpers";

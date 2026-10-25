@@ -5,9 +5,13 @@ const pathOf = (input: RequestInfo | URL) =>
   new URL(input instanceof Request ? input.url : String(input), "http://x").pathname;
 
 describe("createRefreshingFetch", () => {
-  afterEach(() => vi.unstubAllGlobals());
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    window.history.replaceState({}, "", "/");
+  });
 
   it("collapses concurrent 401s into ONE refresh and retries each request", async () => {
+    window.history.replaceState({}, "", "/admin/products"); // admin zone refreshes via /api/auth
     let refreshed = false;
     const calls: string[] = [];
     const fake = vi.fn(async (input: RequestInfo | URL) => {
@@ -25,6 +29,17 @@ describe("createRefreshingFetch", () => {
     const [a, b] = await Promise.all([f("http://x/api/backend/a"), f("http://x/api/backend/b")]);
     expect([a.status, b.status]).toEqual([200, 200]);
     expect(calls.filter((c) => c === "/api/auth/refresh")).toHaveLength(1);
+  });
+
+  it("refreshes a storefront session via /api/store-auth", async () => {
+    window.history.replaceState({}, "", "/account");
+    const calls: string[] = [];
+    const fake = (async (input: RequestInfo | URL) => {
+      calls.push(pathOf(input));
+      return new Response("{}", { status: 200 });
+    }) as typeof fetch;
+    expect(await refreshSession(fake)).toBe(true);
+    expect(calls).toEqual(["/api/store-auth/refresh"]);
   });
 
   it("returns the 401 when refresh fails", async () => {

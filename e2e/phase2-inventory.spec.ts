@@ -1,7 +1,7 @@
 import { choose, expect, pickDate, test, toast, visit } from "./fixtures";
 
 test("stock: low-stock flag, reorder suggestion and an adjustment", async ({ admin: page }) => {
-  await visit(page, "/stock", "Stock");
+  await visit(page, "/admin/stock", "Stock");
   const table = page.getByRole("table", { name: "Stock levels" });
   await expect(table.getByRole("row", { name: /A2 Desi Ghee/ })).toContainText("Low");
   await page.getByRole("tab", { name: "Reorder suggestions" }).click();
@@ -21,7 +21,7 @@ test("stock: low-stock flag, reorder suggestion and an adjustment", async ({ adm
 });
 
 test("batches are FEFO and a new batch can be received", async ({ admin: page }) => {
-  await visit(page, "/batches", "Batches (FEFO)");
+  await visit(page, "/admin/batches", "Batches (FEFO)");
   const rows = page.getByRole("table", { name: "Batches (FEFO)" }).getByRole("row");
   await expect(rows.nth(1)).toContainText("MLK-2410A"); // expires first
   await expect(rows.nth(1)).toContainText("Today");
@@ -41,7 +41,7 @@ test("batches are FEFO and a new batch can be received", async ({ admin: page })
 });
 
 test("purchase order: create → place → receive (GRN)", async ({ admin: page }) => {
-  await visit(page, "/purchase-orders", "Purchase orders");
+  await visit(page, "/admin/purchase-orders", "Purchase orders");
   await page.getByRole("link", { name: "New purchase order" }).click();
   await choose(page.getByLabel(/^Supplier/), { label: "Gwala Dairy Co-op" });
   await choose(page.getByLabel("Product (line 1)"), { label: "Full Cream Milk (MILK-FC-500)" });
@@ -68,7 +68,7 @@ test("purchase order: create → place → receive (GRN)", async ({ admin: page 
 });
 
 test("transfer: dispatch a draft", async ({ admin: page }) => {
-  await visit(page, "/transfers", "Transfers");
+  await visit(page, "/admin/transfers", "Transfers");
   await page.getByRole("link", { name: /^TR-0001/ }).click();
   await page.getByRole("button", { name: "Dispatch" }).click();
   await page.getByRole("dialog", { name: "Dispatch" }).getByRole("button", { name: "Dispatch" }).click();
@@ -77,10 +77,10 @@ test("transfer: dispatch a draft", async ({ admin: page }) => {
 });
 
 test("production and BOM pages render", async ({ admin: page }) => {
-  await visit(page, "/boms", "Bills of materials");
+  await visit(page, "/admin/boms", "Bills of materials");
   await page.getByRole("link", { name: /^Masala chaas/ }).click();
   await expect(page.getByRole("table", { name: "Components" })).toContainText("Full Cream Milk");
-  await visit(page, "/production-orders", "Production");
-  await visit(page, "/locations", "Locations");
-  await visit(page, "/suppliers", "Suppliers");
+  await visit(page, "/admin/production-orders", "Production");
+  await visit(page, "/admin/locations", "Locations");
+  await visit(page, "/admin/suppliers", "Suppliers");
 });

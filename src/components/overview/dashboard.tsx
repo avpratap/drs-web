@@ -22,34 +22,34 @@ const status = (value: string): CrudFilter[] => [{ field: "status", operator: "e
 const ATTENTION: { label: string; href: string; resource: string; filters?: CrudFilter[]; hint: string }[] = [
   {
     label: "Withdrawals to approve",
-    href: "/withdrawals",
+    href: "/admin/withdrawals",
     resource: "withdrawals",
     filters: status("requested"),
     hint: "Wallet payouts awaiting a decision",
   },
   {
     label: "Returns to review",
-    href: "/returns",
+    href: "/admin/returns",
     resource: "returns",
     filters: status("requested"),
     hint: "Customer return requests",
   },
   {
     label: "Open support tickets",
-    href: "/tickets",
+    href: "/admin/tickets",
     resource: "tickets",
     filters: status("open"),
     hint: "Waiting for a reply",
   },
   {
     label: "Low-stock items",
-    href: "/reorder-suggestions",
+    href: "/admin/reorder-suggestions",
     resource: "stock-low",
     hint: "At or below reorder point",
   },
   {
     label: "High churn risk",
-    href: "/churn",
+    href: "/admin/churn",
     resource: "churn",
     filters: [{ field: "risk", operator: "eq", value: "high" }],
     hint: "Accounts likely to lapse",
@@ -57,12 +57,12 @@ const ATTENTION: { label: string; href: string; resource: string; filters?: Crud
 ];
 
 const QUICK = [
-  { label: "Today's deliveries", href: "/delivery", icon: TruckIcon },
-  { label: "Cutoff runs", href: "/cutoff", icon: CalendarClockIcon },
-  { label: "New product", href: "/products/create", icon: PackagePlusIcon },
-  { label: "New purchase order", href: "/purchase-orders/create", icon: ShoppingCartIcon },
-  { label: "Issue a gift card", href: "/gift-cards", icon: GiftIcon },
-  { label: "Ask the AI copilot", href: "/copilot", icon: BotIcon },
+  { label: "Today's deliveries", href: "/admin/delivery", icon: TruckIcon },
+  { label: "Cutoff runs", href: "/admin/cutoff", icon: CalendarClockIcon },
+  { label: "New product", href: "/admin/products/create", icon: PackagePlusIcon },
+  { label: "New purchase order", href: "/admin/purchase-orders/create", icon: ShoppingCartIcon },
+  { label: "Issue a gift card", href: "/admin/gift-cards", icon: GiftIcon },
+  { label: "Ask the AI copilot", href: "/admin/copilot", icon: BotIcon },
 ];
 
 function AttentionItem({ item }: { item: (typeof ATTENTION)[number] }) {

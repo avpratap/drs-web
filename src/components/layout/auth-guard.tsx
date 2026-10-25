@@ -2,6 +2,7 @@
 
 import { useIsAuthenticated, useLogout } from "@refinedev/core";
 import { useEffect } from "react";
+import { ADMIN_LOGIN } from "./nav";
 
 /**
  * Client-side session check. The proxy already redirects requests without an admin token
@@ -14,7 +15,7 @@ export function AuthGuard() {
   const { mutate: logout } = useLogout();
   const rejected = data?.authenticated === false;
   useEffect(() => {
-    if (rejected) logout({ redirectPath: "/login" });
+    if (rejected) logout({ redirectPath: ADMIN_LOGIN });
   }, [rejected, logout]);
   return null;
 }

@@ -59,14 +59,14 @@ describe("Checkbox (Radix)", () => {
 describe("Sidebar collapsible groups", () => {
   beforeEach(() => window.localStorage.clear());
   afterEach(() => {
-    nav.pathname = "/";
+    nav.pathname = "/admin";
     window.localStorage.clear();
   });
   const header = (name: string) => screen.getByRole("button", { name: new RegExp(`^${name}`, "i") });
 
   it("opens the group holding the active route; others start collapsed", () => {
-    nav.pathname = "/purchase-orders/4";
-    expect(activeGroupOf("/purchase-orders/4")).toBe("Inventory");
+    nav.pathname = "/admin/purchase-orders/4";
+    expect(activeGroupOf("/admin/purchase-orders/4")).toBe("Inventory");
     render(<SidebarNav />);
     expect(header("Inventory")).toHaveAttribute("aria-expanded", "true");
     expect(screen.getByRole("link", { name: "Purchase orders" })).toHaveAttribute("aria-current", "page");
@@ -77,7 +77,7 @@ describe("Sidebar collapsible groups", () => {
   });
 
   it("toggles by click and keyboard, and remembers the choice", async () => {
-    nav.pathname = "/";
+    nav.pathname = "/admin";
     const user = userEvent.setup();
     const { unmount } = render(<SidebarNav />);
     const billing = header("Billing");
@@ -101,7 +101,7 @@ describe("Sidebar collapsible groups", () => {
 
   it("survives unavailable or corrupt storage", () => {
     window.localStorage.setItem(NAV_STORAGE_KEY, "{not json");
-    nav.pathname = "/stock";
+    nav.pathname = "/admin/stock";
     render(<SidebarNav />);
     expect(header("Inventory")).toHaveAttribute("aria-expanded", "true");
     const spy = vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => {

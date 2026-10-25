@@ -82,7 +82,7 @@ export function PriceTierForm({ id }: { id?: string }) {
         </div>
       </Card>
       <div className="mt-6 flex flex-col-reverse gap-2 md:flex-row md:justify-end">
-        <ButtonLink variant="secondary" href={isEdit ? `/price-tiers/${id}` : "/price-tiers"}>
+        <ButtonLink variant="secondary" href={isEdit ? `/admin/price-tiers/${id}` : "/admin/price-tiers"}>
           Cancel
         </ButtonLink>
         <Button type="submit" loading={formLoading}>

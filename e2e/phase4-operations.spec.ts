@@ -1,7 +1,7 @@
 import { choose, expect, test, toast, visit } from "./fixtures";
 
 test("returns: approve a request, then refund an approved one as store credit", async ({ admin: page }) => {
-  await visit(page, "/returns", "Returns (RMA)");
+  await visit(page, "/admin/returns", "Returns (RMA)");
   await page.getByRole("link", { name: /^RMA-0001/ }).click();
   await expect(page.getByRole("heading", { level: 1, name: "RMA-0001" })).toBeVisible();
   await page.getByRole("button", { name: "Approve" }).click();
@@ -11,7 +11,7 @@ test("returns: approve a request, then refund an approved one as store credit", 
     .click();
   await expect(toast(page, "Return approved")).toBeVisible();
 
-  await page.goto("/returns/2");
+  await page.goto("/admin/returns/2");
   await page.getByRole("button", { name: "Refund" }).click();
   const dialog = page.getByRole("dialog", { name: /refund rma-0002/i });
   await expect(dialog.getByLabel(/refund amount/i)).toHaveValue("33");
@@ -25,7 +25,7 @@ test("returns: approve a request, then refund an approved one as store credit", 
 });
 
 test("returns: reject with a note", async ({ admin: page }) => {
-  await page.goto("/returns/1");
+  await page.goto("/admin/returns/1");
   await page.getByRole("button", { name: "Reject" }).click();
   const dialog = page.getByRole("dialog", { name: /reject rma-0001/i });
   await dialog.getByLabel(/reason for rejecting/i).fill("Outside the return window");
@@ -35,7 +35,7 @@ test("returns: reject with a note", async ({ admin: page }) => {
 });
 
 test("subscriptions: edit standing-order lines, then pause", async ({ admin: page }) => {
-  await visit(page, "/subscriptions", "Subscriptions");
+  await visit(page, "/admin/subscriptions", "Subscriptions");
   await page.getByRole("link", { name: /^Sharma Sweets/ }).click();
   await expect(page.getByRole("heading", { level: 1, name: "Sharma Sweets" })).toBeVisible();
   await expect(page.getByRole("table", { name: "Standing order" })).toContainText("Daily");
@@ -63,7 +63,7 @@ test("subscriptions: edit standing-order lines, then pause", async ({ admin: pag
 });
 
 test("shops: set price tier and assign a driver", async ({ admin: page }) => {
-  await visit(page, "/shops", "Shops");
+  await visit(page, "/admin/shops", "Shops");
   await page.getByRole("link", { name: /^Verma residence/ }).click();
   await expect(page.getByRole("heading", { level: 1, name: "Verma residence" })).toBeVisible();
   await page.getByRole("button", { name: "Set price tier" }).click();
@@ -82,7 +82,7 @@ test("shops: set price tier and assign a driver", async ({ admin: page }) => {
 });
 
 test("driver assignments: assign, unassign, then reassign", async ({ admin: page }) => {
-  await visit(page, "/delivery-assignments", "Driver assignments");
+  await visit(page, "/admin/delivery-assignments", "Driver assignments");
   const table = page.getByRole("table");
   await expect(table).toContainText("Ramesh (driver)");
   await expect(table).toContainText("Sharma Sweets");
@@ -114,7 +114,7 @@ test("driver assignments: assign, unassign, then reassign", async ({ admin: page
 });
 
 test("cutoff: status, manual run and history", async ({ admin: page }) => {
-  await visit(page, "/cutoff", "Cutoff runs");
+  await visit(page, "/admin/cutoff", "Cutoff runs");
   await expect(page.getByText("Not run yet")).toBeVisible();
   await page.getByRole("button", { name: "Run cutoff now" }).click();
   await page
@@ -127,7 +127,7 @@ test("cutoff: status, manual run and history", async ({ admin: page }) => {
 });
 
 test("users: filter drivers and search", async ({ admin: page }) => {
-  await visit(page, "/users", "Users & staff");
+  await visit(page, "/admin/users", "Users & staff");
   await choose(page.getByLabel("Role", { exact: true }), "delivery");
   const table = page.getByRole("table", { name: "Users & staff" });
   await expect(table.getByRole("row")).toHaveCount(3);
@@ -139,9 +139,9 @@ test("users: filter drivers and search", async ({ admin: page }) => {
 });
 
 test("locations: a duplicate name is refused with a clear message", async ({ admin: page }) => {
-  await page.goto("/locations/create");
+  await page.goto("/admin/locations/create");
   await page.getByLabel(/^Name/).fill("jaipur PLANT");
   await page.getByRole("button", { name: "Create location" }).click();
   await expect(toast(page, "A location with this name already exists")).toBeVisible();
-  await expect(page).toHaveURL(/\/locations\/create$/);
+  await expect(page).toHaveURL(/\/admin\/locations\/create$/);
 });

@@ -1,7 +1,7 @@
 import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
-import ReportsPage from "@/app/(admin)/reports/page";
+import ReportsPage from "@/app/admin/(dashboard)/reports/page";
 import { todayIST } from "@/lib/forms";
 import { nav } from "../../setup";
 import { mockApi, renderWithRefine } from "../../helpers";
@@ -9,7 +9,7 @@ import { mockApi, renderWithRefine } from "../../helpers";
 describe("Reports", () => {
   it("renders KPIs, charts with data tables, and switches range", async () => {
     nav.search = new URLSearchParams("days=7");
-    nav.pathname = "/reports";
+    nav.pathname = "/admin/reports";
     const api = mockApi([
       {
         path: "/api/v1/admin/reports/summary",
@@ -53,6 +53,6 @@ describe("Reports", () => {
     expect(within(top).getByText("A2 Ghee")).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Last 90 days" }));
-    expect(nav.replace).toHaveBeenCalledWith("/reports?days=90");
+    expect(nav.replace).toHaveBeenCalledWith("/admin/reports?days=90");
   });
 });

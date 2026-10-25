@@ -129,8 +129,8 @@ describe("form payloads", () => {
 
 describe("misc helpers", () => {
   it("listHref builds Refine's filter query", () => {
-    expect(listHref("/refunds", { payment_id: 9 })).toBe(
-      "/refunds?filters[0][field]=payment_id&filters[0][operator]=eq&filters[0][value]=9",
+    expect(listHref("/admin/refunds", { payment_id: 9 })).toBe(
+      "/admin/refunds?filters[0][field]=payment_id&filters[0][operator]=eq&filters[0][value]=9",
     );
     expect(listHref("/x", {})).toBe("/x");
   });

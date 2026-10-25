@@ -3,7 +3,7 @@ import { expect, test } from "./fixtures";
 test("scrollbars are thin with a transparent track; sidebar only scrolls when it overflows", async ({
   admin: page,
 }) => {
-  await page.goto("/"); // no section open: the nav fits at every breakpoint
+  await page.goto("/admin"); // no section open: the nav fits at every breakpoint
   const wide = page.viewportSize()!.width >= 1024;
   const nav = wide
     ? page.getByRole("navigation", { name: "Main" })
@@ -31,7 +31,7 @@ test("on a short (zoomed) viewport the sidebar scrolls inside itself, not the pa
 }) => {
   test.skip(page.viewportSize()!.width < 1024, "the sidebar is a drawer below 1024px");
   await page.setViewportSize({ width: page.viewportSize()!.width, height: 420 });
-  await page.goto("/purchase-orders");
+  await page.goto("/admin/purchase-orders");
   const nav = page.getByRole("navigation", { name: "Main" });
   // Open every section so the nav is taller than the viewport.
   const closed = nav.getByRole("button", { expanded: false });

@@ -1,7 +1,7 @@
 import { screen, within } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import DeliveryShowPage from "@/app/(admin)/delivery/[id]/page";
-import DeliveryPage from "@/app/(admin)/delivery/page";
+import DeliveryShowPage from "@/app/admin/(dashboard)/delivery/[id]/page";
+import DeliveryPage from "@/app/admin/(dashboard)/delivery/page";
 import { nav } from "../../setup";
 import { mockApi, renderWithRefine } from "../../helpers";
 
