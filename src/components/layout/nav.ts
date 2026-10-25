@@ -1,93 +1,97 @@
+/** Admin lives under /admin; the storefront owns the root. */
+export const ADMIN_HOME = "/admin";
+export const ADMIN_LOGIN = "/admin/login";
+
 export type NavItem = { href: string; label: string };
 export type NavGroup = { label: string; items: NavItem[] };
 
 export const NAV_GROUPS: NavGroup[] = [
-  { label: "", items: [{ href: "/", label: "Overview" }] },
+  { label: "", items: [{ href: ADMIN_HOME, label: "Overview" }] },
   {
     label: "Catalog",
     items: [
-      { href: "/products", label: "Products" },
-      { href: "/price-tiers", label: "Price tiers" },
-      { href: "/product-prices", label: "Product prices" },
+      { href: "/admin/products", label: "Products" },
+      { href: "/admin/price-tiers", label: "Price tiers" },
+      { href: "/admin/product-prices", label: "Product prices" },
     ],
   },
   {
     label: "Billing",
     items: [
-      { href: "/accounts", label: "Accounts & wallets" },
-      { href: "/withdrawals", label: "Withdrawals" },
-      { href: "/payments", label: "Payments" },
-      { href: "/refunds", label: "Refunds" },
-      { href: "/invoices", label: "Invoices" },
+      { href: "/admin/accounts", label: "Accounts & wallets" },
+      { href: "/admin/withdrawals", label: "Withdrawals" },
+      { href: "/admin/payments", label: "Payments" },
+      { href: "/admin/refunds", label: "Refunds" },
+      { href: "/admin/invoices", label: "Invoices" },
     ],
   },
   {
     label: "Loyalty",
     items: [
-      { href: "/gift-cards", label: "Gift cards" },
-      { href: "/loyalty", label: "Loyalty points" },
+      { href: "/admin/gift-cards", label: "Gift cards" },
+      { href: "/admin/loyalty", label: "Loyalty points" },
     ],
   },
   {
     label: "Inventory",
     items: [
-      { href: "/stock", label: "Stock" },
-      { href: "/batches", label: "Batches (FEFO)" },
-      { href: "/locations", label: "Locations" },
-      { href: "/transfers", label: "Transfers" },
-      { href: "/suppliers", label: "Suppliers" },
-      { href: "/purchase-orders", label: "Purchase orders" },
-      { href: "/boms", label: "Bills of materials" },
-      { href: "/production-orders", label: "Production" },
+      { href: "/admin/stock", label: "Stock" },
+      { href: "/admin/batches", label: "Batches (FEFO)" },
+      { href: "/admin/locations", label: "Locations" },
+      { href: "/admin/transfers", label: "Transfers" },
+      { href: "/admin/suppliers", label: "Suppliers" },
+      { href: "/admin/purchase-orders", label: "Purchase orders" },
+      { href: "/admin/boms", label: "Bills of materials" },
+      { href: "/admin/production-orders", label: "Production" },
     ],
   },
   {
     label: "Delivery",
     items: [
-      { href: "/delivery", label: "Daily deliveries" },
-      { href: "/cutoff", label: "Cutoff runs" },
-      { href: "/delivery-assignments", label: "Driver assignments" },
-      { href: "/orders", label: "Orders" },
-      { href: "/returns", label: "Returns (RMA)" },
+      { href: "/admin/delivery", label: "Daily deliveries" },
+      { href: "/admin/cutoff", label: "Cutoff runs" },
+      { href: "/admin/delivery-assignments", label: "Driver assignments" },
+      { href: "/admin/orders", label: "Orders" },
+      { href: "/admin/returns", label: "Returns (RMA)" },
     ],
   },
   {
     label: "Insights",
     items: [
-      { href: "/reports", label: "Reports" },
-      { href: "/churn", label: "Churn risk" },
-      { href: "/forecast", label: "Demand forecast" },
-      { href: "/reorder-suggestions", label: "Reorder suggestions" },
-      { href: "/copilot", label: "AI copilot" },
-      { href: "/audit-log", label: "Audit log" },
+      { href: "/admin/reports", label: "Reports" },
+      { href: "/admin/churn", label: "Churn risk" },
+      { href: "/admin/forecast", label: "Demand forecast" },
+      { href: "/admin/reorder-suggestions", label: "Reorder suggestions" },
+      { href: "/admin/copilot", label: "AI copilot" },
+      { href: "/admin/audit-log", label: "Audit log" },
     ],
   },
   {
     label: "Content",
     items: [
-      { href: "/banners", label: "Banners" },
-      { href: "/articles", label: "Articles" },
-      { href: "/pages", label: "Pages" },
-      { href: "/newsletter", label: "Newsletter" },
+      { href: "/admin/banners", label: "Banners" },
+      { href: "/admin/articles", label: "Articles" },
+      { href: "/admin/pages", label: "Pages" },
+      { href: "/admin/newsletter", label: "Newsletter" },
     ],
   },
   {
     label: "Customers",
     items: [
-      { href: "/subscriptions", label: "Subscriptions" },
-      { href: "/shops", label: "Shops" },
-      { href: "/tickets", label: "Support tickets" },
-      { href: "/ratings", label: "Ratings" },
-      { href: "/coupons", label: "Coupons" },
+      { href: "/admin/subscriptions", label: "Subscriptions" },
+      { href: "/admin/shops", label: "Shops" },
+      { href: "/admin/tickets", label: "Support tickets" },
+      { href: "/admin/ratings", label: "Ratings" },
+      { href: "/admin/coupons", label: "Coupons" },
     ],
   },
   {
     label: "System",
     items: [
-      { href: "/users", label: "Users & staff" },
-      { href: "/notifications", label: "Notifications" },
-      { href: "/webhooks", label: "Webhooks" },
-      { href: "/feature-flags", label: "Feature flags" },
+      { href: "/admin/users", label: "Users & staff" },
+      { href: "/admin/notifications", label: "Notifications" },
+      { href: "/admin/webhooks", label: "Webhooks" },
+      { href: "/admin/feature-flags", label: "Feature flags" },
     ],
   },
 ];
@@ -95,5 +99,5 @@ export const NAV_GROUPS: NavGroup[] = [
 export const NAV = NAV_GROUPS.flatMap((g) => g.items);
 
 export function isActive(pathname: string, href: string): boolean {
-  return href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(`${href}/`);
+  return href === ADMIN_HOME ? pathname === ADMIN_HOME : pathname === href || pathname.startsWith(`${href}/`);
 }

@@ -7,7 +7,7 @@ test("dialogs and menus opened from right-aligned actions columns render left-al
   admin: page,
 }) => {
   // ActionDialog from the Users actions column.
-  await page.goto("/users");
+  await page.goto("/admin/users");
   await page
     .getByRole("button", { name: /^Edit / })
     .first()
@@ -26,7 +26,7 @@ test("dialogs and menus opened from right-aligned actions columns render left-al
   await page.keyboard.press("Escape");
 
   // ConfirmDialog from the Gift cards actions column.
-  await page.goto("/gift-cards");
+  await page.goto("/admin/gift-cards");
   await page
     .getByRole("button", { name: /^Void gift card/ })
     .first()
@@ -37,7 +37,7 @@ test("dialogs and menus opened from right-aligned actions columns render left-al
   await dialog.getByRole("button", { name: "Cancel" }).click();
 
   // ActionDialog with fields from the Loyalty actions column; DatePicker inside Gift-card issue.
-  await page.goto("/loyalty");
+  await page.goto("/admin/loyalty");
   await page
     .getByRole("button", { name: /^Adjust points for/ })
     .first()
@@ -46,7 +46,7 @@ test("dialogs and menus opened from right-aligned actions columns render left-al
   expect(await align(dialog.getByText(/Points \(\+\/−\)/))).toBe("left");
   await page.keyboard.press("Escape");
 
-  await page.goto("/gift-cards");
+  await page.goto("/admin/gift-cards");
   await page.getByRole("button", { name: "Issue gift card" }).click();
   await page
     .getByRole("dialog")
@@ -57,7 +57,7 @@ test("dialogs and menus opened from right-aligned actions columns render left-al
   await page.keyboard.press("Escape");
 
   // Driver unassign confirm from the assignments actions column; a filter Select.
-  await page.goto("/delivery-assignments");
+  await page.goto("/admin/delivery-assignments");
   await page
     .getByRole("button", { name: /^Unassign / })
     .first()

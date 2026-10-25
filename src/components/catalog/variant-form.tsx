@@ -31,7 +31,7 @@ const UPDATE_KEYS = ["label", "pack_size", "price", "mrp", "image_url", "status"
 export function VariantForm({ productId, id }: { productId: string; id?: string }) {
   const router = useRouter();
   const isEdit = id !== undefined;
-  const back = `/products/${productId}`;
+  const back = `/admin/products/${productId}`;
   const {
     register,
     control,

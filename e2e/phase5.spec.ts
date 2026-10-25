@@ -1,7 +1,7 @@
 import { choose, expect, pickDate, test, toast, visit } from "./fixtures";
 
 test("gift cards: issue (code in toast) and void with a confirm dialog", async ({ admin: page }) => {
-  await visit(page, "/gift-cards", "Gift cards");
+  await visit(page, "/admin/gift-cards", "Gift cards");
   await expect(page.getByRole("table")).toContainText("DRS-GIFT-7Q2K");
   await page.getByRole("button", { name: "Issue gift card" }).click();
   const dialog = page.getByRole("dialog", { name: "Issue gift card" });
@@ -23,7 +23,7 @@ test("gift cards: issue (code in toast) and void with a confirm dialog", async (
 });
 
 test("loyalty: adjust points with validation", async ({ admin: page }) => {
-  await visit(page, "/loyalty", "Loyalty points");
+  await visit(page, "/admin/loyalty", "Loyalty points");
   await page.getByRole("button", { name: /Adjust points for Asha Verma/ }).click();
   const dialog = page.getByRole("dialog");
   await dialog.getByLabel(/Points/).fill("-500");
@@ -36,7 +36,7 @@ test("loyalty: adjust points with validation", async ({ admin: page }) => {
 });
 
 test("notifications: resend, flush and send a test", async ({ admin: page }) => {
-  await visit(page, "/notifications", "Notifications");
+  await visit(page, "/admin/notifications", "Notifications");
   await page.getByRole("button", { name: "Resend notification 502" }).click();
   await expect(toast(page, "Notification re-queued")).toBeVisible();
   await page.getByRole("button", { name: "Send test" }).click();
@@ -50,7 +50,7 @@ test("notifications: resend, flush and send a test", async ({ admin: page }) => 
 });
 
 test("webhooks: create, disable, test, delete", async ({ admin: page }) => {
-  await visit(page, "/webhooks", "Webhooks");
+  await visit(page, "/admin/webhooks", "Webhooks");
   await page.getByRole("button", { name: "New webhook" }).click();
   const dialog = page.getByRole("dialog", { name: "New webhook" });
   await choose(dialog.getByRole("combobox", { name: /Event/ }), "subscription.paused");
@@ -69,25 +69,25 @@ test("webhooks: create, disable, test, delete", async ({ admin: page }) => {
   await expect(page.getByRole("table", { name: "Recent deliveries" }).getByRole("row")).toHaveCount(3);
   await page.getByRole("button", { name: "Delete" }).click();
   await page.getByRole("dialog").getByRole("button", { name: "Delete webhook" }).click();
-  await expect(page).toHaveURL(/\/webhooks(\?|$)/);
+  await expect(page).toHaveURL(/\/admin\/webhooks(\?|$)/);
   await expect(page.getByRole("table")).not.toContainText("erp.example");
 });
 
 test("insights: churn re-score, forecast window, reorder suggestions, copilot", async ({ admin: page }) => {
-  await visit(page, "/churn", "Churn risk");
+  await visit(page, "/admin/churn", "Churn risk");
   await expect(page.getByRole("table")).toContainText("82%");
   await page.getByRole("button", { name: "Re-score accounts" }).click();
   await page.getByRole("dialog").getByRole("button", { name: "Run scoring" }).click();
   await expect(toast(page, "Scored 3 accounts")).toBeVisible();
 
-  await visit(page, "/forecast", "Demand forecast");
+  await visit(page, "/admin/forecast", "Demand forecast");
   await expect(page.getByRole("table", { name: "Production plan" })).toContainText("Full Cream Milk");
   await choose(page.getByRole("combobox", { name: "History" }), "56");
   await expect(page.getByText("Based on the last 56 days")).toBeVisible();
 
-  await visit(page, "/reorder-suggestions", "Reorder suggestions");
+  await visit(page, "/admin/reorder-suggestions", "Reorder suggestions");
 
-  await visit(page, "/copilot", "AI copilot");
+  await visit(page, "/admin/copilot", "AI copilot");
   await page.getByRole("button", { name: "Which products sold most in the last 7 days?" }).click();
   await expect(page.getByText(/Full Cream Milk led sales/)).toBeVisible();
   await page.getByLabel("Your question").fill("And buttermilk?");
@@ -96,7 +96,7 @@ test("insights: churn re-score, forecast window, reorder suggestions, copilot", 
 });
 
 test("invoices: list → detail → PDF dialog; order detail opens its invoice PDF", async ({ admin: page }) => {
-  await visit(page, "/invoices", "Invoices");
+  await visit(page, "/admin/invoices", "Invoices");
   await page.getByRole("link", { name: /^DRS\/2026-27\/0001/ }).click();
   await expect(page.getByRole("heading", { level: 1, name: "DRS/2026-27/0001" })).toBeVisible();
   await page.getByRole("button", { name: "View PDF" }).click();
@@ -108,17 +108,17 @@ test("invoices: list → detail → PDF dialog; order detail opens its invoice P
   );
   await page.keyboard.press("Escape");
 
-  await page.goto("/orders/7");
+  await page.goto("/admin/orders/7");
   await page.getByRole("button", { name: "Invoice PDF" }).click();
   await expect(page.getByRole("dialog", { name: "Invoice DRS/2026-27/0001" })).toBeVisible();
 });
 
 test("CSV export downloads a file from the main lists", async ({ admin: page }) => {
   for (const [path, heading, kind] of [
-    ["/orders", "Orders", "orders"],
-    ["/payments", "Payments", "payments"],
-    ["/users", "Users & staff", "users"],
-    ["/invoices", "Invoices", "invoices"],
+    ["/admin/orders", "Orders", "orders"],
+    ["/admin/payments", "Payments", "payments"],
+    ["/admin/users", "Users & staff", "users"],
+    ["/admin/invoices", "Invoices", "invoices"],
   ] as const) {
     await page.goto(path);
     await expect(page.getByRole("heading", { level: 1, name: heading })).toBeVisible();
@@ -132,7 +132,7 @@ test("CSV export downloads a file from the main lists", async ({ admin: page }) 
 });
 
 test("overview: KPIs, needs attention and quick actions", async ({ admin: page }) => {
-  await visit(page, "/", "Overview");
+  await visit(page, "/admin", "Overview");
   const attention = page.getByRole("region", { name: "Needs attention" });
   await expect(attention.getByRole("link", { name: /Withdrawals to approve/ })).toBeVisible();
   await expect(attention.getByRole("link", { name: /High churn risk/ })).toContainText("1");
@@ -154,7 +154,7 @@ test("purchase order GRN: expiry before manufacture is refused per line", async 
     })
   ).json();
   await page.request.post(`${api}/${po.id}/place`, { headers });
-  await page.goto(`/purchase-orders/${po.id}`);
+  await page.goto(`/admin/purchase-orders/${po.id}`);
   await page.getByRole("button", { name: "Receive goods (GRN)" }).click();
   const grn = page.getByRole("dialog", { name: /goods receipt/i });
   await grn.getByLabel("Batch no. (line 1)").fill("B-1");

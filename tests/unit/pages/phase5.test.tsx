@@ -1,16 +1,16 @@
 import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import ChurnPage from "@/app/(admin)/churn/page";
-import CopilotPage from "@/app/(admin)/copilot/page";
-import ForecastPage from "@/app/(admin)/forecast/page";
-import GiftCardsPage from "@/app/(admin)/gift-cards/page";
-import InvoiceShowPage from "@/app/(admin)/invoices/[id]/page";
-import LoyaltyPage from "@/app/(admin)/loyalty/page";
-import NotificationsPage from "@/app/(admin)/notifications/page";
-import OrderShowPage from "@/app/(admin)/orders/[id]/page";
-import WebhookShowPage from "@/app/(admin)/webhooks/[id]/page";
-import WebhooksPage from "@/app/(admin)/webhooks/page";
+import ChurnPage from "@/app/admin/(dashboard)/churn/page";
+import CopilotPage from "@/app/admin/(dashboard)/copilot/page";
+import ForecastPage from "@/app/admin/(dashboard)/forecast/page";
+import GiftCardsPage from "@/app/admin/(dashboard)/gift-cards/page";
+import InvoiceShowPage from "@/app/admin/(dashboard)/invoices/[id]/page";
+import LoyaltyPage from "@/app/admin/(dashboard)/loyalty/page";
+import NotificationsPage from "@/app/admin/(dashboard)/notifications/page";
+import OrderShowPage from "@/app/admin/(dashboard)/orders/[id]/page";
+import WebhookShowPage from "@/app/admin/(dashboard)/webhooks/[id]/page";
+import WebhooksPage from "@/app/admin/(dashboard)/webhooks/page";
 import { OverviewDashboard } from "@/components/overview/dashboard";
 import { downloadCsv } from "@/components/resource/export-csv";
 import { nav } from "../../setup";
@@ -324,7 +324,7 @@ describe("Webhooks", () => {
     await user.click(screen.getByRole("button", { name: "Delete" }));
     await user.click(within(screen.getByRole("dialog")).getByRole("button", { name: "Delete webhook" }));
     await waitFor(() => expect(api.last("DELETE", "/api/v1/admin/outbound-webhooks/1")).toBeTruthy());
-    await waitFor(() => expect(nav.push).toHaveBeenCalledWith("/webhooks"));
+    await waitFor(() => expect(nav.push).toHaveBeenCalledWith("/admin/webhooks"));
   });
 });
 
@@ -523,6 +523,9 @@ describe("Invoices, exports and overview", () => {
     );
     expect(within(attention).getByRole("link", { name: /Open support tickets/ })).toHaveTextContent("4");
     expect(within(attention).getByRole("link", { name: /Returns to review/ })).toHaveTextContent("0");
-    expect(screen.getByRole("link", { name: /Ask the AI copilot/ })).toHaveAttribute("href", "/copilot");
+    expect(screen.getByRole("link", { name: /Ask the AI copilot/ })).toHaveAttribute(
+      "href",
+      "/admin/copilot",
+    );
   });
 });

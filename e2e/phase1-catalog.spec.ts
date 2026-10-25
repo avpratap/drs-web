@@ -1,7 +1,7 @@
 import { choose, expect, test, visit } from "./fixtures";
 
 test("product list: totals, retired filter and create", async ({ admin: page }) => {
-  await visit(page, "/products", "Products");
+  await visit(page, "/admin/products", "Products");
   const table = page.getByRole("table", { name: "Products" });
   await expect(table.getByRole("link", { name: /^Full Cream Milk/ })).toBeVisible();
   // Retired products are visible to admins and filterable.
@@ -21,7 +21,7 @@ test("product list: totals, retired filter and create", async ({ admin: page }) 
 });
 
 test("product detail shows variants; price list filters by product", async ({ admin: page }) => {
-  await visit(page, "/products/1", "Full Cream Milk");
+  await visit(page, "/admin/products/1", "Full Cream Milk");
   await expect(page.getByRole("table", { name: /Variants of/ })).toContainText("1 L");
   await page.getByRole("link", { name: "Prices", exact: true }).click();
   await expect(page.getByRole("heading", { level: 1, name: "Product prices" })).toBeVisible();

@@ -23,7 +23,7 @@ const opaque = (el: Locator) =>
   });
 
 test("date picker: open, pick with the mouse, keyboard, Escape and axe", async ({ admin: page }) => {
-  await page.goto("/product-prices/create");
+  await page.goto("/admin/product-prices/create");
   const from = page.getByRole("button", { name: /Valid from/ });
   const to = page.getByRole("button", { name: /Valid to/ });
   await expect(to).toHaveText("Open-ended");
@@ -72,7 +72,7 @@ test("date picker: open, pick with the mouse, keyboard, Escape and axe", async (
 });
 
 test("date picker: at the bottom edge it flips up and stays fully on-screen", async ({ admin: page }) => {
-  await page.goto("/product-prices/create");
+  await page.goto("/admin/product-prices/create");
   const to = page.getByRole("button", { name: /Valid to/ });
   await to.scrollIntoViewIfNeeded();
   const bottom = await to.evaluate((el) => el.getBoundingClientRect().bottom);
@@ -94,7 +94,7 @@ test("date picker: at the bottom edge it flips up and stays fully on-screen", as
 test("date picker: at the right edge (delivery date) it shifts to stay on-screen", async ({
   admin: page,
 }) => {
-  await page.goto("/delivery");
+  await page.goto("/admin/delivery");
   const date = page.getByRole("button", { name: /Delivery date/ });
   // Pin the trigger against the right edge, narrower than the calendar.
   await date.evaluate((el) =>
@@ -109,7 +109,7 @@ test("date picker: at the right edge (delivery date) it shifts to stay on-screen
 });
 
 test("checkbox: on-brand Radix checkbox toggles by click and Space", async ({ admin: page }) => {
-  await page.goto("/products/create");
+  await page.goto("/admin/products/create");
   const perishable = page.getByRole("checkbox", { name: "Perishable" });
   await expect(perishable).toHaveAttribute("aria-checked", "true");
   const bg = await perishable.evaluate((n) => getComputedStyle(n).backgroundColor);
@@ -132,7 +132,7 @@ test("checkbox: on-brand Radix checkbox toggles by click and Space", async ({ ad
 test("sidebar: sections collapse, the active one auto-opens, choices persist, keyboard works", async ({
   admin: page,
 }) => {
-  await page.goto("/purchase-orders");
+  await page.goto("/admin/purchase-orders");
   const openNav = async () => {
     if (isMobile(page) || page.viewportSize()!.width < 1024) {
       await page.getByRole("button", { name: "Open navigation" }).click();

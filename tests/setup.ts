@@ -32,7 +32,7 @@ if (typeof window !== "undefined" && !window.ResizeObserver) {
 export const nav = {
   params: {} as Record<string, string>,
   search: new URLSearchParams(),
-  pathname: "/",
+  pathname: "/admin",
   push: vi.fn(),
   replace: vi.fn(),
 };
@@ -54,7 +54,7 @@ afterEach(() => {
   cleanup();
   nav.params = {};
   nav.search = new URLSearchParams();
-  nav.pathname = "/";
+  nav.pathname = "/admin";
   nav.push.mockReset();
   nav.replace.mockReset();
   vi.unstubAllGlobals();

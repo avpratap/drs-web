@@ -774,6 +774,24 @@ on("GET", "/api/v1/admin/products", (req, res, { q }) => {
     q,
   );
 });
+// Public storefront catalogue (no auth, like the backend).
+on("GET", "/api/v1/products/categories", (req, res) =>
+  send(res, 200, [
+    ...new Set(
+      db.products
+        .filter((x) => x.status === "active")
+        .map((x) => x.category)
+        .filter(Boolean),
+    ),
+  ]),
+);
+on("GET", "/api/v1/products", (req, res, { q }) => {
+  let rows = db.products.filter((x) => x.status === "active");
+  if (q.get("category")) rows = rows.filter((x) => x.category === q.get("category"));
+  if (q.get("sort") === "rating") rows = [...rows].sort((a, b) => b.avg_rating - a.avg_rating);
+  const limit = Number(q.get("limit") ?? 50);
+  send(res, 200, rows.slice(0, limit));
+});
 on("GET", "/api/v1/products/:pid", (req, res, { p }) =>
   find(db.products, p.pid)
     ? send(res, 200, find(db.products, p.pid))
@@ -1674,9 +1692,13 @@ createServer(async (req, res) => {
   }
   const isAuth = url.pathname.startsWith("/api/v1/auth/") && url.pathname !== "/api/v1/auth/me";
   const signedFile = url.pathname.startsWith("/files/");
+  const publicCatalogue =
+    req.method === "GET" &&
+    (url.pathname === "/api/v1/products" || url.pathname === "/api/v1/products/categories");
   if (
     !isAuth &&
     !signedFile &&
+    !publicCatalogue &&
     url.pathname !== "/__reset" &&
     !req.headers.authorization?.startsWith("Bearer ")
   )

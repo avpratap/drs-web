@@ -1,8 +1,8 @@
 import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
-import AccountShowPage from "@/app/(admin)/accounts/[id]/page";
-import PaymentShowPage from "@/app/(admin)/payments/[id]/page";
+import AccountShowPage from "@/app/admin/(dashboard)/accounts/[id]/page";
+import PaymentShowPage from "@/app/admin/(dashboard)/payments/[id]/page";
 import { nav } from "../../setup";
 import { mockApi, renderWithRefine } from "../../helpers";
 
@@ -95,7 +95,7 @@ describe("Payment page", () => {
     expect(screen.getByRole("button", { name: "Refund" })).toBeDisabled();
     expect(screen.getByRole("link", { name: "Refunds" })).toHaveAttribute(
       "href",
-      "/refunds?filters[0][field]=payment_id&filters[0][operator]=eq&filters[0][value]=8",
+      "/admin/refunds?filters[0][field]=payment_id&filters[0][operator]=eq&filters[0][value]=8",
     );
   });
 });

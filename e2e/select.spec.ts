@@ -18,7 +18,7 @@ async function expectFullyOnScreen(page: Page, list: Locator) {
 }
 
 test("select: mouse open + pick, keyboard pick, and axe while open", async ({ admin: page }) => {
-  await visit(page, "/delivery-assignments", "Driver assignments");
+  await visit(page, "/admin/delivery-assignments", "Driver assignments");
   // While a Select is open Radix hides the rest of the page from assistive tech, so role
   // queries can't see the trigger then: hold it by id.
   await expect(page.getByRole("combobox", { name: "Status", exact: true })).toBeVisible();
@@ -71,7 +71,7 @@ test("select: mouse open + pick, keyboard pick, and axe while open", async ({ ad
 });
 
 test("select: a list opened at the bottom edge stays fully on-screen (flips up)", async ({ admin: page }) => {
-  await page.goto("/products/create");
+  await page.goto("/admin/products/create");
   const gst = page.getByRole("combobox", { name: /GST rate/ });
   // Shrink the viewport so the trigger sits against its bottom edge.
   const width = page.viewportSize()!.width;
@@ -92,7 +92,7 @@ test("select: a list opened at the bottom edge stays fully on-screen (flips up)"
 test("select: inside a modal dialog it renders above it, on-screen, and Esc closes only the list", async ({
   admin: page,
 }) => {
-  await page.goto("/delivery-assignments");
+  await page.goto("/admin/delivery-assignments");
   await page.getByRole("button", { name: "Assign driver" }).click();
   const dialog = page.getByRole("dialog", { name: "Assign driver" });
   const shop = dialog.getByRole("combobox", { name: /shop/i });
@@ -109,7 +109,7 @@ test("select: inside a modal dialog it renders above it, on-screen, and Esc clos
 test("select: a filter sized to its widest option, opened at the right edge, stays on-screen", async ({
   admin: page,
 }) => {
-  await page.goto("/delivery-assignments");
+  await page.goto("/admin/delivery-assignments");
   const shop = page.getByRole("combobox", { name: "Shop", exact: true });
   // Pin the trigger to the right edge of the viewport, wider than the room to its left.
   await shop.evaluate((el) => {
@@ -133,7 +133,7 @@ const alphaOf = (c: string) => {
 test("select: the open list has a solid, opaque background (nothing bleeds through)", async ({
   admin: page,
 }) => {
-  await page.goto("/product-prices/create");
+  await page.goto("/admin/product-prices/create");
   const product = page.getByRole("combobox", { name: /Product/ });
   await product.click();
   const list = page.getByRole("listbox");

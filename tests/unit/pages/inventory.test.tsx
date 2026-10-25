@@ -1,9 +1,9 @@
 import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
-import PurchaseOrderShowPage from "@/app/(admin)/purchase-orders/[id]/page";
-import StockPage from "@/app/(admin)/stock/page";
-import TransferCreatePage from "@/app/(admin)/transfers/create/page";
+import PurchaseOrderShowPage from "@/app/admin/(dashboard)/purchase-orders/[id]/page";
+import StockPage from "@/app/admin/(dashboard)/stock/page";
+import TransferCreatePage from "@/app/admin/(dashboard)/transfers/create/page";
 import { nav } from "../../setup";
 import { mockApi, renderWithRefine, pick } from "../../helpers";
 
@@ -112,6 +112,6 @@ describe("Transfer create", () => {
       to_location_id: 2,
       items: [{ product_id: 1, qty: 25 }],
     });
-    await waitFor(() => expect(nav.push).toHaveBeenCalledWith("/transfers/9"));
+    await waitFor(() => expect(nav.push).toHaveBeenCalledWith("/admin/transfers/9"));
   });
 });

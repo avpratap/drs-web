@@ -1,7 +1,7 @@
 import { choose, expect, test, toast, visit } from "./fixtures";
 
 test("reports: KPIs, charts with tables, range switch", async ({ admin: page }) => {
-  await visit(page, "/reports", "Reports");
+  await visit(page, "/admin/reports", "Reports");
   await expect(page.getByText("₹12,84,500.00")).toBeVisible();
   await expect(page.getByRole("img", { name: /^Revenue: 30 days/ })).toBeVisible();
   await page.getByRole("button", { name: "Last 7 days" }).click();
@@ -12,7 +12,7 @@ test("reports: KPIs, charts with tables, range switch", async ({ admin: page }) 
 });
 
 test("CMS: write and publish an article; banners and pages render", async ({ admin: page }) => {
-  await visit(page, "/articles", "Articles");
+  await visit(page, "/admin/articles", "Articles");
   await page.getByRole("link", { name: "New article" }).click();
   await page.getByLabel(/^Title/).fill("Making ghee the bilona way");
   await page.getByLabel(/^Slug/).fill("Bilona Ghee");
@@ -30,13 +30,13 @@ test("CMS: write and publish an article; banners and pages render", async ({ adm
     .click();
   await expect(row).toContainText("Published");
 
-  await visit(page, "/banners", "Banners");
-  await visit(page, "/pages", "Pages");
-  await visit(page, "/newsletter", "Newsletter");
+  await visit(page, "/admin/banners", "Banners");
+  await visit(page, "/admin/pages", "Pages");
+  await visit(page, "/admin/newsletter", "Newsletter");
 });
 
 test("support: reply to a ticket and resolve it", async ({ admin: page }) => {
-  await visit(page, "/tickets", "Support tickets");
+  await visit(page, "/admin/tickets", "Support tickets");
   await page.getByRole("link", { name: /^Milk was sour/ }).click();
   await page.getByLabel(/reply to customer/i).fill("Sorry — a fresh pouch is on tomorrow's route.");
   await page.getByRole("button", { name: "Send reply" }).click();
@@ -47,7 +47,7 @@ test("support: reply to a ticket and resolve it", async ({ admin: page }) => {
 });
 
 test("ratings: approve and reply", async ({ admin: page }) => {
-  await visit(page, "/ratings", "Ratings");
+  await visit(page, "/admin/ratings", "Ratings");
   const table = page.getByRole("table", { name: "Ratings" });
   await table.getByRole("button", { name: "Reply" }).click();
   const dialog = page.getByRole("dialog", { name: "Public reply" });
@@ -59,7 +59,7 @@ test("ratings: approve and reply", async ({ admin: page }) => {
 });
 
 test("coupons: create and deactivate", async ({ admin: page }) => {
-  await visit(page, "/coupons", "Coupons");
+  await visit(page, "/admin/coupons", "Coupons");
   await page.getByRole("link", { name: "New coupon" }).click();
   await page.getByLabel(/^Code/).fill("diwali15");
   await page.getByLabel(/^Value/).fill("15");
@@ -75,11 +75,11 @@ test("coupons: create and deactivate", async ({ admin: page }) => {
 });
 
 test("audit log and feature flags", async ({ admin: page }) => {
-  await visit(page, "/audit-log", "Audit log");
+  await visit(page, "/admin/audit-log", "Audit log");
   await page.getByRole("table", { name: "Audit log" }).locator("summary").first().click();
   await expect(page.getByLabel("Detail of audit entry 1")).toContainText("WELCOME50");
 
-  await visit(page, "/feature-flags", "Feature flags");
+  await visit(page, "/admin/feature-flags", "Feature flags");
   const sw = page.getByRole("switch", { name: "checkout.upi_intent" });
   await expect(sw).toHaveAttribute("aria-checked", "false");
   await sw.click();

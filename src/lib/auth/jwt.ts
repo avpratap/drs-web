@@ -21,3 +21,11 @@ export function decodeJwt(token: string | undefined | null): AccessClaims | null
 export function isAdminToken(token: string | undefined | null): boolean {
   return decodeJwt(token)?.role === "admin";
 }
+
+/** Storefront shoppers: retail customers and B2B subscribers. */
+export const CUSTOMER_ROLES = ["customer", "subscriber"] as const;
+
+export function isCustomerToken(token: string | undefined | null): boolean {
+  const role = decodeJwt(token)?.role;
+  return !!role && (CUSTOMER_ROLES as readonly string[]).includes(role);
+}

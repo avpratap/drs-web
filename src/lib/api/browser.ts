@@ -26,8 +26,13 @@ function lockManager(): LockManagerLike | undefined {
  *   with the (shared) cookie the first tab rotated, so it never replays the old token.
  */
 export function refreshSession(fetchImpl: typeof fetch = fetch): Promise<boolean> {
+  // Each zone rotates its own session: the admin console under /api/auth, the store under
+  // /api/store-auth (the refresh cookie is scoped to that path).
+  const origin = typeof window === "undefined" ? "" : window.location.origin;
+  const zone =
+    typeof window !== "undefined" && !window.location.pathname.startsWith("/admin") ? "store-auth" : "auth";
   const run = () =>
-    fetchImpl(`${typeof window === "undefined" ? "" : window.location.origin}/api/auth/refresh`, {
+    fetchImpl(`${origin}/api/${zone}/refresh`, {
       method: "POST",
       credentials: "same-origin",
     })

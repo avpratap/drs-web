@@ -184,7 +184,7 @@ export function ProductForm({ id }: { id?: string }) {
         </div>
       </Card>
       <div className="mt-6 flex flex-col-reverse gap-2 md:flex-row md:justify-end">
-        <ButtonLink variant="secondary" href={isEdit ? `/products/${id}` : "/products"}>
+        <ButtonLink variant="secondary" href={isEdit ? `/admin/products/${id}` : "/admin/products"}>
           Cancel
         </ButtonLink>
         <Button type="submit" loading={formLoading}>

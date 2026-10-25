@@ -1,7 +1,7 @@
 import { choose, expect, test, toast, visit } from "./fixtures";
 
 test("account: top up the wallet and see it in the ledger", async ({ admin: page }) => {
-  await visit(page, "/accounts", "Accounts & wallets");
+  await visit(page, "/admin/accounts", "Accounts & wallets");
   await page.getByRole("link", { name: /^Asha Verma/ }).click();
   await expect(page.getByRole("heading", { level: 1, name: "Asha Verma" })).toBeVisible();
   await expect(page.getByText("₹450.00", { exact: true }).first()).toBeVisible();
@@ -16,7 +16,7 @@ test("account: top up the wallet and see it in the ledger", async ({ admin: page
 });
 
 test("B2B account: settle outstanding credit", async ({ admin: page }) => {
-  await page.goto("/accounts/2");
+  await page.goto("/admin/accounts/2");
   await expect(page.getByRole("tab", { name: "Credit ledger" })).toHaveAttribute("aria-selected", "true");
   await page.getByRole("button", { name: "Settle credit" }).click();
   const dialog = page.getByRole("dialog", { name: "Settle credit" });
@@ -27,7 +27,7 @@ test("B2B account: settle outstanding credit", async ({ admin: page }) => {
 });
 
 test("withdrawals: approve a request", async ({ admin: page }) => {
-  await visit(page, "/withdrawals", "Withdrawals");
+  await visit(page, "/admin/withdrawals", "Withdrawals");
   const table = page.getByRole("table", { name: "Withdrawals" });
   await table.getByRole("button", { name: "Approve" }).click();
   await page
@@ -39,7 +39,7 @@ test("withdrawals: approve a request", async ({ admin: page }) => {
 });
 
 test("payments → refund → reconcile", async ({ admin: page }) => {
-  await visit(page, "/payments", "Payments");
+  await visit(page, "/admin/payments", "Payments");
   await page.getByRole("link", { name: /^#1 \d/ }).click();
   await page.getByRole("button", { name: "Refund" }).click();
   const dialog = page.getByRole("dialog", { name: /refund payment #1/i });
@@ -47,7 +47,7 @@ test("payments → refund → reconcile", async ({ admin: page }) => {
   await dialog.getByRole("button", { name: "Refund" }).click();
   await expect(toast(page, "Refund initiated")).toBeVisible();
 
-  await visit(page, "/refunds", "Refunds");
+  await visit(page, "/admin/refunds", "Refunds");
   await page.getByRole("link", { name: /^#1 \d/ }).click();
   await page.getByRole("button", { name: "Reconcile" }).click();
   const rec = page.getByRole("dialog", { name: "Reconcile" });

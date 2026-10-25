@@ -1,7 +1,7 @@
 import { choose, expect, test, toast, visit } from "./fixtures";
 
 test("daily deliveries: summary, stops, POD and cash", async ({ admin: page }) => {
-  await visit(page, "/delivery", "Daily deliveries");
+  await visit(page, "/admin/delivery", "Daily deliveries");
   await expect(page.getByText("₹330.00").first()).toBeVisible(); // cash collected today
   const table = page.getByRole("table", { name: /Delivery stops on/ });
   await table.getByRole("link", { name: /^Sharma Sweets/ }).click();
@@ -12,7 +12,7 @@ test("daily deliveries: summary, stops, POD and cash", async ({ admin: page }) =
 });
 
 test("mark a pending stop as failed", async ({ admin: page }) => {
-  await page.goto("/delivery/32");
+  await page.goto("/admin/delivery/32");
   await page.getByRole("button", { name: "Mark failed" }).click();
   const dialog = page.getByRole("dialog", { name: /mark this stop as failed/i });
   await choose(dialog.getByLabel(/reason/i), "customer_unavailable");
@@ -22,6 +22,6 @@ test("mark a pending stop as failed", async ({ admin: page }) => {
 });
 
 test("orders list renders", async ({ admin: page }) => {
-  await visit(page, "/orders", "Orders");
+  await visit(page, "/admin/orders", "Orders");
   await expect(page.getByRole("table", { name: "Orders" })).toContainText("ORD-0007");
 });

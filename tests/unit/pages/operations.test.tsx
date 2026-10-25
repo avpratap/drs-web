@@ -1,10 +1,10 @@
 import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
-import CutoffPage from "@/app/(admin)/cutoff/page";
-import ReturnShowPage from "@/app/(admin)/returns/[id]/page";
-import ShopShowPage from "@/app/(admin)/shops/[id]/page";
-import SubscriptionShowPage from "@/app/(admin)/subscriptions/[id]/page";
+import CutoffPage from "@/app/admin/(dashboard)/cutoff/page";
+import ReturnShowPage from "@/app/admin/(dashboard)/returns/[id]/page";
+import ShopShowPage from "@/app/admin/(dashboard)/shops/[id]/page";
+import SubscriptionShowPage from "@/app/admin/(dashboard)/subscriptions/[id]/page";
 import { nav } from "../../setup";
 import { mockApi, renderWithRefine, optionLabels, pick } from "../../helpers";
 
@@ -51,7 +51,7 @@ describe("Return detail", () => {
     renderWithRefine(<ReturnShowPage />);
     expect(await screen.findByRole("heading", { name: "RMA-0005" })).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Approve" })).not.toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "ORD-0012" })).toHaveAttribute("href", "/orders/12");
+    expect(screen.getByRole("link", { name: "ORD-0012" })).toHaveAttribute("href", "/admin/orders/12");
 
     await user.click(screen.getByRole("button", { name: "Refund" }));
     const dialog = screen.getByRole("dialog", { name: /refund rma-0005/i });
