@@ -119,7 +119,14 @@ describe("payment panel (gateway handoff is guarded)", () => {
 
   it("without payments enabled it never calls the gateway: pay on delivery", () => {
     const calls = fakeGateway("");
-    render(<PaymentPanel orderId={5} orderNo="DRS-5" total={899} enabled={false} onPaid={() => {}} />);
+    render(
+      <PaymentPanel
+        purpose={{ kind: "order", orderId: 5, orderNo: "DRS-5" }}
+        total={899}
+        enabled={false}
+        onPaid={() => {}}
+      />,
+    );
     expect(screen.getByRole("heading", { name: "Pay on delivery" })).toBeInTheDocument();
     expect(screen.getByText(/Online payment is coming soon/)).toBeInTheDocument();
     expect(calls).toEqual([]);
@@ -129,7 +136,14 @@ describe("payment panel (gateway handoff is guarded)", () => {
     const calls = fakeGateway("");
     const onPaid = vi.fn();
     const user = userEvent.setup();
-    render(<PaymentPanel orderId={5} orderNo="DRS-5" total={899} enabled onPaid={onPaid} />);
+    render(
+      <PaymentPanel
+        purpose={{ kind: "order", orderId: 5, orderNo: "DRS-5" }}
+        total={899}
+        enabled
+        onPaid={onPaid}
+      />,
+    );
     await user.click(screen.getByRole("button", { name: "Pay ₹899 securely" }));
     await user.click(await screen.findByRole("button", { name: "Complete test payment · ₹899" }));
     await waitFor(() => expect(onPaid).toHaveBeenCalled());
@@ -167,7 +181,14 @@ describe("payment panel (gateway handoff is guarded)", () => {
     );
     const onPaid = vi.fn();
     const user = userEvent.setup();
-    render(<PaymentPanel orderId={5} orderNo="DRS-5" total={899} enabled onPaid={onPaid} />);
+    render(
+      <PaymentPanel
+        purpose={{ kind: "order", orderId: 5, orderNo: "DRS-5" }}
+        total={899}
+        enabled
+        onPaid={onPaid}
+      />,
+    );
     await user.click(screen.getByRole("button", { name: "Pay ₹899 securely" }));
     await waitFor(() => expect(onPaid).toHaveBeenCalled());
     expect(opened[0]).toMatchObject({ key: "rzp_test_123", order_id: "order_X", amount: 89900 });

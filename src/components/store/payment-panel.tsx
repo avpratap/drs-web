@@ -24,19 +24,20 @@ const primary =
  * - on with keys: POST /payments/create (Idempotency-Key per attempt) → Razorpay Checkout →
  *   POST /payments/verify.
  */
+export type PaymentPurpose = { kind: "order"; orderId: number; orderNo: string } | { kind: "topup" };
+
 export function PaymentPanel({
-  orderId,
-  orderNo,
+  purpose,
   total,
   enabled,
   onPaid,
 }: {
-  orderId: number;
-  orderNo: string;
+  purpose: PaymentPurpose;
   total: number;
   enabled: boolean;
   onPaid: () => void;
 }) {
+  const topup = purpose.kind === "topup";
   const attempt = useAttemptKey();
   const [state, setState] = useState<State>({ kind: "idle" });
 
@@ -45,9 +46,13 @@ export function PaymentPanel({
       <div className="flex items-start gap-3 rounded-2xl border border-drs-ink/10 bg-drs-white p-5 shadow-sm">
         <WalletIcon aria-hidden className="mt-0.5 size-5 shrink-0 text-drs-green" />
         <div className="text-sm">
-          <h2 className="text-base font-semibold text-drs-ink">Pay on delivery</h2>
+          <h2 className="text-base font-semibold text-drs-ink">
+            {topup ? "Online top-up coming soon" : "Pay on delivery"}
+          </h2>
           <p className="mt-0.5 text-drs-ink/75">
-            Online payment is coming soon. Please pay {rupees(total)} when your order arrives.
+            {topup
+              ? "You'll soon be able to add money with UPI, cards and netbanking."
+              : `Online payment is coming soon. Please pay ${rupees(total)} when your order arrives.`}
           </p>
         </div>
       </div>
@@ -81,7 +86,10 @@ export function PaymentPanel({
     try {
       const { data, error, response } = await api.POST("/api/v1/payments/create", {
         params: { header: attempt.header() },
-        body: { purpose: "order_payment", order_id: orderId },
+        body:
+          purpose.kind === "order"
+            ? { purpose: "order_payment", order_id: purpose.orderId }
+            : { purpose: "wallet_topup", amount: total },
       });
       status = response.status;
       attempt.settle(status);
@@ -99,7 +107,7 @@ export function PaymentPanel({
         key: data.key_id,
         gatewayOrderId: data.gateway_order_id,
         amount: data.amount,
-        description: `Order ${orderNo}`,
+        description: purpose.kind === "order" ? `Order ${purpose.orderNo}` : "Wallet top-up",
       });
       if (!result) {
         setState({
@@ -129,7 +137,7 @@ export function PaymentPanel({
         <CreditCardIcon aria-hidden className="mt-0.5 size-5 shrink-0 text-drs-green" />
         <div className="min-w-0 flex-1">
           <h2 id="pay-heading" className="text-base font-semibold text-drs-ink">
-            Complete your payment
+            {topup ? `Add ${rupees(total)} to your wallet` : "Complete your payment"}
           </h2>
           <p className="mt-0.5 text-sm text-drs-ink/75">UPI, cards and netbanking via Razorpay.</p>
         </div>
@@ -154,7 +162,7 @@ export function PaymentPanel({
       ) : (
         <button type="button" onClick={pay} disabled={state.kind === "busy"} className={`${primary} mt-4`}>
           <LockIcon aria-hidden className="size-4" />
-          {state.kind === "busy" ? state.text : `Pay ${rupees(total)} securely`}
+          {state.kind === "busy" ? state.text : `${topup ? "Add" : "Pay"} ${rupees(total)} securely`}
         </button>
       )}
       <p

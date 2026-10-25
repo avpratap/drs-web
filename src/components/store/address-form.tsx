@@ -48,16 +48,34 @@ export function validateAddress(d: Draft): Partial<Record<keyof Draft, string>> 
   return e;
 }
 
+const draftFrom = (a: Address): Draft => ({
+  contact_name: a.contact_name ?? "",
+  contact_phone: a.contact_phone ?? "",
+  line1: a.line1,
+  line2: a.line2 ?? "",
+  landmark: a.landmark ?? "",
+  city: a.city,
+  state: a.state,
+  pincode: a.pincode,
+  label: a.label ?? "Home",
+  is_default: a.is_default,
+});
+
+/** Add a delivery address, or edit `address` in place (PATCH). */
 export function AddressForm({
+  address,
   onSaved,
   onCancel,
   defaultOpen,
 }: {
+  address?: Address;
   onSaved: (a: Address) => void;
   onCancel?: () => void;
   defaultOpen?: boolean;
 }) {
-  const [d, setD] = useState<Draft>({ ...EMPTY, is_default: !!defaultOpen });
+  const [d, setD] = useState<Draft>(() =>
+    address ? draftFrom(address) : { ...EMPTY, is_default: !!defaultOpen },
+  );
   const [errors, setErrors] = useState<Partial<Record<keyof Draft, string>>>({});
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
@@ -66,7 +84,7 @@ export function AddressForm({
   return (
     <form
       noValidate
-      aria-label="New delivery address"
+      aria-label={address ? "Edit address" : "New delivery address"}
       className="grid gap-4 sm:grid-cols-2"
       onSubmit={async (e) => {
         e.preventDefault();
@@ -76,21 +94,25 @@ export function AddressForm({
         setSaving(true);
         setFormError(null);
         try {
-          const { data, error } = await api.POST("/api/v1/addresses", {
-            body: {
-              label: d.label || null,
-              contact_name: d.contact_name.trim(),
-              contact_phone: d.contact_phone.replace(/\D/g, "").slice(-10),
-              line1: d.line1.trim(),
-              line2: d.line2.trim() || null,
-              landmark: d.landmark.trim() || null,
-              city: d.city.trim(),
-              state: d.state,
-              pincode: d.pincode.trim(),
-              country: "IN",
-              is_default: d.is_default,
-            },
-          });
+          const body = {
+            label: d.label || null,
+            contact_name: d.contact_name.trim(),
+            contact_phone: d.contact_phone.replace(/\D/g, "").slice(-10),
+            line1: d.line1.trim(),
+            line2: d.line2.trim() || null,
+            landmark: d.landmark.trim() || null,
+            city: d.city.trim(),
+            state: d.state,
+            pincode: d.pincode.trim(),
+            country: "IN",
+            is_default: d.is_default,
+          };
+          const { data, error } = address
+            ? await api.PATCH("/api/v1/addresses/{address_id}", {
+                params: { path: { address_id: address.id } },
+                body,
+              })
+            : await api.POST("/api/v1/addresses", { body });
           if (data) onSaved(data);
           else setFormError(detailOf(error) ?? "We couldn't save this address.");
         } catch {
@@ -203,7 +225,7 @@ export function AddressForm({
       )}
       <div className="flex flex-wrap gap-3 sm:col-span-2">
         <Button type="submit" disabled={saving} className="rounded-full px-6">
-          {saving ? "Saving…" : "Save address"}
+          {saving ? "Saving…" : address ? "Save changes" : "Save address"}
         </Button>
         {onCancel && (
           <Button type="button" variant="ghost" onClick={onCancel} className="rounded-full">

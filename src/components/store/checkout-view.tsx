@@ -195,7 +195,7 @@ export function CheckoutView({ paymentsEnabled }: { paymentsEnabled: boolean }) 
       if (data) {
         setCoupon(null);
         void refresh(); // the cart is converted; the header count resets
-        router.replace(`/orders/${data.id}?placed=1`);
+        router.replace(`/account/orders/${data.id}?placed=1`);
         return;
       }
       const retry = status >= 500 || status === 409;
