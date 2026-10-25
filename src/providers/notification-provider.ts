@@ -24,7 +24,7 @@ export const notificationProvider: NotificationProvider = {
     const key = params.key ?? `t${++seq}`;
     toasts = [...toasts.filter((t) => t.key !== key), { ...params, key }];
     emit();
-    if (params.type !== "progress") setTimeout(() => toastStore.dismiss(key), 5000);
+    // Radix Toast handles auto-dismiss (paused while hovered/focused) and calls dismiss().
   },
   close: (key) => toastStore.dismiss(key),
 };

@@ -1,5 +1,6 @@
 "use client";
 
+import { ExportCsvButton } from "@/components/resource/export-csv";
 import { ResourceList } from "@/components/resource/resource-list";
 import { StatusBadge } from "@/components/ui/badge";
 import { TextLink } from "@/components/ui/links";
@@ -32,6 +33,7 @@ const columns: Column<Order>[] = [
 export default function OrdersPage() {
   return (
     <ResourceList<Order>
+      actions={<ExportCsvButton kind="orders" />}
       resource="orders"
       title="Orders"
       description="One-off storefront and app orders. Cancel to release stock and refund."

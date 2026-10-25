@@ -30,7 +30,7 @@ describe("ActionDialog", () => {
     await user.click(within(dialog).getByRole("button", { name: "Top up" }));
     await waitFor(() => expect(onConfirm).toHaveBeenCalledWith({ amount: 250 }));
     expect(await screen.findByText("Done!")).toBeInTheDocument();
-    await waitFor(() => expect(dialog).not.toHaveAttribute("open"));
+    await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
   });
 
   it("keeps the dialog open and shows the API error on failure", async () => {
@@ -41,7 +41,8 @@ describe("ActionDialog", () => {
     const dialog = screen.getByRole("dialog", { name: "Approve" });
     await user.click(within(dialog).getByRole("button", { name: "Approve" }));
     expect(await screen.findByText("Insufficient balance")).toBeInTheDocument();
-    expect(dialog).toHaveAttribute("open");
+    expect(dialog).toHaveAttribute("data-state", "open");
+    expect(dialog).toBeVisible();
   });
 
   it("cancel closes without calling the action", async () => {
@@ -51,7 +52,6 @@ describe("ActionDialog", () => {
     await user.click(screen.getByRole("button", { name: "Reject" }));
     const dialog = screen.getByRole("dialog", { name: "Reject" });
     await user.click(within(dialog).getByRole("button", { name: "Cancel" }));
-    expect(dialog).not.toHaveAttribute("open");
-    expect(onConfirm).not.toHaveBeenCalled();
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
 });

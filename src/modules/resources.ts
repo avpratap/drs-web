@@ -54,5 +54,13 @@ export const resources: ResourceProps[] = [
   crud("shops", "/shops", "Shops", { show: true }),
   crud("users", "/users", "Users & staff"),
   crud("delivery-assignments", "/delivery-assignments", "Driver assignments"),
+  crud("invoices", "/invoices", "Invoices", { show: true }),
+  crud("gift-cards", "/gift-cards", "Gift cards"),
+  crud("loyalty", "/loyalty", "Loyalty points"),
+  crud("churn", "/churn", "Churn risk"),
+  crud("forecast", "/forecast", "Demand forecast"),
+  crud("reorder-suggestions", "/reorder-suggestions", "Reorder suggestions"),
+  crud("notifications", "/notifications", "Notifications"),
+  crud("webhooks", "/webhooks", "Webhooks", { show: true }),
   crud("cutoff-runs", "/cutoff", "Cutoff runs"),
 ];

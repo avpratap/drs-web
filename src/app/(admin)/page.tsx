@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { PageHeader } from "@/components/ui/card";
 import { NAV_GROUPS } from "@/components/layout/nav";
+import { OverviewDashboard } from "@/components/overview/dashboard";
 
 const BLURBS: Record<string, string> = {
   "/products": "SKUs, units, GST & HSN, pack variants.",
@@ -36,21 +37,35 @@ const BLURBS: Record<string, string> = {
   "/shops": "Delivery points: price tier and assigned drivers.",
   "/delivery-assignments": "Which driver serves which shop: assign, reassign, remove.",
   "/users": "Customers, subscribers, drivers and admins.",
+  "/invoices": "GST invoices and credit notes; view or download the PDF.",
+  "/gift-cards": "Issue and void gift cards; balances and expiry.",
+  "/loyalty": "Points balances per account; manual adjustments.",
+  "/churn": "Accounts at risk of lapsing, scored low / medium / high.",
+  "/forecast": "Tomorrow's production plan: committed + forecast + safety.",
+  "/reorder-suggestions": "Products below their reorder point, with suggested quantities.",
+  "/copilot": "Ask the AI copilot about sales, stock and customers.",
+  "/notifications": "Outbound SMS/push/email outbox: resend, test, flush.",
+  "/webhooks": "Outbound event webhooks: endpoints, tests, delivery log.",
 };
 
 export default function OverviewPage() {
   return (
     <>
-      <PageHeader title="Overview" description="Everything you can manage in the DRS admin." />
+      <PageHeader
+        title="Overview"
+        description="Today's headline numbers, what needs attention, and every area of the DRS admin."
+      />
+      <OverviewDashboard />
+      <h2 className="mt-10 mb-4 text-lg font-semibold text-drs-green">All sections</h2>
       <div className="flex flex-col gap-8">
         {NAV_GROUPS.filter((g) => g.label).map((g) => (
           <section key={g.label} aria-labelledby={`ov-${g.label}`}>
-            <h2
+            <h3
               id={`ov-${g.label}`}
               className="mb-3 text-xs leading-4 font-semibold tracking-[0.14em] text-drs-ink/70 uppercase"
             >
               {g.label}
-            </h2>
+            </h3>
             <ul className="grid gap-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {g.items.map((i) => (
                 <li key={i.href}>

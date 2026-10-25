@@ -76,15 +76,15 @@ describe("Purchase order page", () => {
     expect(await screen.findByRole("heading", { name: "PO-0004" })).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Place order" })).not.toBeInTheDocument();
 
-    await user.click(screen.getByRole("button", { name: "Receive goods" }));
+    await user.click(screen.getByRole("button", { name: "Receive goods (GRN)" }));
     const dialog = screen.getByRole("dialog", { name: /goods receipt/i });
     // Only the line still open, pre-filled with the remaining qty.
     expect(within(dialog).getByLabelText("Qty received (line 1)")).toHaveValue(60);
     expect(within(dialog).queryByLabelText("Qty received (line 2)")).not.toBeInTheDocument();
-    await user.click(within(dialog).getByRole("button", { name: "Receive goods" }));
+    await user.click(within(dialog).getByRole("button", { name: "Receive goods (GRN)" }));
     expect(await within(dialog).findByText("Batch no. is required")).toBeInTheDocument();
     await user.type(within(dialog).getByLabelText("Batch no. (line 1)"), "b-2410");
-    await user.click(within(dialog).getByRole("button", { name: "Receive goods" }));
+    await user.click(within(dialog).getByRole("button", { name: "Receive goods (GRN)" }));
     await waitFor(() => expect(api.last("POST", "/api/v1/admin/purchase-orders/4/receive")).toBeTruthy());
     expect(api.last("POST", "/api/v1/admin/purchase-orders/4/receive")!.body).toEqual({
       lines: [{ product_id: 1, qty_received: 60, batch_no: "B-2410", mfg_date: null, expiry_date: null }],

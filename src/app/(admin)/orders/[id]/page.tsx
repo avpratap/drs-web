@@ -3,6 +3,7 @@
 import { useOne } from "@refinedev/core";
 import { useParams } from "next/navigation";
 import { ItemsTable } from "@/components/inventory/items-table";
+import { InvoicePdfButton } from "@/components/billing/invoice-pdf";
 import { ActionDialog } from "@/components/resource/action-dialog";
 import { StatusBadge } from "@/components/ui/badge";
 import { Card, DescriptionList, PageHeader } from "@/components/ui/card";
@@ -10,10 +11,14 @@ import { BackLink } from "@/components/ui/links";
 import type { components } from "@/lib/api/client";
 import { formatQty, humanize, money } from "@/lib/format";
 import { deliveryActions } from "@/modules/delivery/actions";
+import { insightsActions } from "@/modules/insights/handlers";
 import { useInventoryLookups } from "@/modules/inventory/lookups";
 
 type Order = components["schemas"]["OrderOut"];
 type Item = components["schemas"]["OrderItemOut"];
+
+/** An invoice exists (or can be issued) once the order has been paid. */
+const INVOICEABLE = new Set(["paid", "partially_refunded", "refunded"]);
 
 export default function OrderShowPage() {
   const { id } = useParams<{ id: string }>();
@@ -27,18 +32,25 @@ export default function OrderShowPage() {
         eyebrow={<BackLink href="/orders">Orders</BackLink>}
         title={o.order_no}
         actions={
-          o.status !== "cancelled" &&
-          o.status !== "delivered" && (
-            <ActionDialog
-              label="Cancel order"
-              variant="danger"
-              confirmVariant="danger"
-              description="Releases reserved stock; paid amounts are refunded per the payment method."
-              onConfirm={() => deliveryActions.cancelOrder(o.id)}
-              success="Order cancelled"
-              invalidate={["orders"]}
-            />
-          )
+          <>
+            {INVOICEABLE.has(o.payment_status) && (
+              <InvoicePdfButton
+                label="Invoice PDF"
+                resolve={async () => (await insightsActions.orderInvoice(o.id)).id}
+              />
+            )}
+            {o.status !== "cancelled" && o.status !== "delivered" && (
+              <ActionDialog
+                label="Cancel order"
+                variant="danger"
+                confirmVariant="danger"
+                description="Releases reserved stock; paid amounts are refunded per the payment method."
+                onConfirm={() => deliveryActions.cancelOrder(o.id)}
+                success="Order cancelled"
+                invalidate={["orders"]}
+              />
+            )}
+          </>
         }
       />
       <Card>

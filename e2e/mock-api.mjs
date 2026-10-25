@@ -593,6 +593,36 @@ function seed() {
         duration_seconds: 4,
       },
     ],
+    giftCards: [
+      { id: 1, code: "DRS-GIFT-7Q2K", initial_amount: 500, balance: 320, status: "active", issued_to_account_id: 1, expires_at: "2027-03-31" },
+      { id: 2, code: "DRS-GIFT-9XW4", initial_amount: 1000, balance: 0, status: "redeemed", issued_to_account_id: null, expires_at: null },
+    ],
+    loyalty: [
+      { account_id: 2, points_balance: 1840 },
+      { account_id: 1, points_balance: 260 },
+    ],
+    notifications: [
+      { id: 501, user_id: 11, event_type: "payment.success", channel: "whatsapp", category: "transactional", status: "sent", skip_reason: null, provider_message_id: "wamid.1", body: "Payment of ₹330 received for ORD-0007.", attempts: 1 },
+      { id: 502, user_id: 12, event_type: "wallet.low", channel: "sms", category: "transactional", status: "failed", skip_reason: null, provider_message_id: null, body: "Your DRS wallet is running low.", attempts: 3 },
+      { id: 503, user_id: 11, event_type: "marketing.promo", channel: "whatsapp", category: "marketing", status: "skipped", skip_reason: "opted_out", provider_message_id: null, body: null, attempts: 0 },
+    ],
+    webhooks: [{ id: 1, event_type: "payment.success", url: "https://erp.example/hooks/drs", active: true }],
+    deliveries: [{ id: 1, webhook_id: 1, event_type: "payment.success", status: "delivered", attempts: 1, response_code: 200 }],
+    churn: [
+      { account_id: 2, score: 0.82, risk: "high" },
+      { account_id: 1, score: 0.35, risk: "medium" },
+    ],
+    invoices: [
+      {
+        id: 1, invoice_no: "DRS/2026-27/0001", fy: "2026-27", account_id: 1, delivery_order_id: null, order_id: 7,
+        invoice_date: today, seller_gstin: "08AAACD1234F1Z5", buyer_gstin: null, place_of_supply: "Rajasthan",
+        is_interstate: false, taxable_value: 314.29, cgst: 7.86, sgst: 7.85, igst: 0, total: 330, is_credit_note: false,
+        is_partial: false, original_invoice_id: null, status: "issued",
+        lines: [
+          { product_id: 2, hsn_code: "0403", description: "Masala Buttermilk 200 ml", qty: 10, unit_price: 31.43, taxable_value: 314.29, gst_rate: 5, cgst: 7.86, sgst: 7.85, igst: 0, line_total: 330 },
+        ],
+      },
+    ],
   };
   return db;
 }
@@ -1293,6 +1323,178 @@ on("PUT", "/api/v1/admin/feature-flags", (req, res, { body }) => {
   );
 });
 
+// --- Phase 5: loyalty, gift cards, notifications, webhooks, ML, invoices, exports ---
+on("GET", "/api/v1/admin/gift-cards", (req, res, { q }) => {
+  let rows = byStatus([...db.giftCards].reverse(), q);
+  if (q.get("issued_to")) rows = rows.filter((c) => c.issued_to_account_id === Number(q.get("issued_to")));
+  page(res, rows, q);
+});
+on("POST", "/api/v1/admin/gift-cards", (req, res, { body }) => {
+  if (!(body.amount > 0)) return send(res, 422, { detail: "amount must be > 0" });
+  const card = {
+    id: id(),
+    code: `DRS-GIFT-${Math.random().toString(36).slice(2, 6).toUpperCase()}`,
+    initial_amount: body.amount,
+    balance: body.amount,
+    status: "active",
+    issued_to_account_id: body.issued_to_account_id ?? null,
+    expires_at: body.expires_at ?? null,
+  };
+  db.giftCards.push(card);
+  send(res, 200, card);
+});
+on("POST", "/api/v1/admin/gift-cards/:cid/void", (req, res, { p }) => {
+  const c = find(db.giftCards, p.cid);
+  if (!c) return send(res, 404, { detail: "Gift card not found" });
+  c.status = "disabled";
+  send(res, 200, c);
+});
+on("GET", "/api/v1/admin/loyalty", (req, res, { q }) =>
+  page(res, [...db.loyalty].sort((a, b) => b.points_balance - a.points_balance), q),
+);
+on("POST", "/api/v1/admin/loyalty/:aid/adjust", (req, res, { p, body }) => {
+  let row = db.loyalty.find((l) => l.account_id === Number(p.aid));
+  if (!row) db.loyalty.push((row = { account_id: Number(p.aid), points_balance: 0 }));
+  if (row.points_balance + body.points < 0) return send(res, 409, { detail: "Insufficient points" });
+  row.points_balance += body.points;
+  send(res, 200, { ...row, recent: [{ delta: body.points, reason: body.reason ?? "adjust", balance_after: row.points_balance }] });
+});
+on("GET", "/api/v1/admin/notifications", (req, res, { q }) => {
+  let rows = byStatus([...db.notifications].sort((a, b) => b.id - a.id), q);
+  if (q.get("user_id")) rows = rows.filter((n) => n.user_id === Number(q.get("user_id")));
+  // Like the backend: no X-Total-Count on this list.
+  const limit = Number(q.get("limit") ?? 50);
+  const offset = Number(q.get("offset") ?? 0);
+  send(res, 200, rows.slice(offset, offset + limit));
+});
+on("POST", "/api/v1/admin/notifications/:nid/resend", (req, res, { p }) => {
+  const n = find(db.notifications, p.nid);
+  if (!n) return send(res, 404, { detail: "Notification not found" });
+  n.status = "queued";
+  n.skip_reason = null;
+  send(res, 200, { id: n.id, status: n.status });
+});
+on("POST", "/api/v1/admin/notifications/test", (req, res, { body }) => {
+  const created = ["whatsapp", "push"].map((channel) => {
+    const n = { id: id(), user_id: body.user_id, event_type: body.event_type, channel, category: "transactional", status: "queued", skip_reason: null, provider_message_id: null, body: `Test: ${body.event_type}`, attempts: 0 };
+    db.notifications.push(n);
+    return { id: n.id, channel, status: "queued", skip_reason: null };
+  });
+  send(res, 200, { created });
+});
+on("POST", "/api/v1/admin/notifications/flush", (req, res) => {
+  const queued = db.notifications.filter((n) => n.status === "queued");
+  queued.forEach((n) => ((n.status = "sent"), (n.attempts += 1)));
+  send(res, 200, { processed: queued.length, sent: queued.length, failed: 0 });
+});
+on("GET", "/api/v1/admin/outbound-webhooks", (req, res, { q }) => page(res, [...db.webhooks].reverse(), q));
+on("POST", "/api/v1/admin/outbound-webhooks", (req, res, { body }) => {
+  const h = { id: id(), event_type: body.event_type, url: body.url, active: body.active ?? true };
+  db.webhooks.push(h);
+  send(res, 200, h);
+});
+on("PATCH", "/api/v1/admin/outbound-webhooks/:hid", (req, res, { p, body }) => {
+  const h = find(db.webhooks, p.hid);
+  if (!h) return send(res, 404, { detail: "Webhook not found" });
+  for (const k of ["event_type", "url", "active"]) if (body[k] !== undefined && body[k] !== null) h[k] = body[k];
+  send(res, 200, h);
+});
+on("DELETE", "/api/v1/admin/outbound-webhooks/:hid", (req, res, { p }) => {
+  db.webhooks = db.webhooks.filter((h) => h.id !== Number(p.hid));
+  send(res, 204);
+});
+on("GET", "/api/v1/admin/outbound-webhooks/:hid/deliveries", (req, res, { p, q }) =>
+  page(res, db.deliveries.filter((d) => d.webhook_id === Number(p.hid)).reverse(), q),
+);
+on("POST", "/api/v1/admin/outbound-webhooks/:hid/test", (req, res, { p }) => {
+  const h = find(db.webhooks, p.hid);
+  if (!h) return send(res, 404, { detail: "Webhook not found" });
+  const d = { id: id(), webhook_id: h.id, event_type: h.event_type, status: "delivered", attempts: 1, response_code: 200 };
+  db.deliveries.push(d);
+  send(res, 200, d);
+});
+on("GET", "/api/v1/admin/ml/churn", (req, res, { q }) => {
+  const risk = q.get("risk");
+  page(res, db.churn.filter((c) => !risk || c.risk === risk).sort((a, b) => b.score - a.score), q);
+});
+on("POST", "/api/v1/admin/ml/churn/score", (req, res) => {
+  db.churn.push({ account_id: 3, score: 0.12, risk: "low" });
+  const by = (r) => db.churn.filter((c) => c.risk === r).length;
+  send(res, 200, { scored: db.churn.length, low: by("low"), medium: by("medium"), high: by("high") });
+});
+on("GET", "/api/v1/admin/forecast", (req, res, { q }) => {
+  const d = q.get("date") ?? today;
+  const h = Number(q.get("history_days") ?? 28);
+  send(res, 200, {
+    for_date: d,
+    history_days: h,
+    plan: [
+      { product_id: 1, product_name: "Full Cream Milk", committed_qty: 240, forecast_variable_qty: 36.5, safety_qty: 12, recommended_production: 288.5, method: "seasonal_naive" },
+      { product_id: 2, product_name: "Masala Buttermilk", committed_qty: 80, forecast_variable_qty: 22, safety_qty: 8, recommended_production: 110, method: "moving_average" },
+      { product_id: 3, product_name: "A2 Desi Ghee", committed_qty: 0, forecast_variable_qty: 4.2, safety_qty: 2, recommended_production: 6.2, method: "croston" },
+    ],
+  });
+});
+on("POST", "/api/v1/admin/ai/ask", (req, res, { body }) => {
+  if (!body.message?.trim()) return send(res, 422, { detail: "message required" });
+  send(res, 200, {
+    answer: `Here's what I found for "${body.message}": Full Cream Milk led sales this week (₹12,400), followed by Masala Buttermilk.`,
+    ai_live: false,
+  });
+});
+on("GET", "/api/v1/invoices", (req, res, { q }) => {
+  const limit = Number(q.get("limit") ?? 50);
+  const offset = Number(q.get("offset") ?? 0);
+  send(res, 200, [...db.invoices].reverse().slice(offset, offset + limit));
+});
+on("GET", "/api/v1/invoices/:iid", (req, res, { p }) => {
+  const i = find(db.invoices, p.iid);
+  return i ? send(res, 200, i) : send(res, 404, { detail: "Invoice not found" });
+});
+on("GET", "/api/v1/invoices/:iid/pdf", (req, res, { p }) => {
+  const i = find(db.invoices, p.iid);
+  if (!i) return send(res, 404, { detail: "Invoice not found" });
+  send(res, 200, { invoice_no: i.invoice_no, pdf_url: `/files/private/invoices/${i.id}.pdf?exp=4102444800&sig=mock` });
+});
+on("POST", "/api/v1/orders/:oid/invoice", (req, res, { p }) => {
+  const o = find(db.orders, p.oid);
+  if (!o) return send(res, 404, { detail: "Order not found" });
+  if (!["paid", "partially_refunded", "refunded"].includes(o.payment_status))
+    return send(res, 409, { detail: "Invoice is available only after the order is paid" });
+  let inv = db.invoices.find((i) => i.order_id === o.id);
+  if (!inv) {
+    inv = { ...db.invoices[0], id: id(), invoice_no: `DRS/2026-27/${String(db.invoices.length + 1).padStart(4, "0")}`, order_id: o.id, account_id: o.account_id, total: o.total };
+    db.invoices.push(inv);
+  }
+  send(res, 200, inv);
+});
+const CSV = {
+  orders: "id,order_no,status,total\n7,ORD-0007,created,330\n",
+  payments: "id,amount,status\n1,330,success\n",
+  users: "id,phone,role\n1,9876500001,admin\n",
+  invoices: "id,invoice_no,total\n1,DRS/2026-27/0001,330\n",
+};
+on("GET", "/api/v1/admin/exports/:file", (req, res, { p }) => {
+  const kind = p.file.replace(/\.csv$/, "");
+  if (!CSV[kind]) return send(res, 404, { detail: "Unknown export" });
+  res.writeHead(200, {
+    "content-type": "text/csv",
+    "content-disposition": `attachment; filename="${kind}.csv"`,
+    "x-export-truncated": "false",
+    "access-control-expose-headers": "X-Export-Truncated",
+  });
+  res.end(CSV[kind]);
+});
+// Signed private files (invoice PDFs): a tiny valid PDF, no bearer token (signed URL).
+const PDF = Buffer.from(
+  "%PDF-1.4\n1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj 2 0 obj<</Type/Pages/Kids[3 0 R]/Count 1>>endobj " +
+    "3 0 obj<</Type/Page/Parent 2 0 R/MediaBox[0 0 300 144]>>endobj\ntrailer<</Root 1 0 R>>\n%%EOF\n",
+);
+on("GET", "/files/.+", (req, res) => {
+  res.writeHead(200, { "content-type": "application/pdf" });
+  res.end(PDF);
+});
+
 createServer(async (req, res) => {
   const url = new URL(req.url, `http://localhost:${PORT}`);
   let raw = "";
@@ -1304,7 +1506,8 @@ createServer(async (req, res) => {
     return send(res, 422, { detail: "bad json" });
   }
   const isAuth = url.pathname.startsWith("/api/v1/auth/") && url.pathname !== "/api/v1/auth/me";
-  if (!isAuth && url.pathname !== "/__reset" && !req.headers.authorization?.startsWith("Bearer "))
+  const signedFile = url.pathname.startsWith("/files/");
+  if (!isAuth && !signedFile && url.pathname !== "/__reset" && !req.headers.authorization?.startsWith("Bearer "))
     return send(res, 401, { detail: "Not authenticated" });
   for (const r of routes) {
     if (r.method !== req.method) continue;

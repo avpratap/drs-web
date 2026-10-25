@@ -54,7 +54,7 @@ export default function PurchaseOrderShowPage() {
             )}
             {receivable && (
               <ActionDialog
-                label="Receive goods"
+                label="Receive goods (GRN)"
                 variant="primary"
                 wide
                 title={`Goods receipt for ${po.po_no}`}
@@ -79,7 +79,7 @@ export default function PurchaseOrderShowPage() {
                     })),
                 })}
                 onConfirm={(body) => inventoryActions.receivePO(po.id, body)}
-                success="Goods received"
+                success="Goods received: GRN posted and batches created"
                 invalidate={REFRESH}
               >
                 {(form) => (
@@ -106,7 +106,13 @@ export default function PurchaseOrderShowPage() {
                       },
                       { name: "batch_no", label: "Batch no.", required: true, maxLength: 64 },
                       { name: "mfg_date", label: "Mfg", type: "date" },
-                      { name: "expiry_date", label: "Expiry", type: "date" },
+                      {
+                        name: "expiry_date",
+                        label: "Expiry",
+                        type: "date",
+                        validate: (v, row) =>
+                          !v || !row.mfg_date || String(v) >= String(row.mfg_date) || "Expiry is before manufacture",
+                      },
                     ]}
                   />
                 )}
