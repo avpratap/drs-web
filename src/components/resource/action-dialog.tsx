@@ -92,7 +92,7 @@ export function ActionDialog({
         aria-labelledby={titleId}
         onClose={() => form.reset(defaultValues)}
         className={cn(
-          "m-auto rounded-xl bg-drs-white p-0 text-drs-ink shadow-xl backdrop:bg-drs-ink/50",
+          "m-auto rounded-xl bg-drs-white p-0 text-left text-drs-ink shadow-xl backdrop:bg-drs-ink/50",
           wide ? "w-[min(56rem,calc(100vw-2rem))]" : "w-[min(34rem,calc(100vw-2rem))]",
         )}
       >
