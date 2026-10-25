@@ -30,6 +30,11 @@ const BLURBS: Record<string, string> = {
   "/ratings": "Moderate product reviews.",
   "/coupons": "Checkout discount codes.",
   "/feature-flags": "Switch features on and off.",
+  "/cutoff": "Nightly order cutoff: status, history, manual run.",
+  "/returns": "Approve, reject and refund customer returns.",
+  "/subscriptions": "Standing orders: lines, pause, resume, cancel.",
+  "/shops": "Delivery points: price tier and assigned drivers.",
+  "/users": "Customers, subscribers, drivers and admins.",
 };
 
 export default function OverviewPage() {

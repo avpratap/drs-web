@@ -28,4 +28,14 @@ export const OPTIONS = {
   ratingStatus: opts("pending", "approved", "rejected", "hidden"),
   discountType: opts("percent", "flat"),
   productStatus: opts("active", "retired"),
+  rmaStatus: opts("requested", "approved", "rejected", "refunded", "cancelled"),
+  subscriptionStatus: opts("active", "paused", "cancelled"),
+  frequency: [
+    { value: "daily", label: "Daily" },
+    { value: "alternate", label: "Every N days" },
+    { value: "weekly", label: "Weekly (pick days)" },
+  ],
+  userRole: opts("admin", "customer", "subscriber", "delivery"),
+  userStatus: opts("active", "suspended", "erased"),
+  cutoffStatus: opts("generating", "frozen", "partial", "failed"),
 } as const;

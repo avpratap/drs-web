@@ -51,6 +51,7 @@ const GREEN = [
   "confirmed",
   "settled",
   "subscribed",
+  "frozen",
 ];
 const MAROON = [
   "retired",

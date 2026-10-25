@@ -5,10 +5,12 @@ export function ItemsTable<T>({
   rows,
   columns,
   caption,
+  empty = "No lines.",
 }: {
   rows: T[];
   columns: Column<T>[];
   caption: string;
+  empty?: React.ReactNode;
 }) {
   return (
     <section className="mt-8">
@@ -18,7 +20,7 @@ export function ItemsTable<T>({
         columns={columns}
         rows={rows}
         rowKey={(r) => JSON.stringify(r)}
-        empty="No lines."
+        empty={empty}
       />
     </section>
   );

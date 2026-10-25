@@ -5,6 +5,7 @@ import { contentHandlers } from "./content/handlers";
 import { customerHandlers } from "./customers/handlers";
 import { deliveryHandlers } from "./delivery/handlers";
 import { inventoryHandlers } from "./inventory/handlers";
+import { operationsHandlers } from "./operations/handlers";
 import { reportHandlers } from "./reports/handlers";
 import { systemHandlers } from "./system/handlers";
 
@@ -18,4 +19,5 @@ export const handlers: Handlers = {
   ...contentHandlers,
   ...customerHandlers,
   ...systemHandlers,
+  ...operationsHandlers,
 };

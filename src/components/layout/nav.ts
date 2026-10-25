@@ -37,7 +37,9 @@ export const NAV_GROUPS: NavGroup[] = [
     label: "Delivery",
     items: [
       { href: "/delivery", label: "Daily deliveries" },
+      { href: "/cutoff", label: "Cutoff runs" },
       { href: "/orders", label: "Orders" },
+      { href: "/returns", label: "Returns (RMA)" },
     ],
   },
   {
@@ -59,12 +61,20 @@ export const NAV_GROUPS: NavGroup[] = [
   {
     label: "Customers",
     items: [
+      { href: "/subscriptions", label: "Subscriptions" },
+      { href: "/shops", label: "Shops" },
       { href: "/tickets", label: "Support tickets" },
       { href: "/ratings", label: "Ratings" },
       { href: "/coupons", label: "Coupons" },
     ],
   },
-  { label: "System", items: [{ href: "/feature-flags", label: "Feature flags" }] },
+  {
+    label: "System",
+    items: [
+      { href: "/users", label: "Users & staff" },
+      { href: "/feature-flags", label: "Feature flags" },
+    ],
+  },
 ];
 
 export const NAV = NAV_GROUPS.flatMap((g) => g.items);

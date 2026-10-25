@@ -16,6 +16,9 @@ export type LineColumn = {
   max?: number;
   maxLength?: number;
   readOnly?: boolean;
+  placeholder?: string;
+  /** Cross-field check against the rest of the row. */
+  validate?: (value: unknown, row: Record<string, unknown>) => true | string;
 };
 
 const control =
@@ -83,14 +86,22 @@ export function LineItems({
               const reg = form.register(path, {
                 required: c.required ? `${c.label} is required` : false,
                 valueAsNumber: numeric,
+                // Numeric selects (ids) submit numbers; text selects keep their string value.
                 setValueAs:
-                  c.type === "select"
+                  c.type === "select" && typeof c.options?.[0]?.value === "number"
                     ? (v: unknown) => (v === "" || v == null ? undefined : Number(v))
                     : undefined,
                 maxLength: c.maxLength
                   ? { value: c.maxLength, message: `Max ${c.maxLength} characters` }
                   : undefined,
                 validate: (v: unknown) => {
+                  if (c.validate) {
+                    const res = c.validate(
+                      v,
+                      (form.getValues(`${name}.${i}`) ?? {}) as Record<string, unknown>,
+                    );
+                    if (res !== true) return res;
+                  }
                   if (!numeric) return true;
                   const n = v as number;
                   if (Number.isNaN(n) || n === undefined) return c.required ? `${c.label} is required` : true;
@@ -121,6 +132,7 @@ export function LineItems({
                       readOnly={c.readOnly}
                       className={cn(control, c.readOnly && "bg-drs-cream/50")}
                       type={numeric ? "number" : c.type === "date" ? "date" : "text"}
+                      placeholder={c.placeholder}
                       step={numeric ? (c.type === "money" ? "0.01" : "any") : undefined}
                       inputMode={numeric ? "decimal" : undefined}
                       aria-label={`${c.label} (line ${i + 1})`}
