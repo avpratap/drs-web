@@ -12,6 +12,13 @@ const nextConfig: NextConfig = {
       },
     },
   },
+  // Orders moved into the account area; old links (and PR 3's confirmation URL) keep working.
+  async redirects() {
+    return [
+      { source: "/orders", destination: "/account/orders", permanent: true },
+      { source: "/orders/:id", destination: "/account/orders/:id", permanent: true },
+    ];
+  },
   async headers() {
     return [
       {

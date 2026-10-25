@@ -20,6 +20,7 @@ import { deliveryLabel } from "@/modules/store/checkout";
 import { ORDER_STEPS, orderStage, orderStatusLabel, paymentLabel } from "@/modules/store/orders";
 import { linePack } from "@/modules/store/packs";
 import { detailOf } from "./cart";
+import { InvoiceLink } from "./invoice-link";
 import { PaymentPanel } from "./payment-panel";
 import { rupees } from "./product-card";
 import { useProducts } from "./use-products";
@@ -97,7 +98,7 @@ export function OrdersList() {
         return (
           <li key={o.id}>
             <Link
-              href={`/orders/${o.id}`}
+              href={`/account/orders/${o.id}`}
               className="group flex items-center gap-4 rounded-2xl border border-drs-ink/10 bg-drs-white p-4 shadow-sm transition-shadow hover:shadow-md sm:p-5"
             >
               <span
@@ -230,7 +231,9 @@ function Shipments({ tracking }: { tracking: Tracking | null }) {
             <ol className="mt-3 space-y-2 border-l-2 border-drs-green/20 pl-4">
               {s.events.map((e, i) => (
                 <li key={i}>
-                  <p className="font-medium text-drs-ink">{e.status.replace(/_/g, " ")}</p>
+                  <p className="font-medium text-drs-ink">
+                    {e.status.replace(/_/g, " ").replace(/^\w/, (c) => c.toUpperCase())}
+                  </p>
                   <p className="text-drs-ink/70">{[e.location, e.note].filter(Boolean).join(" · ")}</p>
                 </li>
               ))}
@@ -296,7 +299,7 @@ export function OrderDetail({
   const due = o.payment_status === "pending" && orderStage(o.status) !== "cancelled";
 
   return (
-    <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-start lg:gap-10">
+    <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_20rem] xl:items-start xl:gap-8">
       <div className="space-y-4">
         {placed && (
           <div
@@ -315,8 +318,7 @@ export function OrderDetail({
 
         {due && (
           <PaymentPanel
-            orderId={o.id}
-            orderNo={o.order_no}
+            purpose={{ kind: "order", orderId: o.id, orderNo: o.order_no }}
             total={o.total}
             enabled={paymentsEnabled}
             onPaid={() => void load().then(setState)}
@@ -389,7 +391,7 @@ export function OrderDetail({
 
       <aside
         aria-labelledby="totals-heading"
-        className="rounded-2xl border border-drs-ink/10 bg-drs-white p-5 shadow-sm md:p-6 lg:sticky lg:top-28"
+        className="rounded-2xl border border-drs-ink/10 bg-drs-white p-5 shadow-sm md:p-6 xl:sticky xl:top-28"
       >
         <h2 id="totals-heading" className="text-lg font-semibold text-drs-ink">
           Bill details
@@ -415,8 +417,11 @@ export function OrderDetail({
           </div>
         </dl>
         <p className="mt-1.5 text-xs text-drs-ink/70">Includes {rupees(o.tax_total)} GST</p>
+        {["paid", "partially_refunded", "refunded"].includes(o.payment_status) && (
+          <InvoiceLink orderId={o.id} />
+        )}
         <Link
-          href="/orders"
+          href="/account/orders"
           className="mt-5 inline-flex min-h-11 items-center gap-1 text-sm font-semibold text-drs-green hover:underline"
         >
           All orders <ChevronRightIcon aria-hidden className="size-4" />

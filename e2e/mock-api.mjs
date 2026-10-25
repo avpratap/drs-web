@@ -202,6 +202,41 @@ function seed() {
       },
     ],
     carts: {},
+    // The storefront customer (phone 9000000000): profile, wallet and one delivered order.
+    custProfile: {
+      user_id: 50,
+      phone: "9000000000",
+      email: null,
+      email_verified: false,
+      full_name: "Asha Verma",
+      display_name: null,
+      avatar_url: null,
+      date_of_birth: null,
+      gender: null,
+      locale: "en-IN",
+      alternate_phone: null,
+      gstin: null,
+      legal_name: null,
+      notify_whatsapp: true,
+      notify_sms: true,
+      notify_push: true,
+      notify_email: false,
+      marketing_opt_in: false,
+      quiet_hours_start: null,
+      quiet_hours_end: null,
+    },
+    custWallet: {
+      balance: 250,
+      txns: Array.from({ length: 23 }, (_, i) => ({
+        id: 500 + i,
+        txn_type: i % 4 === 0 ? "topup" : "debit",
+        amount: i % 4 === 0 ? 500 : 33,
+        balance_after: 250 + i * 10,
+        ref_type: i % 4 === 0 ? "payment" : "order",
+        ref_id: 900 + i,
+        created_at: new Date(Date.UTC(2026, 9, 24) - i * 86_400_000).toISOString(),
+      })),
+    },
     addresses: [],
     idem: {}, // Idempotency-Key -> stored response (checkout / payment create)
     onlinePayments: [],
@@ -469,6 +504,47 @@ function seed() {
       ],
     },
     orders: [
+      {
+        id: 880,
+        order_no: "DRS-000880",
+        account_id: 50,
+        shop_id: 1,
+        order_type: "one_time",
+        status: "delivered",
+        payment_status: "paid",
+        subtotal: 132,
+        discount: 0,
+        coupon_code: null,
+        total: 132,
+        tax_total: 0,
+        total_incl_tax: 132,
+        items: [
+          {
+            product_id: 1,
+            qty: 2000,
+            unit_price: 0.066,
+            line_total: 132,
+            gst_rate: 0,
+            gst_amount: 0,
+            price_incl_tax: 0.066,
+          },
+        ],
+        owner: `Bearer ${token("customer")}`,
+        shipments: [
+          {
+            id: 1,
+            shipment_no: "SH-880",
+            status: "delivered",
+            courier: "DRS Fleet",
+            awb: "AWB880",
+            tracking_url: null,
+            events: [
+              { status: "delivered", location: "Jaipur", note: "Left at the door", event_time: null },
+              { status: "out_for_delivery", location: "Jaipur hub", note: null, event_time: null },
+            ],
+          },
+        ],
+      },
       {
         id: 7,
         order_no: "ORD-0007",
@@ -1154,8 +1230,94 @@ on("GET", "/api/v1/orders/:oid/tracking", (req, res, { p, headers }) => {
     shipments: o.shipments ?? [],
   });
 });
+// --- customer account ---
+const CUSTOMER = () => `Bearer ${token("customer")}`;
+const isCustomer = (headers) => headers.authorization === CUSTOMER();
+on("GET", "/api/v1/me/home", (req, res, { headers }) => {
+  const mine = db.orders.filter((o) => o.owner === headers.authorization).sort((a, b) => b.id - a.id);
+  send(res, 200, {
+    wallet_balance: isCustomer(headers) ? db.custWallet.balance : 0,
+    credit_outstanding: 0,
+    loyalty_points: 120,
+    active_subscriptions: 1,
+    recent_orders: mine
+      .slice(0, 5)
+      .map((o) => ({ id: o.id, order_no: o.order_no, status: o.status, total: o.total })),
+    banners: [],
+    recommendations: [],
+  });
+});
+on("GET", "/api/v1/profile", (req, res) => send(res, 200, db.custProfile));
+on("PATCH", "/api/v1/profile", (req, res, { body }) => {
+  if (body.email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(body.email))
+    return send(res, 422, { detail: "Enter a valid email address" });
+  if (body.email && body.email !== db.custProfile.email) db.custProfile.email_verified = false;
+  Object.assign(db.custProfile, body);
+  send(res, 200, db.custProfile);
+});
+const ownedAddress = (headers, aid) =>
+  db.addresses.find((a) => a.id === Number(aid) && a.owner === headers.authorization);
+on("PATCH", "/api/v1/addresses/:aid", (req, res, { p, body, headers }) => {
+  const a = ownedAddress(headers, p.aid);
+  if (!a) return send(res, 404, { detail: "Address not found" });
+  if (body.pincode && !/^\d{6}$/.test(body.pincode))
+    return send(res, 422, { detail: "Enter a 6-digit pincode" });
+  Object.assign(a, body);
+  send(res, 200, withoutOwner(a));
+});
+on("POST", "/api/v1/addresses/:aid/default", (req, res, { p, headers }) => {
+  const a = ownedAddress(headers, p.aid);
+  if (!a) return send(res, 404, { detail: "Address not found" });
+  db.addresses.filter((x) => x.owner === headers.authorization).forEach((x) => (x.is_default = x === a));
+  send(res, 200, withoutOwner(a));
+});
+on("DELETE", "/api/v1/addresses/:aid", (req, res, { p, headers }) => {
+  const a = ownedAddress(headers, p.aid);
+  if (!a) return send(res, 404, { detail: "Address not found" });
+  db.addresses = db.addresses.filter((x) => x !== a);
+  if (a.is_default) {
+    const next = db.addresses.find((x) => x.owner === headers.authorization);
+    if (next) next.is_default = true;
+  }
+  send(res, 204);
+});
+on("GET", "/api/v1/billing/me", (req, res, { headers }) => {
+  if (!isCustomer(headers)) return send(res, 404, { detail: "No billing account for this user" });
+  send(res, 200, {
+    account_id: 50,
+    billing_mode: "prepaid_wallet",
+    wallet_balance: db.custWallet.balance,
+    credit_outstanding: 0,
+    recent_wallet_txns: db.custWallet.txns
+      .slice(0, 5)
+      .map(({ txn_type, amount, balance_after }) => ({ txn_type, amount, balance_after })),
+  });
+});
+on("GET", "/api/v1/billing/transactions", (req, res, { q, headers }) => {
+  const rows = isCustomer(headers) ? db.custWallet.txns : [];
+  const limit = Number(q.get("limit") ?? 20);
+  const offset = Number(q.get("offset") ?? 0);
+  send(res, 200, rows.slice(offset, offset + limit), {
+    "x-total-count": String(rows.length),
+    "access-control-expose-headers": "X-Total-Count",
+  });
+});
 on("POST", "/api/v1/payments/create", (req, res, { body, headers }) =>
   idempotent(headers, res, () => {
+    if (body.purpose === "wallet_topup") {
+      if (!(body.amount > 0)) return { status: 422, body: { detail: "amount required for top-up" } };
+      const pay = {
+        id: id(),
+        gateway_order_id: `order_dev_${id()}`,
+        topup: body.amount,
+        status: "initiated",
+      };
+      db.onlinePayments.push(pay);
+      return {
+        status: 200,
+        body: { payment_id: pay.id, gateway_order_id: pay.gateway_order_id, amount: body.amount, key_id: "" },
+      };
+    }
     const o = find(db.orders, body.order_id);
     if (body.purpose !== "order_payment" || !o || o.owner !== headers.authorization)
       return { status: 404, body: { detail: "Order not found" } };
@@ -1174,6 +1336,19 @@ on("POST", "/api/v1/payments/verify", (req, res, { body }) => {
   if (!pay) return send(res, 404, { detail: "Payment not found" });
   if (body.signature !== "dev") return send(res, 400, { detail: "Signature verification failed" });
   pay.status = "success";
+  if (pay.topup) {
+    db.custWallet.balance += pay.topup;
+    db.custWallet.txns.unshift({
+      id: id(),
+      txn_type: "topup",
+      amount: pay.topup,
+      balance_after: db.custWallet.balance,
+      ref_type: "payment",
+      ref_id: pay.id,
+      created_at: new Date().toISOString(),
+    });
+    return send(res, 200, { detail: "payment successful", payment_id: pay.id, status: "success" });
+  }
   const o = find(db.orders, pay.order_id);
   o.payment_status = "paid";
   o.status = "confirmed";

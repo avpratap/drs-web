@@ -132,7 +132,7 @@ test("checkout: add an address, unserviceable pincode blocks, place order with a
   await expect(page.getByRole("alert").filter({ hasText: "Temporarily unavailable" })).toBeVisible();
   await page.getByRole("button", { name: "Try again" }).click();
 
-  await expect(page).toHaveURL(/\/orders\/\d+\?placed=1$/);
+  await expect(page).toHaveURL(/\/account\/orders\/\d+\?placed=1$/);
   expect(keys).toHaveLength(2);
   expect(keys[0]).toMatch(/^[0-9a-f-]{36}$/);
   expect(keys[1]).toBe(keys[0]);
@@ -145,13 +145,15 @@ test("checkout: add an address, unserviceable pincode blocks, place order with a
   await expect(page.getByRole("link", { name: "Cart, empty" })).toBeVisible();
 
   // History lists it.
-  await visit(page, "/orders", "Your orders");
-  await expect(page.getByRole("list", { name: "Your orders" }).getByRole("link")).toContainText(["₹899"]);
+  await visit(page, "/account/orders", "Your orders");
+  await expect(
+    page.getByRole("list", { name: "Your orders" }).getByRole("link").filter({ hasText: "₹899" }),
+  ).toHaveCount(1);
   if (isMobile(page)) await expect(page.getByRole("button", { name: "Open menu" })).toBeVisible();
 });
 
 test("order pages are customer-only", async ({ page }) => {
   await page.request.post(`${API}/__reset`);
-  await page.goto("/orders");
-  await expect(page).toHaveURL(/\/account\/login\?next=%2Forders$/);
+  await page.goto("/orders"); // old URL: redirects into the account area, which needs a sign-in
+  await expect(page).toHaveURL(/\/account\/login\?next=%2Faccount%2Forders$/);
 });
