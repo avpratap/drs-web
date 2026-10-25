@@ -13,27 +13,29 @@
   --color-drs-ink: #1e1a1e;
   --color-drs-white: #ffffff;
 
-  /* shadcn/ui semantic tokens, mapped onto the DRS palette (no shadcn neutral palette). */
+  /* shadcn/ui semantic tokens on the DRS palette (no shadcn neutral palette). Concrete colour
+     values, not var() chains, so every utility built on them (bg-popover, bg-card…) always
+     resolves to an opaque colour. The app's own components use the drs-* classes directly. */
   --radius: 0.5rem;
-  --background: var(--color-drs-cream);
-  --foreground: var(--color-drs-ink);
-  --card: var(--color-drs-white);
-  --card-foreground: var(--color-drs-ink);
-  --popover: var(--color-drs-white);
-  --popover-foreground: var(--color-drs-ink);
-  --primary: var(--color-drs-green);
-  --primary-foreground: var(--color-drs-cream);
-  --secondary: var(--color-drs-cream);
-  --secondary-foreground: var(--color-drs-green);
-  --muted: color-mix(in srgb, var(--color-drs-cream) 60%, var(--color-drs-white));
-  --muted-foreground: color-mix(in srgb, var(--color-drs-ink) 72%, transparent);
-  --accent: color-mix(in srgb, var(--color-drs-green) 10%, var(--color-drs-white));
-  --accent-foreground: var(--color-drs-green);
-  --destructive: var(--color-drs-maroon);
-  --destructive-foreground: var(--color-drs-cream);
-  --border: color-mix(in srgb, var(--color-drs-ink) 20%, transparent);
-  --input: color-mix(in srgb, var(--color-drs-ink) 20%, transparent);
-  --ring: var(--color-drs-green);
+  --background: #f4eade; /* cream */
+  --foreground: #1e1a1e; /* ink */
+  --card: #ffffff;
+  --card-foreground: #1e1a1e;
+  --popover: #ffffff;
+  --popover-foreground: #1e1a1e;
+  --primary: #0d4c3c; /* green */
+  --primary-foreground: #f4eade;
+  --secondary: #f4eade;
+  --secondary-foreground: #0d4c3c;
+  --muted: #f8f2eb; /* cream 60% on white */
+  --muted-foreground: rgb(30 26 30 / 0.72);
+  --accent: #e7edeb; /* green 10% on white */
+  --accent-foreground: #0d4c3c;
+  --destructive: #3b0a1e; /* maroon */
+  --destructive-foreground: #f4eade;
+  --border: rgb(30 26 30 / 0.2);
+  --input: rgb(30 26 30 / 0.2);
+  --ring: #0d4c3c;
 }
 
 @theme inline {

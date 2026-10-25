@@ -16,7 +16,7 @@ const SelectValue = SelectPrimitive.Value;
 
 /** Same height/radius/border/padding as the text inputs; the chevron turns while open. */
 const triggerClass =
-  "relative flex w-full min-h-11 items-center justify-between gap-2 rounded-lg border border-input bg-drs-white px-3 py-2 text-left text-sm text-foreground transition-colors hover:border-drs-green/50 focus-visible:border-ring data-[state=open]:border-ring data-[placeholder]:text-muted-foreground aria-[invalid=true]:border-destructive disabled:cursor-not-allowed disabled:bg-drs-cream/50 disabled:text-muted-foreground disabled:hover:border-input [&>span]:min-w-0 [&>span]:truncate [&[data-state=open]>svg]:rotate-180";
+  "relative flex w-full min-h-11 items-center justify-between gap-2 rounded-lg border border-drs-ink/20 bg-drs-white px-3 py-2 text-left text-sm text-drs-ink transition-colors hover:border-drs-green/50 focus-visible:border-drs-green data-[state=open]:border-drs-green data-[placeholder]:text-drs-ink/70 aria-[invalid=true]:border-drs-maroon disabled:cursor-not-allowed disabled:bg-drs-cream/50 disabled:text-drs-ink/70 disabled:hover:border-drs-ink/20 [&>span]:min-w-0 [&>span]:truncate [&[data-state=open]>svg]:rotate-180";
 
 function SelectTrigger({
   className,
@@ -85,7 +85,7 @@ function SelectContent({
         sideOffset={6}
         collisionPadding={8}
         className={cn(
-          "relative z-50 overflow-hidden rounded-lg border border-drs-green/15 bg-popover text-sm text-popover-foreground shadow-lg shadow-drs-green/10",
+          "relative z-50 overflow-hidden rounded-lg border border-drs-green/15 bg-drs-white text-sm text-drs-ink shadow-lg shadow-drs-green/10",
           "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-1 data-[side=top]:slide-in-from-bottom-1",
           position === "popper" &&
             "max-h-[min(18rem,var(--radix-select-content-available-height))] w-[var(--radix-select-trigger-width)] max-w-[calc(100vw-1rem)] origin-[var(--radix-select-content-transform-origin)]",
@@ -104,7 +104,7 @@ function SelectContent({
 function SelectLabel({ className, ...props }: React.ComponentProps<typeof SelectPrimitive.Label>) {
   return (
     <SelectPrimitive.Label
-      className={cn("px-2 py-1.5 text-xs font-medium text-muted-foreground", className)}
+      className={cn("px-2 py-1.5 text-xs font-medium text-drs-ink/70", className)}
       {...props}
     />
   );
@@ -116,7 +116,7 @@ function SelectItem({ className, children, ...props }: React.ComponentProps<type
       data-slot="select-item"
       className={cn(
         "relative flex min-h-10 w-full cursor-pointer items-center rounded-md py-2 pr-3 pl-8 outline-none select-none",
-        "focus:bg-accent focus:text-accent-foreground data-[state=checked]:font-medium data-[state=checked]:text-drs-green",
+        "focus:bg-drs-green/10 focus:text-drs-green data-[state=checked]:font-medium data-[state=checked]:text-drs-green",
         "data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
         className,
       )}
@@ -133,7 +133,7 @@ function SelectItem({ className, children, ...props }: React.ComponentProps<type
 }
 
 function SelectSeparator({ className, ...props }: React.ComponentProps<typeof SelectPrimitive.Separator>) {
-  return <SelectPrimitive.Separator className={cn("-mx-1 my-1 h-px bg-border", className)} {...props} />;
+  return <SelectPrimitive.Separator className={cn("-mx-1 my-1 h-px bg-drs-ink/10", className)} {...props} />;
 }
 
 export {
@@ -261,7 +261,7 @@ export function Select({
           }}
         >
           {clearable && (
-            <SelectItem value={EMPTY} data-value="" className="text-muted-foreground">
+            <SelectItem value={EMPTY} data-value="" className="text-drs-ink/70">
               {emptyLabel ?? placeholder}
             </SelectItem>
           )}

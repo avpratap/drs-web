@@ -121,3 +121,30 @@ test("select: a filter sized to its widest option, opened at the right edge, sta
   await expect(list).toBeVisible();
   await expectFullyOnScreen(page, list);
 });
+
+/** Parse a computed CSS colour (rgb/rgba/color()) into its alpha channel. */
+const alphaOf = (c: string) => {
+  if (c === "transparent") return 0;
+  const m = c.match(/\/\s*([\d.]+%?)\s*\)$/) ?? c.match(/^rgba\([^)]*,\s*([\d.]+)\s*\)$/);
+  if (!m) return 1;
+  return m[1].endsWith("%") ? parseFloat(m[1]) / 100 : parseFloat(m[1]);
+};
+
+test("select: the open list has a solid, opaque background (nothing bleeds through)", async ({
+  admin: page,
+}) => {
+  await page.goto("/product-prices/create");
+  const product = page.getByRole("combobox", { name: /Product/ });
+  await product.click();
+  const list = page.getByRole("listbox");
+  await expect(list).toBeVisible();
+  await settle(list);
+  const surfaces = await list.evaluate((el) => {
+    // The listbox and every wrapper up to the Radix positioner must paint an opaque fill
+    // somewhere; the content element itself is the painted surface.
+    const content = el.closest("[data-slot='select-content']") ?? el;
+    return [getComputedStyle(content).backgroundColor, getComputedStyle(content).opacity];
+  });
+  expect(alphaOf(surfaces[0]), `background-color was ${surfaces[0]}`).toBe(1);
+  expect(surfaces[1]).toBe("1");
+});

@@ -24,7 +24,7 @@ function ToastViewport({ className, ...props }: React.ComponentProps<typeof Toas
 }
 
 const toastVariants = cva(
-  "group pointer-events-auto relative flex w-full items-start gap-3 overflow-hidden rounded-lg border bg-card p-4 pr-10 text-sm shadow-lg shadow-drs-green/10 transition-all data-[state=open]:animate-in data-[state=open]:slide-in-from-bottom-2 data-[state=open]:fade-in-0 data-[state=closed]:animate-out data-[state=closed]:fade-out-80 data-[swipe=cancel]:translate-x-0 data-[swipe=end]:translate-x-[var(--radix-toast-swipe-end-x)] data-[swipe=end]:animate-out data-[swipe=move]:translate-x-[var(--radix-toast-swipe-move-x)] data-[swipe=move]:transition-none",
+  "group pointer-events-auto relative flex w-full items-start gap-3 overflow-hidden rounded-lg border bg-drs-white p-4 pr-10 text-sm shadow-lg shadow-drs-green/10 transition-all data-[state=open]:animate-in data-[state=open]:slide-in-from-bottom-2 data-[state=open]:fade-in-0 data-[state=closed]:animate-out data-[state=closed]:fade-out-80 data-[swipe=cancel]:translate-x-0 data-[swipe=end]:translate-x-[var(--radix-toast-swipe-end-x)] data-[swipe=end]:animate-out data-[swipe=move]:translate-x-[var(--radix-toast-swipe-move-x)] data-[swipe=move]:transition-none",
   {
     variants: {
       variant: {
@@ -70,7 +70,7 @@ function ToastClose({ className, ...props }: React.ComponentProps<typeof ToastPr
   return (
     <ToastPrimitive.Close
       className={cn(
-        "absolute top-2 right-2 grid size-8 place-items-center rounded-md text-drs-ink/70 hover:bg-accent hover:text-accent-foreground",
+        "absolute top-2 right-2 grid size-8 place-items-center rounded-md text-drs-ink/70 hover:bg-drs-green/10 hover:text-drs-green",
         className,
       )}
       aria-label="Dismiss"
