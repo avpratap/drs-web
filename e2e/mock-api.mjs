@@ -17,6 +17,8 @@ function seed() {
         id: 1,
         sku: "MILK-FC-500",
         name: "Full Cream Milk",
+        // A product photo from the media store; ghee's points at a missing file (fallback art).
+        image_url: "/files/media/products/milk.svg",
         uom: "ml",
         pack_size: 500,
         gst_rate: 0,
@@ -47,6 +49,7 @@ function seed() {
         id: 3,
         sku: "GHEE-1L",
         name: "A2 Desi Ghee",
+        image_url: "/files/media/products/ghee-missing.jpg",
         uom: "litre",
         pack_size: 1,
         gst_rate: 12,
@@ -1279,6 +1282,7 @@ function seedB2b() {
 }
 
 let db = seed();
+let failing = null;
 const id = () => ++db.seq;
 
 const send = (res, status, body, headers = {}) => {
@@ -1326,6 +1330,7 @@ on("GET", "/api/v1/auth/me", (req, res) =>
 // --- test control ---
 on("POST", "/__reset", (req, res) => {
   db = seed();
+  failing = null;
   send(res, 200, { ok: true });
 });
 
@@ -2015,6 +2020,13 @@ on("GET", "/sitemap.xml", (req, res) => {
   );
 });
 // Content images (SVG placeholders): a cream tile with the title's first letter.
+on("GET", "/files/media/products/:name", (req, res, { p }) => {
+  if (p.name !== "milk.svg") return send(res, 404, { detail: "Not found" });
+  res.writeHead(200, { "content-type": "image/svg+xml" });
+  res.end(
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300"><rect width="400" height="300" fill="#DCEBF2"/><rect x="160" y="60" width="80" height="180" rx="16" fill="#fff" stroke="#0D4C3C" stroke-width="6"/></svg>',
+  );
+});
 on("GET", "/files/content/.+", (req, res) => {
   res.writeHead(200, { "content-type": "image/svg+xml" });
   res.end(
@@ -2973,6 +2985,14 @@ createServer(async (req, res) => {
   } catch {
     return send(res, 422, { detail: "bad json" });
   }
+  // Test control: POST /__fail {path} makes GETs of that exact path answer 503 until
+  // POST /__fail {path: null} (or /__reset) — to prove failed SSR reads aren't cached.
+  if (url.pathname === "/__fail") {
+    failing = body.path ?? null;
+    return send(res, 200, { failing });
+  }
+  if (failing && req.method === "GET" && url.pathname === failing)
+    return send(res, 503, { detail: "mock: temporarily unavailable" });
   const isAuth = url.pathname.startsWith("/api/v1/auth/") && url.pathname !== "/api/v1/auth/me";
   const signedFile = url.pathname.startsWith("/files/");
   const publicCatalogue =

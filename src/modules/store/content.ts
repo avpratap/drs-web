@@ -2,7 +2,7 @@ import "server-only";
 import { cacheLife, cacheTag } from "next/cache";
 import { serverApi } from "@/lib/api/server";
 import type { components } from "@/lib/api/client";
-import type { Loaded } from "./catalog";
+import { failed, type Loaded } from "./catalog";
 
 export type Article = components["schemas"]["ArticleOut"];
 export type CmsPage = components["schemas"]["PageOut"];
@@ -12,7 +12,7 @@ export const JOURNAL_PAGE_SIZE = 12;
 
 /**
  * Public CMS reads (journal, static pages, promo banners), fetched on the server and cached
- * for a few minutes. Failures return `{ ok: false }` so pages degrade calmly; a missing
+ * for a few minutes. Failures return `failed()` (short-lived, retried) so pages degrade calmly; a missing
  * article/page is `{ ok: true, data: null }`.
  */
 export async function getArticles(page = 1): Promise<Loaded<{ items: Article[]; more: boolean }>> {
@@ -25,13 +25,13 @@ export async function getArticles(page = 1): Promise<Loaded<{ items: Article[]; 
         query: { limit: JOURNAL_PAGE_SIZE + 1, offset: (Math.max(1, page) - 1) * JOURNAL_PAGE_SIZE },
       },
     });
-    if (!response.ok || !data) return { ok: false };
+    if (!response.ok || !data) return failed();
     return {
       ok: true,
       data: { items: data.slice(0, JOURNAL_PAGE_SIZE), more: data.length > JOURNAL_PAGE_SIZE },
     };
   } catch {
-    return { ok: false };
+    return failed();
   }
 }
 
@@ -44,9 +44,9 @@ export async function getArticle(slug: string): Promise<Loaded<Article | null>> 
       params: { path: { slug } },
     });
     if (response.status === 404) return { ok: true, data: null };
-    return response.ok && data ? { ok: true, data } : { ok: false };
+    return response.ok && data ? { ok: true, data } : failed();
   } catch {
-    return { ok: false };
+    return failed();
   }
 }
 
@@ -59,9 +59,9 @@ export async function getCmsPage(slug: string): Promise<Loaded<CmsPage | null>> 
       params: { path: { slug } },
     });
     if (response.status === 404) return { ok: true, data: null };
-    return response.ok && data ? { ok: true, data } : { ok: false };
+    return response.ok && data ? { ok: true, data } : failed();
   } catch {
-    return { ok: false };
+    return failed();
   }
 }
 
@@ -71,8 +71,8 @@ export async function getBanners(): Promise<Loaded<Banner[]>> {
   cacheTag("content", "banners");
   try {
     const { data, response } = await serverApi().GET("/api/v1/content/banners");
-    return response.ok && data ? { ok: true, data } : { ok: false };
+    return response.ok && data ? { ok: true, data } : failed();
   } catch {
-    return { ok: false };
+    return failed();
   }
 }

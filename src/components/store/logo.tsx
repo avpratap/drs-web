@@ -9,14 +9,19 @@ import { cn } from "@/lib/utils";
  */
 export function StoreLogo({ onDark, className }: { onDark?: boolean; className?: string }) {
   return (
-    <Link
-      href="/"
-      aria-label="DRS Dairy — home"
-      className={cn("flex min-h-11 items-center gap-2.5", className)}
-    >
+    <Link href="/" className={cn("flex min-h-11 items-center gap-2.5", className)}>
       <svg viewBox="0 0 48 48" aria-hidden className="size-11 shrink-0">
         <rect x="2" y="2" width="44" height="44" rx="12" fill={onDark ? "transparent" : "#0D4C3C"} />
-        <rect x="5.5" y="5.5" width="37" height="37" rx="8.5" fill="none" stroke="#C5A253" strokeWidth="1.3" />
+        <rect
+          x="5.5"
+          y="5.5"
+          width="37"
+          height="37"
+          rx="8.5"
+          fill="none"
+          stroke="#C5A253"
+          strokeWidth="1.3"
+        />
         <text
           x="24"
           y="30.5"
@@ -28,7 +33,9 @@ export function StoreLogo({ onDark, className }: { onDark?: boolean; className?:
           DRS
         </text>
       </svg>
+      {/* The link's name is its visible words (+ the mark's "DRS" and "home" for screen readers). */}
       <span className="leading-none">
+        <span className="sr-only">DRS </span>
         <span
           className={cn(
             "block text-[1.0625rem] font-bold tracking-[0.16em]",
@@ -45,6 +52,7 @@ export function StoreLogo({ onDark, className }: { onDark?: boolean; className?:
         >
           Pure heritage
         </span>
+        <span className="sr-only">, home</span>
       </span>
     </Link>
   );

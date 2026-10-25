@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { pulse } from "@/components/store/sections";
 import { cn } from "@/lib/utils";
+import { mediaUrl } from "@/lib/media";
 import { getProductFull } from "@/modules/store/catalog";
 import { productIdFromSlug, productHref } from "@/modules/store/categories";
 import { ProductDetail } from "./product-detail";
@@ -22,7 +23,12 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
     title: p.name,
     description,
     alternates: { canonical: productHref(p) },
-    openGraph: { title: p.name, description, images: p.image_url ? [p.image_url] : undefined },
+    openGraph: {
+      title: p.name,
+      description,
+      // Absolute (the media store is on the API host), so link previews can fetch it.
+      images: mediaUrl(p.image_url) ? [{ url: mediaUrl(p.image_url)!, alt: p.name }] : undefined,
+    },
   };
 }
 

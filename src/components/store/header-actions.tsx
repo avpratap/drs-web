@@ -9,7 +9,7 @@ import { useCart } from "./cart";
 import { STORE_NAV } from "./nav";
 
 const iconBtn =
-  "relative grid size-11 place-items-center rounded-full text-drs-green transition-colors hover:bg-drs-green/10";
+  "relative grid size-11 shrink-0 place-items-center rounded-full text-drs-green transition-colors hover:bg-drs-green/10";
 
 export function CartButton() {
   const { count } = useCart();

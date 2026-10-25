@@ -1,6 +1,6 @@
 import { RepeatIcon, StarIcon } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
+import { ProductImage } from "./product-image";
 import { cn } from "@/lib/utils";
 import { WishlistButton } from "./engagement";
 import { categoryMeta, productHref } from "@/modules/store/categories";
@@ -55,23 +55,20 @@ export function ProductCard({ product, className }: { product: StoreProduct; cla
           meta.milkLine ? "bg-drs-sky/15" : "bg-drs-cream",
         )}
       >
-        {product.image_url ? (
-          <Image
-            src={product.image_url}
-            alt=""
-            fill
-            sizes="(min-width: 1024px) 18rem, (min-width: 768px) 33vw, 70vw"
-            className="object-cover transition-transform duration-300 group-hover:scale-[1.03]"
-            unoptimized
-          />
-        ) : (
-          <span
-            aria-hidden
-            className="grid size-14 place-items-center rounded-full bg-drs-white/80 shadow-sm sm:size-20"
-          >
-            <Icon className="size-7 text-drs-green sm:size-9" strokeWidth={1.5} />
-          </span>
-        )}
+        <ProductImage
+          src={product.image_url}
+          alt=""
+          sizes="(min-width: 1024px) 18rem, (min-width: 768px) 33vw, 70vw"
+          className="object-cover transition-transform duration-300 group-hover:scale-[1.03] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
+          fallback={
+            <span
+              aria-hidden
+              className="grid size-14 place-items-center rounded-full bg-drs-white/80 shadow-sm sm:size-20"
+            >
+              <Icon className="size-7 text-drs-green sm:size-9" strokeWidth={1.5} />
+            </span>
+          }
+        />
         <WishlistButton
           productId={product.id}
           productName={product.name}

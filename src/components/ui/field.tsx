@@ -87,7 +87,7 @@ export function CheckboxField({
       />
       <label
         htmlFor={id}
-        className="cursor-pointer text-sm text-drs-ink peer-disabled:cursor-not-allowed peer-disabled:opacity-60"
+        className="flex min-h-11 flex-1 cursor-pointer items-center text-sm text-drs-ink peer-disabled:cursor-not-allowed peer-disabled:opacity-60"
       >
         {label}
       </label>

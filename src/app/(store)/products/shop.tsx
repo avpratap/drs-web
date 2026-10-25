@@ -27,14 +27,20 @@ export async function Shop({ searchParams }: { searchParams: Promise<SearchParam
       <nav aria-label="Breadcrumb" className="text-sm text-drs-ink/75">
         <ol className="flex flex-wrap items-center gap-1.5">
           <li>
-            <Link href="/" className="hover:text-drs-green hover:underline">
+            <Link
+              href="/"
+              className="-mx-2.5 -my-3 inline-block px-2.5 py-3 hover:text-drs-green hover:underline"
+            >
               Home
             </Link>
           </li>
           <li aria-hidden>/</li>
           <li>
             {active ? (
-              <Link href="/products" className="hover:text-drs-green hover:underline">
+              <Link
+                href="/products"
+                className="-mx-2.5 -my-3 inline-block px-2.5 py-3 hover:text-drs-green hover:underline"
+              >
                 Shop
               </Link>
             ) : (

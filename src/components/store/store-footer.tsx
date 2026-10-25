@@ -80,7 +80,7 @@ export async function StoreFooter() {
                 <li key={l.href}>
                   <Link
                     href={l.href}
-                    className="flex min-h-11 items-center text-sm text-drs-cream/90 hover:text-drs-cream hover:underline md:min-h-9"
+                    className="flex min-h-11 items-center text-sm text-drs-cream/90 hover:text-drs-cream hover:underline"
                   >
                     {l.label}
                   </Link>

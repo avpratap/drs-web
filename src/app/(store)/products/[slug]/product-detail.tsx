@@ -1,5 +1,5 @@
 import { LeafIcon, RepeatIcon, SnowflakeIcon, StarIcon } from "lucide-react";
-import Image from "next/image";
+import { ProductImage } from "@/components/store/product-image";
 import Link from "next/link";
 import { notFound, permanentRedirect } from "next/navigation";
 import { Suspense } from "react";
@@ -32,13 +32,19 @@ export async function ProductDetail({ params }: { params: Promise<{ slug: string
       <nav aria-label="Breadcrumb" className="text-sm text-drs-ink/75">
         <ol className="flex flex-wrap items-center gap-1.5">
           <li>
-            <Link href="/" className="hover:text-drs-green hover:underline">
+            <Link
+              href="/"
+              className="-mx-2.5 -my-3 inline-block px-2.5 py-3 hover:text-drs-green hover:underline"
+            >
               Home
             </Link>
           </li>
           <li aria-hidden>/</li>
           <li>
-            <Link href="/products" className="hover:text-drs-green hover:underline">
+            <Link
+              href="/products"
+              className="-mx-2.5 -my-3 inline-block px-2.5 py-3 hover:text-drs-green hover:underline"
+            >
               Shop
             </Link>
           </li>
@@ -46,7 +52,10 @@ export async function ProductDetail({ params }: { params: Promise<{ slug: string
             <>
               <li aria-hidden>/</li>
               <li>
-                <Link href={categoryHref(meta.slug)} className="hover:text-drs-green hover:underline">
+                <Link
+                  href={categoryHref(meta.slug)}
+                  className="-mx-2.5 -my-3 inline-block px-2.5 py-3 hover:text-drs-green hover:underline"
+                >
                   {meta.label}
                 </Link>
               </li>
@@ -66,24 +75,21 @@ export async function ProductDetail({ params }: { params: Promise<{ slug: string
             meta.milkLine ? "bg-drs-sky/15" : "bg-drs-white",
           )}
         >
-          {p.image_url ? (
-            <Image
-              src={p.image_url}
-              alt={p.name}
-              fill
-              priority
-              sizes="(min-width: 1024px) 40rem, 100vw"
-              className="object-cover"
-              unoptimized
-            />
-          ) : (
-            <span
-              aria-hidden
-              className="grid size-40 place-items-center rounded-full bg-drs-cream shadow-sm md:size-52"
-            >
-              <Icon className="size-20 text-drs-green md:size-24" strokeWidth={1.25} />
-            </span>
-          )}
+          <ProductImage
+            src={p.image_url}
+            alt={p.name}
+            priority
+            sizes="(min-width: 1024px) 40rem, 100vw"
+            className="object-cover"
+            fallback={
+              <span
+                aria-hidden
+                className="grid size-40 place-items-center rounded-full bg-drs-cream shadow-sm md:size-52"
+              >
+                <Icon className="size-20 text-drs-green md:size-24" strokeWidth={1.25} />
+              </span>
+            }
+          />
           {p.is_subscribable && (
             <span className="absolute top-4 left-4 inline-flex items-center gap-1.5 rounded-full bg-drs-white/95 px-3 py-1.5 text-xs font-semibold text-drs-green shadow-sm">
               <RepeatIcon aria-hidden className="size-3.5" strokeWidth={2.25} />

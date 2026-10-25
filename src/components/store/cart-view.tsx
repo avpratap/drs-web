@@ -103,7 +103,8 @@ function LineItem({ line, product }: { line: CartLine; product: ProductInfo | nu
             {product ? (
               <Link
                 href={productHref(product)}
-                className="font-semibold text-drs-ink hover:text-drs-green hover:underline"
+                // -my/py: a 44px tap target without changing the line's layout.
+                className="-my-3 inline-block py-3 font-semibold text-drs-ink hover:text-drs-green hover:underline"
               >
                 {name}
               </Link>
