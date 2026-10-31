@@ -1,12 +1,16 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { apiBase } from "@/lib/env";
+import { isAdminOnlyApi } from "@/lib/auth/bff";
+import { isAdminToken } from "@/lib/auth/jwt";
 import { ACCESS_COOKIE, forwardedFor, isSameOrigin } from "@/lib/auth/session";
 
 /**
  * Same-origin BFF for the typed browser client: attaches the access token from the httpOnly
  * cookie and forwards to the FastAPI backend. Token issuance/rotation endpoints are not
- * reachable through here — they go through /api/auth/* so tokens never touch JS.
+ * reachable through here — they go through /api/auth/* so tokens never touch JS. Admin-only
+ * API paths (lib/auth/bff) need an admin token here too, so a customer session can never
+ * reach them through the storefront's origin even if a backend check regressed.
  */
 const BLOCKED = /^api\/v1\/auth\/(otp|refresh|logout)(\/|$)/;
 const PASS_REQ_HEADERS = ["content-type", "accept", "idempotency-key", "if-none-match"];
@@ -28,6 +32,8 @@ async function handle(req: Request, ctx: { params: Promise<{ path: string[] }> }
 
   const token = (await cookies()).get(ACCESS_COOKIE)?.value;
   if (!token) return NextResponse.json({ detail: "Not authenticated" }, { status: 401 });
+  if (isAdminOnlyApi(req.method, path) && !isAdminToken(token))
+    return NextResponse.json({ detail: "Not enough permissions" }, { status: 403 });
 
   const headers = new Headers(forwardedFor(req));
   for (const h of PASS_REQ_HEADERS) {

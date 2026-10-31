@@ -9,7 +9,9 @@ test("admin logs in with phone OTP and lands on the requested page", async ({ pa
 
   await page.getByLabel(/mobile number/i).fill("9876500001");
   await page.getByRole("button", { name: /send code/i }).click();
-  await expect(page.getByText(/dev mode code: 123456/i)).toBeVisible();
+  await expect(page.getByLabel(/one-time code/i)).toBeVisible();
+  // A production build never shows the dev code (the mock backend still sends it).
+  await expect(page.getByText(/dev mode code/i)).toHaveCount(0);
   await page.getByLabel(/one-time code/i).fill("123456");
   await page.getByRole("button", { name: /verify/i }).click();
 
