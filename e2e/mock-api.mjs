@@ -2085,11 +2085,11 @@ on("POST", "/api/v1/payments/verify", (req, res, { body }) => {
   o.status = "confirmed";
   send(res, 200, { detail: "payment successful", payment_id: pay.id, status: "success" });
 });
-on("GET", "/api/v1/products/:pid", (req, res, { p }) =>
-  find(db.products, p.pid)
-    ? send(res, 200, find(db.products, p.pid))
-    : send(res, 404, { detail: "Product not found" }),
-);
+// Like the backend: the public read hides retired products (admins find them via /admin/products).
+on("GET", "/api/v1/products/:pid", (req, res, { p }) => {
+  const x = find(db.products, p.pid);
+  return x && x.status !== "retired" ? send(res, 200, x) : send(res, 404, { detail: "Product not found" });
+});
 on("POST", "/api/v1/products", (req, res, { body }) => {
   if (db.products.some((p) => p.sku === body.sku))
     return send(res, 409, { detail: "Product SKU already exists" });
