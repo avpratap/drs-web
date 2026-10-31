@@ -1117,6 +1117,7 @@ function seedB2b() {
     original_invoice_id: null,
     status: "issued",
     lines: [],
+    shop_id: 701,
     ...extra,
   });
   return {
@@ -1239,6 +1240,20 @@ function seedB2b() {
       invoice(1, 1320, addDaysIso(today, -1)),
       invoice(2, 1320, today),
       invoice(3, 120, today, { is_credit_note: true, original_invoice_id: 601, delivery_order_id: null }),
+      // Lajpat Nagar's own invoice (the API scopes invoices per shop with ?shop_id=).
+      invoice(4, 660, addDaysIso(today, -2), { delivery_order_id: 713, shop_id: 702 }),
+    ],
+    // Lajpat Nagar's credit ledger (Karol Bagh's is `credit` below).
+    credit702: [
+      {
+        id: 10,
+        entry_type: "charge",
+        amount: 660,
+        balance_after: 660,
+        ref_type: "delivery_order",
+        ref_id: 713,
+        created_at: iso(),
+      },
     ],
     credit: [
       {
@@ -1833,9 +1848,19 @@ on("GET", "/api/v1/delivery/orders", (req, res, { q, headers }) => {
     q,
   );
 });
+/** ?shop_id= narrows B2B billing to one of the account's shops (404 for someone else's). */
+const b2bShop = (q) => {
+  const sid = q.get("shop_id");
+  if (sid === null) return { all: true };
+  const shop = db.b2b.shops.find((s) => s.id === Number(sid));
+  return shop ? { id: shop.id } : null;
+};
 on("GET", "/api/v1/invoices", (req, res, { q, headers }) => {
   if (!isSubscriber(headers)) return NEXT;
-  page(res, [...db.b2b.invoices].reverse(), q);
+  const shop = b2bShop(q);
+  if (!shop) return send(res, 404, { detail: "Shop not found" });
+  const rows = db.b2b.invoices.filter((i) => shop.all || i.shop_id === shop.id);
+  page(res, [...rows].reverse(), q);
 });
 on("GET", "/api/v1/invoices/:iid/pdf", (req, res, { p, headers }) => {
   if (!isSubscriber(headers)) return NEXT;
@@ -1846,9 +1871,19 @@ on("GET", "/api/v1/invoices/:iid/pdf", (req, res, { p, headers }) => {
     pdf_url: `/files/private/invoices/${i.id}.pdf?exp=4102444800&sig=mock`,
   });
 });
-on("GET", "/api/v1/billing/credit-statement", (req, res, { q, headers }) =>
-  page(res, isSubscriber(headers) ? db.b2b.credit : [], q),
-);
+on("GET", "/api/v1/billing/credit-statement", (req, res, { q, headers }) => {
+  if (!isSubscriber(headers)) return page(res, [], q);
+  const shop = b2bShop(q);
+  if (!shop) return send(res, 404, { detail: "Shop not found" });
+  const rows = shop.all
+    ? [...db.b2b.credit702, ...db.b2b.credit]
+    : shop.id === 702
+      ? db.b2b.credit702
+      : shop.id === 701
+        ? db.b2b.credit
+        : [];
+  page(res, rows, q);
+});
 
 // --- customer engagement (loyalty, gift cards, wishlist, support, inbox, DPDP) ---
 on("GET", "/api/v1/loyalty", (req, res) =>

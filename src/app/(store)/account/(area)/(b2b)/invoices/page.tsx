@@ -9,7 +9,7 @@ export default function InvoicesPage() {
     <>
       <AccountHeading
         title="Invoices"
-        intro="GST invoices for your deliveries and your credit statement. Both cover every shop on your billing account."
+        intro="GST invoices for your deliveries and your credit statement, one shop at a time."
       />
       <InvoicesView />
     </>

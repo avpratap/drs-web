@@ -19,6 +19,7 @@ import {
 import { detailOf } from "../cart";
 import { LoadError, PanelSkeleton } from "../use-load";
 import { EmptyState } from "../empty-state";
+import { ShopSwitcher, useShops } from "./shops";
 
 const PAGE = 20;
 
@@ -146,9 +147,9 @@ function InvoicePdf({ invoice }: { invoice: Invoice }) {
   );
 }
 
-function InvoiceList() {
+function InvoiceList({ shopId }: { shopId?: number }) {
   const inv = usePaged(
-    (offset) => api.GET("/api/v1/invoices", { params: { query: { limit: PAGE, offset } } }),
+    (offset) => api.GET("/api/v1/invoices", { params: { query: { shop_id: shopId, limit: PAGE, offset } } }),
     "Couldn't load your invoices.",
   );
   if (inv.error && !inv.rows) return <LoadError text={inv.error} />;
@@ -158,7 +159,11 @@ function InvoiceList() {
       <EmptyState
         icon={ReceiptTextIcon}
         title="No invoices yet"
-        body="A GST invoice is issued for every delivery."
+        body={
+          shopId
+            ? "A GST invoice is issued for every delivery to this shop."
+            : "A GST invoice is issued for every delivery."
+        }
       />
     );
   return (
@@ -191,9 +196,12 @@ function InvoiceList() {
   );
 }
 
-function CreditStatement() {
+function CreditStatement({ shopId }: { shopId?: number }) {
   const st = usePaged<CreditLine>(
-    (offset) => api.GET("/api/v1/billing/credit-statement", { params: { query: { limit: PAGE, offset } } }),
+    (offset) =>
+      api.GET("/api/v1/billing/credit-statement", {
+        params: { query: { shop_id: shopId, limit: PAGE, offset } },
+      }),
     "Couldn't load your credit statement.",
   );
   if (st.error && !st.rows) return <LoadError text={st.error} />;
@@ -250,14 +258,29 @@ function CreditStatement() {
   );
 }
 
-/** GST invoices for the account's deliveries, and the B2B credit statement. */
+/**
+ * GST invoices and the B2B credit statement for the shop picked in the switcher (the API
+ * scopes both with ?shop_id=). An account with no shops yet sees the whole account.
+ */
 export function InvoicesView() {
+  const { shops, current, error } = useShops();
+  if (error) return <LoadError text={error} />;
+  if (!shops) return <PanelSkeleton rows={2} label="Loading invoices" />;
+  // Keyed by shop so a switch starts each list afresh (paging restarts at the newest row).
+  const key = current?.id ?? "all";
   return (
-    <Tabs
-      tabs={[
-        { id: "invoices", label: "Invoices", content: <InvoiceList /> },
-        { id: "statement", label: "Credit statement", content: <CreditStatement /> },
-      ]}
-    />
+    <div>
+      <ShopSwitcher />
+      <Tabs
+        tabs={[
+          { id: "invoices", label: "Invoices", content: <InvoiceList key={key} shopId={current?.id} /> },
+          {
+            id: "statement",
+            label: "Credit statement",
+            content: <CreditStatement key={key} shopId={current?.id} />,
+          },
+        ]}
+      />
+    </div>
   );
 }

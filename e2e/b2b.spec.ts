@@ -157,6 +157,26 @@ test("invoices with PDFs and the credit statement", async ({ page, baseURL }) =>
   await expect(lines).toContainText("Payment received");
 });
 
+test("invoices and the credit statement follow the shop switcher", async ({ page, baseURL }) => {
+  await signIn(page, baseURL!, SUBSCRIBER);
+  await visit(page, "/account/invoices", "Invoices");
+  await expect(shopSwitcher(page)).toContainText("Sharma Sweets, Karol Bagh");
+  const invoices = page.getByRole("list", { name: "Invoices" });
+  await expect(invoices.getByRole("listitem")).toHaveCount(3);
+  await expect(invoices).not.toContainText("DRS/2026-27/B004");
+
+  await choose(shopSwitcher(page), { label: "Sharma Sweets, Lajpat Nagar" });
+  await expect(invoices.getByRole("listitem")).toHaveCount(1);
+  await expect(invoices).toContainText("DRS/2026-27/B004");
+
+  // The tab stays put across a switch, and the statement is that shop's own ledger.
+  await page.getByRole("tab", { name: "Credit statement" }).click();
+  await expect(page.getByTestId("credit-outstanding")).toHaveText("₹660.00");
+  await choose(shopSwitcher(page), { label: "Sharma Sweets, Karol Bagh" });
+  await expect(page.getByRole("tab", { name: "Credit statement" })).toHaveAttribute("aria-selected", "true");
+  await expect(page.getByTestId("credit-outstanding")).toHaveText("₹1,520.00");
+});
+
 test("shops: list and add a shop, which becomes the one you're viewing", async ({ page, baseURL }) => {
   await signIn(page, baseURL!, SUBSCRIBER);
   await visit(page, "/account/shops", "Shops");
