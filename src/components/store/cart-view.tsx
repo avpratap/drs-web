@@ -7,14 +7,13 @@ import { buttonClass } from "@/components/ui/button";
 import { api } from "@/lib/api/browser";
 import { cn } from "@/lib/utils";
 import { categoryMeta, productHref } from "@/modules/store/categories";
+import { MAX_PACKS } from "./purchase-panel";
 import { linePack } from "@/modules/store/packs";
 import { detailOf, useCart, type CartLine } from "./cart";
 import { OrderSummary, useQuote } from "./order-summary";
 import { rupees } from "./product-card";
 import { Stepper } from "./stepper";
 import { useProducts, type ProductInfo } from "./use-products";
-
-const MAX_PACKS = 50;
 
 export function CartSkeleton() {
   const pulse = "animate-pulse rounded-xl bg-drs-ink/[0.06] motion-reduce:animate-none";

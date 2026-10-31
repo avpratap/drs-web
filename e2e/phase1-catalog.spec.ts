@@ -20,6 +20,14 @@ test("product list: totals, retired filter and create", async ({ admin: page }) 
   await expect(page.getByRole("heading", { level: 1, name: "Set Curd 400 g" })).toBeVisible();
 });
 
+test("a retired product still opens for admins (show and edit)", async ({ admin: page }) => {
+  // The public read 404s retired products; the admin handler falls back to the admin list.
+  await visit(page, "/admin/products/4", "Malai Paneer (old pack)");
+  await expect(page.getByText("PANEER-OLD").first()).toBeVisible();
+  await visit(page, "/admin/products/4/edit", /Malai Paneer|Edit/);
+  await expect(page.getByLabel(/^Name/)).toHaveValue("Malai Paneer (old pack)");
+});
+
 test("product detail shows variants; price list filters by product", async ({ admin: page }) => {
   await visit(page, "/admin/products/1", "Full Cream Milk");
   await expect(page.getByRole("table", { name: /Variants of/ })).toContainText("1 L");

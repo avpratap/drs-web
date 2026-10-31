@@ -82,6 +82,26 @@ export function notFound(what: string): HttpError {
   return { message: `${what} not found`, statusCode: 404 };
 }
 
+/**
+ * Find one row by id in a paged admin list, for resources with no GET-by-id endpoint. Walks
+ * every page (`limit` rows each) until it's found or a short page ends the list — no cap at
+ * the first page. `maxPages` only guards against a runaway list.
+ */
+export async function findById<T extends { id: number }>(
+  fetchPage: (q: { limit: number; offset: number }) => Promise<ApiResult<T[]>>,
+  id: number,
+  what: string,
+  { limit = 200, maxPages = 50 }: { limit?: number; maxPages?: number } = {},
+): Promise<T> {
+  for (let page = 0; page < maxPages; page++) {
+    const rows = await unwrap(fetchPage({ limit, offset: page * limit }));
+    const found = rows.find((r) => r.id === id);
+    if (found) return found;
+    if (rows.length < limit) break;
+  }
+  throw notFound(what);
+}
+
 export function requireMeta(meta: Meta, key: string, label: string): number {
   const v = meta?.[key];
   if (v === undefined || v === null || v === "")
@@ -89,11 +109,33 @@ export function requireMeta(meta: Meta, key: string, label: string): number {
   return Number(v);
 }
 
-/** Header for endpoints guarded by `require_idempotency_key` (one key per user action). */
-export function idem(): { "Idempotency-Key": string } {
+type IdempotencyHeader = { "Idempotency-Key": string };
+
+/** A brand-new Idempotency-Key (useAttemptKey manages its own retries with it). */
+export function newIdempotencyKey(): IdempotencyHeader {
   const key =
     typeof crypto !== "undefined" && "randomUUID" in crypto
       ? crypto.randomUUID()
       : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
   return { "Idempotency-Key": key };
+}
+
+/** How long one user action keeps its key: covers a double-click or a double submit. */
+export const IDEMPOTENCY_WINDOW_MS = 10_000;
+const recentKeys = new Map<string, { header: IdempotencyHeader; at: number }>();
+
+/**
+ * Idempotency-Key for one user action. `scope` identifies the action — the operation, its
+ * ids and its body — and the same scope within IDEMPOTENCY_WINDOW_MS gets the SAME key, so a
+ * rapid double-click replays on the backend instead of making two orders/top-ups/transfers.
+ * A different request, or the same one after the window, gets a fresh key.
+ */
+export function idem(scope: unknown, now: number = Date.now()): IdempotencyHeader {
+  for (const [k, v] of recentKeys) if (now - v.at > IDEMPOTENCY_WINDOW_MS) recentKeys.delete(k);
+  const id = JSON.stringify(scope ?? null);
+  const hit = recentKeys.get(id);
+  if (hit) return hit.header;
+  const header = newIdempotencyKey();
+  recentKeys.set(id, { header, at: now });
+  return header;
 }

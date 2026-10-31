@@ -6,16 +6,22 @@ import type { components } from "@/lib/api/client";
 
 export type ProductInfo = components["schemas"]["ProductFullOut"];
 
-// One request per product per page load, shared by every component that asks.
+// One request per product per page load, shared by every component that asks. Only a
+// successful read stays cached: a failure (offline, 5xx, a missing product) is dropped so the
+// next render that needs it asks again instead of showing "Product #id" for the whole session.
 const cache = new Map<number, Promise<ProductInfo | null>>();
 
-function load(id: number): Promise<ProductInfo | null> {
+export function loadProduct(id: number): Promise<ProductInfo | null> {
   let p = cache.get(id);
   if (!p) {
     p = api
       .GET("/api/v1/products/{product_id}/full", { params: { path: { product_id: id } } })
       .then(({ data }) => data ?? null)
-      .catch(() => null);
+      .catch(() => null)
+      .then((info) => {
+        if (info === null) cache.delete(id);
+        return info;
+      });
     cache.set(id, p);
   }
   return p;
@@ -35,7 +41,7 @@ export function useProducts(ids: readonly number[]): {
     if (!key) return;
     let live = true;
     const list = key.split(",").map(Number);
-    void Promise.all(list.map(load)).then((rows) => {
+    void Promise.all(list.map(loadProduct)).then((rows) => {
       if (live) setState({ key, products: new Map(list.map((id, i) => [id, rows[i]])) });
     });
     return () => {

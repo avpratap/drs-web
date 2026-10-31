@@ -179,3 +179,25 @@ test("shops: list and add a shop, which becomes the one you're viewing", async (
   await shops.getByRole("button", { name: /View this shop.*Karol Bagh/ }).click();
   await expect(shops.getByRole("listitem").filter({ hasText: "Karol Bagh" })).toContainText("Viewing");
 });
+
+test("saving the standing order keeps the chosen day selected in Day by day", async ({ page, baseURL }) => {
+  await signIn(page, baseURL!, SUBSCRIBER);
+  await visit(page, "/account/subscriptions/801", "Standing order");
+  const days = page.getByRole("region", { name: "Day by day" });
+  const chips = days.getByRole("group", { name: "Delivery date" }).getByRole("button");
+  const third = chips.nth(2);
+  const label = (await third.textContent())!.trim();
+  await third.click();
+  await expect(third).toHaveAttribute("aria-pressed", "true");
+
+  const standing = page.getByRole("region", { name: "Standing order" });
+  await standing.getByLabel("Quantity per delivery (ml)").first().fill("30000");
+  await standing.getByRole("button", { name: "Save standing order" }).click();
+  await expect(standing.getByRole("status")).toHaveText("Standing order saved.");
+  // Still on the same day, and its plan reflects the new quantity.
+  await expect(days.getByRole("button", { name: label, exact: true })).toHaveAttribute(
+    "aria-pressed",
+    "true",
+  );
+  await expect(days.getByRole("list", { name: `Deliveries on ${label}` })).toContainText("30 L");
+});

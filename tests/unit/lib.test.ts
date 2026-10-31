@@ -3,7 +3,15 @@ import { compactINR, niceTicks } from "@/components/charts/scale";
 import { buildPayload, rulesFor, type FieldDef } from "@/components/resource/fields";
 import { statusTone } from "@/components/ui/badge";
 import { TOTAL_HEADER, toLimitOffset, totalFrom } from "@/lib/api/pagination";
-import { filterBool, filterNumber, filterValue, idem, requireMeta } from "@/lib/api/resource";
+import {
+  filterBool,
+  filterNumber,
+  filterValue,
+  IDEMPOTENCY_WINDOW_MS,
+  idem,
+  newIdempotencyKey,
+  requireMeta,
+} from "@/lib/api/resource";
 import { decodeJwt, isAdminToken } from "@/lib/auth/jwt";
 import { humanize, money } from "@/lib/format";
 import { priceWindowState, toPayload } from "@/lib/forms";
@@ -49,8 +57,20 @@ describe("filters", () => {
     expect(requireMeta({ productId: 5 }, "productId", "A product")).toBe(5);
     expect(() => requireMeta({}, "productId", "A product")).toThrowError();
   });
-  it("idem() makes a fresh key per call", () => {
-    expect(idem()["Idempotency-Key"]).not.toBe(idem()["Idempotency-Key"]);
+  it("idem() keeps one key per user action: a double-click reuses it, a new action doesn't", () => {
+    const t = 1_000_000;
+    const a = idem(["topup", 7, 500], t)["Idempotency-Key"];
+    expect(a).toMatch(/^[0-9a-f-]{36}$/);
+    // Same action within the window (a double-click/double submit): same key → backend replays.
+    expect(idem(["topup", 7, 500], t + 300)["Idempotency-Key"]).toBe(a);
+    // A different action, or a changed body: a different key.
+    expect(idem(["topup", 7, 600], t + 300)["Idempotency-Key"]).not.toBe(a);
+    expect(idem(["topup", 8, 500], t + 300)["Idempotency-Key"]).not.toBe(a);
+    // The same action again after the window is a new action.
+    expect(idem(["topup", 7, 500], t + IDEMPOTENCY_WINDOW_MS + 1)["Idempotency-Key"]).not.toBe(a);
+  });
+  it("newIdempotencyKey() is always fresh", () => {
+    expect(newIdempotencyKey()["Idempotency-Key"]).not.toBe(newIdempotencyKey()["Idempotency-Key"]);
   });
 });
 

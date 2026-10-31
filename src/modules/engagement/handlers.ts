@@ -1,12 +1,9 @@
 import { api } from "@/lib/api/browser";
 import type { components } from "@/lib/api/client";
 import { toHttpError } from "@/lib/api/errors";
-import { filterNumber, filterValue, num, pagedList, unwrap, type Handlers } from "@/lib/api/resource";
+import { filterNumber, filterValue, num, pagedList, unwrap, type Handlers, idem } from "@/lib/api/resource";
 
 type S = components["schemas"];
-
-/** One idempotency key per submitted action, so a retried request can't double-issue. */
-const idem = () => ({ "Idempotency-Key": crypto.randomUUID() });
 
 export const engagementHandlers: Handlers = {
   "gift-cards": {
@@ -75,13 +72,18 @@ type V = Record<string, unknown>;
 
 export const engagementActions = {
   issueGiftCard: (v: V) =>
-    unwrap(api.POST("/api/v1/admin/gift-cards", { params: { header: idem() }, body: v as S["IssueGiftIn"] })),
+    unwrap(
+      api.POST("/api/v1/admin/gift-cards", {
+        params: { header: idem(["gift-card-issue", v]) },
+        body: v as S["IssueGiftIn"],
+      }),
+    ),
   voidGiftCard: (id: number) =>
     unwrap(api.POST("/api/v1/admin/gift-cards/{card_id}/void", { params: { path: { card_id: id } } })),
   adjustPoints: (accountId: number, v: V) =>
     unwrap(
       api.POST("/api/v1/admin/loyalty/{account_id}/adjust", {
-        params: { path: { account_id: accountId }, header: idem() },
+        params: { path: { account_id: accountId }, header: idem(["points-adjust", accountId, v]) },
         body: v as S["AdjustPointsIn"],
       }),
     ),

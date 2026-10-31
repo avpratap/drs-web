@@ -9,7 +9,13 @@ import { api } from "@/lib/api/browser";
 import { formatDate, formatDateTime, money } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { mediaUrl } from "@/lib/media";
-import { ledgerLabel, ledgerReduces, type CreditLine, type Invoice } from "@/modules/store/b2b";
+import {
+  latestBalance,
+  ledgerLabel,
+  ledgerReduces,
+  type CreditLine,
+  type Invoice,
+} from "@/modules/store/b2b";
 import { detailOf } from "../cart";
 import { LoadError, PanelSkeleton } from "../use-load";
 import { EmptyState } from "../empty-state";
@@ -200,7 +206,7 @@ function CreditStatement() {
         body="Your account isn't on credit terms — deliveries are paid from your wallet."
       />
     );
-  const outstanding = st.rows[0].balance_after;
+  const outstanding = latestBalance(st.rows);
   return (
     <div className="space-y-4">
       <div className="rounded-2xl bg-drs-green p-5 text-drs-cream shadow-sm md:p-6">
