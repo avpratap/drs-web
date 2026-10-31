@@ -2,10 +2,11 @@ import type { Page } from "@playwright/test";
 import { expect, test } from "./fixtures";
 
 const API = "http://127.0.0.1:8787";
-const hasHamburger = (page: Page) => (page.viewportSize()?.width ?? 1440) < 1024;
+// Phones only: from md the nav is inline in the header.
+const hasHamburger = (page: Page) => (page.viewportSize()?.width ?? 1440) < 768;
 
 test("mobile menu covers the whole viewport and sits above the page (A)", async ({ page }) => {
-  test.skip(!hasHamburger(page), "the menu button shows below lg");
+  test.skip(!hasHamburger(page), "the menu button shows below md");
   await page.request.post(`${API}/__reset`);
   await page.goto("/products");
   await page.evaluate(() => window.scrollTo(0, 600)); // the sticky header is mid-page
@@ -45,7 +46,7 @@ test("cookie notice never covers the footer or the open menu (C)", async ({ brow
     .poll(async () => (await copyright.boundingBox())!.y + (await copyright.boundingBox())!.height)
     .toBeLessThanOrEqual((await notice.boundingBox())!.y + 1);
 
-  if ((page.viewportSize()?.width ?? 1440) < 1024) {
+  if (hasHamburger(page)) {
     await page.getByRole("button", { name: "Open menu" }).click();
     const nb = (await notice.boundingBox())!;
     const menuOnTop = await page.evaluate(
@@ -63,4 +64,37 @@ test("cookie notice never covers the footer or the open menu (C)", async ({ brow
     )
     .toBe("");
   await context.close();
+});
+
+test("tablets get the inline nav and a search toggle (D)", async ({ page }) => {
+  const w = page.viewportSize()!.width;
+  test.skip(w < 768 || w >= 1024, "tablet range only");
+  await page.request.post(`${API}/__reset`);
+  await page.goto("/");
+  const header = page.getByRole("banner");
+  const nav = header.getByRole("navigation", { name: "Store" });
+  for (const name of ["Shop", "Categories", "Subscribe", "About"])
+    await expect(nav.getByRole("link", { name })).toBeVisible();
+  await expect(header.getByRole("button", { name: "Open menu" })).toBeHidden();
+  // Nothing in the header overflows the viewport.
+  const right = await header.evaluate((h) =>
+    Math.max(...[...h.querySelectorAll("a,button")].map((e) => e.getBoundingClientRect().right)),
+  );
+  expect(right).toBeLessThanOrEqual(w);
+  await header.getByRole("button", { name: "Search" }).click();
+  await page.getByLabel("Search products").fill("paneer");
+  await page.getByLabel("Search products").press("Enter");
+  await expect(page).toHaveURL(/\/products\?q=paneer$/);
+});
+
+test("category grid steps 2 → 3 → 4 → 6 columns (E)", async ({ page }) => {
+  await page.request.post(`${API}/__reset`);
+  await page.goto("/categories");
+  const grid = page
+    .locator("ul")
+    .filter({ has: page.getByRole("link", { name: /^Milk/ }) })
+    .first();
+  const cols = await grid.evaluate((el) => getComputedStyle(el).gridTemplateColumns.split(" ").length);
+  const w = page.viewportSize()!.width;
+  expect(cols).toBe(w >= 1280 ? 6 : w >= 1024 ? 4 : w >= 768 ? 3 : 2);
 });

@@ -8,6 +8,7 @@ import { api } from "@/lib/api/browser";
 import type { Address } from "@/modules/store/checkout";
 import { AddressForm } from "./address-form";
 import { detailOf } from "./cart";
+import { buttonClass } from "@/components/ui/button";
 
 const action =
   "inline-flex min-h-11 items-center gap-1.5 rounded-full px-3 text-sm font-medium transition-colors disabled:opacity-50";
@@ -118,7 +119,7 @@ export function AddressBook() {
         <button
           type="button"
           onClick={() => setEditing("new")}
-          className="inline-flex min-h-12 items-center gap-2 rounded-full bg-drs-green px-5 text-sm font-semibold text-drs-cream shadow-sm hover:bg-drs-green/90"
+          className={buttonClass("primary", "px-5 text-sm", "pill")}
         >
           <PlusIcon aria-hidden className="size-4" /> Add an address
         </button>

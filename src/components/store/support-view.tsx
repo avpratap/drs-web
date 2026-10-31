@@ -4,7 +4,7 @@ import { ChevronRightIcon, LifeBuoyIcon, SendIcon } from "lucide-react";
 import Link from "next/link";
 import { useId, useState } from "react";
 import { Badge, type Tone } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Button, buttonClass } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
 import { Select } from "@/components/ui/select";
 import { api } from "@/lib/api/browser";
@@ -138,7 +138,7 @@ export function SupportList() {
         <button
           type="button"
           onClick={() => setComposing(true)}
-          className="inline-flex min-h-12 items-center gap-2 rounded-full bg-drs-green px-5 text-sm font-semibold text-drs-cream shadow-sm hover:bg-drs-green/90"
+          className={buttonClass("primary", "px-5 text-sm", "pill")}
         >
           <LifeBuoyIcon aria-hidden className="size-4" /> New request
         </button>

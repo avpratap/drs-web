@@ -32,6 +32,8 @@ test("home: hero, categories and featured products from the public API (indexabl
     await menu.getByLabel("Search products").fill("ghee");
     await menu.getByLabel("Search products").press("Enter");
   } else {
+    // Tablets open the search from an icon; from lg the box is in the header.
+    if (page.viewportSize()!.width < 1024) await page.getByRole("button", { name: "Search" }).click();
     await page.getByLabel("Search products").fill("ghee");
     await page.getByLabel("Search products").press("Enter");
   }

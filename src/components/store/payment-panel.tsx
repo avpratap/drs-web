@@ -7,6 +7,7 @@ import { detailOf } from "./cart";
 import { rupees } from "./product-card";
 import { payWithRazorpay } from "./razorpay";
 import { useAttemptKey } from "./use-attempt-key";
+import { buttonClass } from "@/components/ui/button";
 
 type State =
   | { kind: "idle" }
@@ -14,8 +15,7 @@ type State =
   | { kind: "test"; gatewayOrderId: string }
   | { kind: "message"; text: string; tone: "info" | "error" };
 
-const primary =
-  "inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-drs-green px-6 text-base font-semibold text-drs-cream shadow-sm transition-colors hover:bg-drs-green/90 disabled:cursor-not-allowed disabled:bg-drs-ink/15 disabled:text-drs-ink/70 sm:w-auto";
+const primary = buttonClass("primary", "w-full px-6 text-base sm:w-auto", "pill");
 
 /**
  * Pay for a placed order. Gateway handoff is GUARDED:

@@ -345,7 +345,7 @@ export function CheckoutView({ paymentsEnabled }: { paymentsEnabled: boolean }) 
             type="button"
             onClick={placeOrder}
             disabled={!canPlace}
-            className="mt-5 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-drs-green px-6 text-base font-semibold text-drs-cream shadow-sm transition-colors hover:bg-drs-green/90 disabled:cursor-not-allowed disabled:bg-drs-ink/15 disabled:text-drs-ink/70 disabled:shadow-none"
+            className={buttonClass("primary", "mt-5 w-full px-6 text-base", "pill")}
           >
             {placing
               ? "Placing your order…"

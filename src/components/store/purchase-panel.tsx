@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { useCart } from "./cart";
 import { rupees } from "./product-card";
 import { Stepper } from "./stepper";
+import { buttonClass } from "@/components/ui/button";
 
 /** One buyable pack. `price` is the GST-inclusive selling price of ONE pack (null = unavailable). */
 export type PackOption = {
@@ -166,7 +167,7 @@ export function PurchasePanel({ productId, options }: { productId: number; optio
           onClick={addToCart}
           disabled={!buyable || status.kind === "adding"}
           aria-disabled={!buyable || undefined}
-          className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-full bg-drs-green px-6 text-base font-semibold text-drs-cream shadow-sm transition-colors hover:bg-drs-green/90 disabled:cursor-not-allowed disabled:bg-drs-ink/15 disabled:text-drs-ink/70 disabled:shadow-none"
+          className={buttonClass("primary", "flex-1 px-6 text-base", "pill")}
         >
           <ShoppingBagIcon aria-hidden className="size-5" strokeWidth={1.75} />
           {status.kind === "adding"

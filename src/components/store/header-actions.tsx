@@ -3,6 +3,7 @@
 import { MenuIcon, SearchIcon, ShoppingBagIcon, UserRoundIcon, XIcon } from "lucide-react";
 import Link from "next/link";
 import { createPortal } from "react-dom";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
@@ -10,7 +11,7 @@ import { useCart } from "./cart";
 import { STORE_NAV } from "./nav";
 
 const iconBtn =
-  "relative grid size-11 shrink-0 place-items-center rounded-full text-drs-green transition-colors hover:bg-drs-green/10";
+  "relative grid size-11 shrink-0 place-items-center rounded-full text-drs-green transition-[background-color,transform] duration-150 hover:bg-drs-green/10 active:scale-95 active:bg-drs-green/15 motion-reduce:active:scale-100";
 
 export function CartButton() {
   const { count } = useCart();
@@ -43,6 +44,25 @@ export function AccountButton() {
 }
 
 /** Product search: a plain GET form so it works before hydration and stays shareable. */
+/**
+ * Tablet (md–lg): the nav is inline but there's no room for the search box, so it opens from
+ * an icon in a popover. Phones search from the menu; from lg the box is in the header.
+ */
+export function SearchToggle() {
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <button type="button" aria-label="Search" className={cn(iconBtn, "hidden md:grid lg:hidden")}>
+          <SearchIcon aria-hidden className="size-5" strokeWidth={1.75} />
+        </button>
+      </PopoverTrigger>
+      <PopoverContent align="end" className="w-80 p-3">
+        <SearchForm id="store-search-tablet" />
+      </PopoverContent>
+    </Popover>
+  );
+}
+
 export function SearchForm({ className, id = "store-search" }: { className?: string; id?: string }) {
   const router = useRouter();
   const [q, setQ] = useState("");
@@ -96,7 +116,7 @@ export function MobileMenu() {
     <>
       <button
         type="button"
-        className={cn(iconBtn, "lg:hidden")}
+        className={cn(iconBtn, "md:hidden")}
         aria-label="Open menu"
         aria-expanded={open}
         aria-controls="store-menu"
@@ -114,7 +134,7 @@ export function MobileMenu() {
       {open &&
         createPortal(
           <div
-            className="fixed inset-0 z-[60] lg:hidden"
+            className="fixed inset-0 z-[60] md:hidden"
             role="dialog"
             aria-modal="true"
             aria-label="Menu"

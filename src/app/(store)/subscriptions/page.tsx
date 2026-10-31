@@ -15,6 +15,7 @@ import { ProductStripSkeleton, SectionHeading, Unavailable } from "@/components/
 import { isCustomerToken, isSubscriberToken } from "@/lib/auth/jwt";
 import { ACCESS_COOKIE } from "@/lib/auth/session";
 import { getSubscribableProducts } from "@/modules/store/catalog";
+import { buttonClass } from "@/components/ui/button";
 
 export const metadata: Metadata = {
   title: "Daily milk subscription",
@@ -62,10 +63,8 @@ const FAQ = [
   },
 ];
 
-const primary =
-  "inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-drs-green px-7 text-[0.9375rem] font-semibold text-drs-cream shadow-sm transition-colors hover:bg-drs-green/90";
-const secondary =
-  "inline-flex min-h-12 items-center justify-center rounded-full border border-drs-green/30 bg-drs-white px-7 text-[0.9375rem] font-semibold text-drs-green transition-colors hover:border-drs-green";
+const primary = buttonClass("primary", undefined, "pill");
+const secondary = buttonClass("secondary", undefined, "pill");
 
 /**
  * Who's looking decides the next step: subscribers manage their standing orders; everyone

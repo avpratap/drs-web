@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { buttonClass } from "@/components/ui/button";
 
 export default function NotFound() {
   return (
@@ -10,10 +11,7 @@ export default function NotFound() {
         <p className="mt-4 text-sm leading-relaxed text-drs-ink/80">
           It may have moved, or it isn&apos;t ready yet. Let&apos;s get you back to something fresh.
         </p>
-        <Link
-          href="/"
-          className="mt-8 inline-flex min-h-12 items-center rounded-full bg-drs-green px-7 text-sm font-semibold text-drs-cream hover:bg-drs-green/90"
-        >
+        <Link href="/" className={buttonClass("primary", "mt-8 text-sm", "pill")}>
           Back to DRS Dairy
         </Link>
       </div>

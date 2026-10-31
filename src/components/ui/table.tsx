@@ -114,10 +114,7 @@ export function Pager({
   onPage: (p: number) => void;
   total?: number;
 }) {
-  const btn = buttonClass(
-    "secondary",
-    "disabled:border-drs-ink/15 disabled:bg-drs-white disabled:opacity-40",
-  );
+  const btn = buttonClass("secondary");
   return (
     <nav aria-label="Pagination" className="mt-4 flex items-center justify-between gap-2">
       <button type="button" className={btn} disabled={page <= 1} onClick={() => onPage(page - 1)}>
