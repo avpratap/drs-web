@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { useCart } from "./cart";
 import { rupees } from "./product-card";
 import { Stepper } from "./stepper";
+import { buttonClass } from "@/components/ui/button";
 
 /** One buyable pack. `price` is the GST-inclusive selling price of ONE pack (null = unavailable). */
 export type PackOption = {
@@ -98,7 +99,7 @@ export function PurchasePanel({ productId, options }: { productId: number; optio
               <label
                 key={o.key}
                 className={cn(
-                  "relative flex min-h-16 flex-col justify-center rounded-xl border-2 px-3.5 py-2.5 transition-colors has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-drs-green",
+                  "relative flex min-h-16 flex-col justify-center rounded-xl border-2 px-3.5 py-2.5 transition-colors focus-ring-within",
                   checked
                     ? "border-drs-green bg-drs-green/5"
                     : "border-drs-ink/15 bg-drs-white hover:border-drs-green/50",
@@ -167,7 +168,7 @@ export function PurchasePanel({ productId, options }: { productId: number; optio
           onClick={addToCart}
           disabled={!buyable || status.kind === "adding"}
           aria-disabled={!buyable || undefined}
-          className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-full bg-drs-green px-6 text-base font-semibold text-drs-cream shadow-sm transition-colors hover:bg-drs-green/90 disabled:cursor-not-allowed disabled:bg-drs-ink/15 disabled:text-drs-ink/70 disabled:shadow-none"
+          className={buttonClass("primary", "flex-1 px-6 text-base", "pill")}
         >
           <ShoppingBagIcon aria-hidden className="size-5" strokeWidth={1.75} />
           {status.kind === "adding"

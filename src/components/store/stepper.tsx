@@ -27,7 +27,7 @@ export function Stepper({
   "aria-labelledby"?: string;
 }) {
   const btn =
-    "grid size-11 place-items-center rounded-full text-drs-green transition-colors hover:bg-drs-green/10 disabled:text-drs-ink/30 disabled:hover:bg-transparent";
+    "grid size-11 place-items-center rounded-full text-drs-green transition-[background-color,transform] duration-150 hover:bg-drs-green/10 active:scale-95 active:bg-drs-green/15 motion-reduce:active:scale-100 disabled:pointer-events-none disabled:text-drs-ink/30";
   return (
     <div
       role="group"

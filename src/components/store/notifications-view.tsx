@@ -8,6 +8,7 @@ import type { components } from "@/lib/api/client";
 import { cn } from "@/lib/utils";
 import { useEngagement } from "./engagement";
 import { LoadError, PanelSkeleton, useLoad } from "./use-load";
+import { EmptyState } from "./empty-state";
 
 type Note = components["schemas"]["app__api__v1__inbox__NotificationOut"];
 
@@ -101,12 +102,11 @@ export function NotificationsView() {
       </div>
 
       {shown.length === 0 ? (
-        <div className="flex flex-col items-center rounded-2xl border border-dashed border-drs-ink/20 bg-drs-white/70 px-6 py-12 text-center">
-          <BellIcon aria-hidden className="size-9 text-drs-green" strokeWidth={1.5} />
-          <p className="mt-3 text-sm text-drs-ink/75">
-            {filter === "unread" ? "You're all caught up." : "No notifications yet."}
-          </p>
-        </div>
+        <EmptyState
+          icon={BellIcon}
+          title={filter === "unread" ? "You're all caught up." : "No notifications yet."}
+          body="Order updates, delivery alerts and offers will show up here."
+        />
       ) : (
         <ul aria-label="Notifications" className="space-y-2">
           {shown.map((n) => {

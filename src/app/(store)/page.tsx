@@ -14,6 +14,7 @@ import {
   SubscriptionBand,
 } from "@/components/store/sections";
 import { mediaUrl } from "@/lib/media";
+import { buttonClass } from "@/components/ui/button";
 
 export default function StoreHome() {
   return (
@@ -38,17 +39,11 @@ export default function StoreHome() {
               before 7&nbsp;am. Subscribe once, pause whenever.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <Link
-                href="/products"
-                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-drs-green px-7 text-[0.9375rem] font-semibold text-drs-cream shadow-sm transition-colors hover:bg-drs-green/90"
-              >
+              <Link href="/products" className={buttonClass("primary", undefined, "pill")}>
                 Shop fresh
                 <ArrowRightIcon aria-hidden className="size-4" />
               </Link>
-              <Link
-                href="/subscriptions"
-                className="inline-flex min-h-12 items-center justify-center rounded-full border border-drs-green/30 bg-drs-white px-7 text-[0.9375rem] font-semibold text-drs-green transition-colors hover:border-drs-green"
-              >
+              <Link href="/subscriptions" className={buttonClass("secondary", undefined, "pill")}>
                 Start a subscription
               </Link>
             </div>
@@ -77,7 +72,11 @@ export default function StoreHome() {
           <PromoBanners />
         </Suspense>
 
-        <section aria-labelledby="categories-heading" id="categories" className="scroll-mt-32">
+        <section
+          aria-labelledby="categories-heading"
+          id="categories"
+          className="scroll-mt-[calc(var(--header-h)+1rem)]"
+        >
           <SectionHeading
             id="categories-heading"
             eyebrow="Our range"

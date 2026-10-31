@@ -48,6 +48,18 @@ export const BUSINESS_NAV: readonly NavItem[] = [
   { href: "/account/shops", label: "Shops", icon: StoreIcon },
 ];
 
+/**
+ * On phones the nav is a sideways-scrolling row: bring the current section into view by
+ * scrolling that row only. (scrollIntoView can also nudge the page vertically.)
+ */
+function revealInRow(el: HTMLElement | null) {
+  const row = el?.closest("ul");
+  if (!el || !row || row.scrollWidth <= row.clientWidth) return;
+  const left = el.offsetLeft - row.offsetLeft;
+  if (left < row.scrollLeft || left + el.offsetWidth > row.scrollLeft + row.clientWidth)
+    row.scrollLeft = Math.max(0, left - 16);
+}
+
 export const isAccountActive = (pathname: string, href: string) =>
   href === "/account" ? pathname === "/account" : pathname === href || pathname.startsWith(`${href}/`);
 
@@ -97,7 +109,7 @@ function NavLinks({ items, pathname }: { items: readonly NavItem[]; pathname?: s
           prefetch={false}
           aria-current={active ? "page" : undefined}
           // On phones the row scrolls sideways: keep the current section in view.
-          ref={active ? (el) => el?.scrollIntoView({ block: "nearest", inline: "nearest" }) : undefined}
+          ref={active ? revealInRow : undefined}
           className={linkClass(active)}
         >
           <Icon aria-hidden className="size-4 shrink-0" />

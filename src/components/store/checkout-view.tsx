@@ -112,7 +112,7 @@ function AddressCard({ a, checked, onSelect }: { a: Address; checked: boolean; o
   return (
     <label
       className={cn(
-        "relative flex cursor-pointer gap-3 rounded-xl border-2 p-4 transition-colors has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-drs-green",
+        "relative flex cursor-pointer gap-3 rounded-xl border-2 p-4 transition-colors focus-ring-within",
         checked ? "border-drs-green bg-drs-green/5" : "border-drs-ink/15 hover:border-drs-green/50",
       )}
     >
@@ -143,7 +143,7 @@ function AddressCard({ a, checked, onSelect }: { a: Address; checked: boolean; o
 
 export function CheckoutView({ paymentsEnabled }: { paymentsEnabled: boolean }) {
   const router = useRouter();
-  const { cart, session, coupon, setCoupon, refresh } = useCart();
+  const { cart, count, session, coupon, setCoupon, refresh } = useCart();
   const [{ loaded, list, error: addrError }, setAddresses] = useAddresses();
   const [picked, setPicked] = useState<number | null>(null);
   const [adding, setAdding] = useState(false);
@@ -165,7 +165,7 @@ export function CheckoutView({ paymentsEnabled }: { paymentsEnabled: boolean }) 
       <div className="rounded-2xl border border-dashed border-drs-ink/20 bg-drs-white/70 px-6 py-14 text-center">
         <h2 className="text-xl font-semibold text-drs-ink">Your cart is empty</h2>
         <p className="mt-1 text-sm text-drs-ink/75">Add something fresh before checking out.</p>
-        <Link href="/products" className={buttonClass("primary", "mt-6 rounded-full px-6")}>
+        <Link href="/products" className={buttonClass("primary", "mt-6 px-6", "pill")}>
           Shop fresh dairy
         </Link>
       </div>
@@ -330,8 +330,8 @@ export function CheckoutView({ paymentsEnabled }: { paymentsEnabled: boolean }) 
         </Link>
       </div>
 
-      <div className="lg:sticky lg:top-28">
-        <OrderSummary quote={quote} count={lines.length}>
+      <div className="lg:sticky lg:top-[calc(var(--header-h)+0.75rem)]">
+        <OrderSummary quote={quote} count={count}>
           {coupon && quote && quote.discount > 0 && (
             <p className="mt-3 text-sm text-drs-green">Coupon {coupon} applied</p>
           )}
@@ -349,7 +349,7 @@ export function CheckoutView({ paymentsEnabled }: { paymentsEnabled: boolean }) 
             type="button"
             onClick={placeOrder}
             disabled={!canPlace}
-            className="mt-5 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-drs-green px-6 text-base font-semibold text-drs-cream shadow-sm transition-colors hover:bg-drs-green/90 disabled:cursor-not-allowed disabled:bg-drs-ink/15 disabled:text-drs-ink/70 disabled:shadow-none"
+            className={buttonClass("primary", "mt-5 w-full px-6 text-base", "pill")}
           >
             {placing
               ? "Placing your order…"

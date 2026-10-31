@@ -15,7 +15,8 @@ export default function StoreLayout({ children }: { children: React.ReactNode })
         >
           Skip to content
         </a>
-        <div className="flex min-h-dvh flex-col">
+        {/* pb: room for the cookie notice while it's shown (it sets --banner-h). */}
+        <div className="flex min-h-dvh flex-col pb-[var(--banner-h,0px)]">
           <StoreHeader />
           <main id="content" className="flex-1">
             {children}

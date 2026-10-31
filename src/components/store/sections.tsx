@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 import { getCategories, getFeaturedProducts } from "@/modules/store/catalog";
 import { categoryHref, categoryMeta } from "@/modules/store/categories";
 import { ProductCard } from "./product-card";
+import { buttonClass } from "@/components/ui/button";
 
 export function SectionHeading({
   id,
@@ -69,7 +70,7 @@ export async function CategoryGrid() {
   if (!res.ok) return <Unavailable what="categories" />;
   if (!res.data.length) return <Unavailable what="categories" />;
   return (
-    <ul className="grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-4 lg:grid-cols-6">
+    <ul className="grid grid-cols-[repeat(2,minmax(0,1fr))] gap-3 md:grid-cols-[repeat(3,minmax(0,1fr))] md:gap-4 lg:grid-cols-[repeat(4,minmax(0,1fr))] xl:grid-cols-[repeat(6,minmax(0,1fr))]">
       {res.data.map((slug) => {
         const m = categoryMeta(slug);
         const Icon = m.icon;
@@ -77,7 +78,7 @@ export async function CategoryGrid() {
           <li key={m.slug}>
             <Link
               href={categoryHref(m.slug)}
-              className="group flex h-full min-h-40 flex-col rounded-2xl border border-drs-ink/10 bg-drs-white p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md md:p-5"
+              className="group flex h-full min-h-40 flex-col rounded-2xl border border-drs-ink/10 bg-drs-white p-4 shadow-sm transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-md motion-reduce:hover:translate-y-0 md:p-5"
             >
               <span
                 aria-hidden
@@ -180,10 +181,7 @@ export function SubscriptionBand() {
             Set it once and we deliver every morning. Pay from your DRS wallet and change your order up to the
             night before.
           </p>
-          <Link
-            href="/subscriptions"
-            className="mt-6 inline-flex min-h-12 items-center gap-2 rounded-full bg-drs-cream px-6 text-sm font-semibold text-drs-green transition-colors hover:bg-drs-white"
-          >
+          <Link href="/subscriptions" className={buttonClass("inverse", "mt-6 px-6 text-sm", "pill")}>
             Start a subscription
             <ArrowRightIcon aria-hidden className="size-4" />
           </Link>

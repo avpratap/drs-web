@@ -8,7 +8,7 @@ export function SearchInput({ className, ...props }: Omit<React.ComponentProps<"
     <div className={cn("relative w-full", className)}>
       <SearchIcon
         aria-hidden
-        className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-drs-ink/60"
+        className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-drs-ink/70"
       />
       <input type="search" className={cn(inputClass, "pl-9")} {...props} />
     </div>

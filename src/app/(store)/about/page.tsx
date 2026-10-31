@@ -206,23 +206,24 @@ export default function AboutPage() {
           From the farm to your door, before 7 am
         </h2>
         <div aria-hidden className="mt-3 h-0.5 w-10 rounded bg-drs-gold" />
-        <ol className="mt-10 grid grid-cols-1 gap-6 md:grid-cols-4 md:gap-4">
+        {/* Connectors are absolute so they span the grid gap: vertical between steps on phones,
+            one continuous line from icon to icon from md (8px clear of each icon). */}
+        <ol className="mt-10 grid grid-cols-1 gap-6 md:grid-cols-[repeat(4,minmax(0,1fr))] md:gap-4">
           {JOURNEY.map(({ icon: Icon, title, body }, i) => (
             <li key={title} className="relative flex gap-4 md:flex-col md:gap-3">
-              <span className="flex flex-col items-center md:flex-row">
+              <span
+                aria-hidden
+                className="relative z-10 grid size-12 shrink-0 place-items-center rounded-full bg-drs-green text-drs-cream"
+              >
+                <Icon className="size-5" strokeWidth={1.75} />
+              </span>
+              {i < JOURNEY.length - 1 && (
                 <span
                   aria-hidden
-                  className="grid size-12 shrink-0 place-items-center rounded-full bg-drs-green text-drs-cream"
-                >
-                  <Icon className="size-5" strokeWidth={1.75} />
-                </span>
-                {i < JOURNEY.length - 1 && (
-                  <span
-                    aria-hidden
-                    className="mt-2 w-px flex-1 bg-drs-green/20 md:mt-0 md:ml-3 md:h-px md:w-auto"
-                  />
-                )}
-              </span>
+                  data-testid="journey-connector"
+                  className="absolute top-14 -bottom-4 left-6 w-px bg-drs-green/25 md:top-6 md:-right-2 md:bottom-auto md:left-14 md:h-px md:w-auto"
+                />
+              )}
               <span className="pb-2">
                 <span className="text-xs font-semibold tracking-wide text-drs-ink/75">Step {i + 1}</span>
                 <span className="mt-0.5 block text-lg font-semibold text-drs-ink">{title}</span>
@@ -243,7 +244,7 @@ export default function AboutPage() {
             <p className="mt-1 text-drs-ink/75">Order today, or subscribe and never run out.</p>
           </div>
           <div className="flex flex-wrap gap-3">
-            <Link href="/products" className={buttonClass("primary", "min-h-12 rounded-full px-6")}>
+            <Link href="/products" className={buttonClass("primary", "px-6", "pill")}>
               Shop fresh <ArrowRightIcon aria-hidden className="size-4" />
             </Link>
             <Link href="/journal" className={buttonClass("secondary", "min-h-12 rounded-full px-6")}>

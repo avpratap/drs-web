@@ -2,6 +2,8 @@
 
 import { MenuIcon, SearchIcon, ShoppingBagIcon, UserRoundIcon, XIcon } from "lucide-react";
 import Link from "next/link";
+import { createPortal } from "react-dom";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
@@ -9,7 +11,7 @@ import { useCart } from "./cart";
 import { STORE_NAV } from "./nav";
 
 const iconBtn =
-  "relative grid size-11 shrink-0 place-items-center rounded-full text-drs-green transition-colors hover:bg-drs-green/10";
+  "relative grid size-11 shrink-0 place-items-center rounded-full text-drs-green transition-[background-color,transform] duration-150 hover:bg-drs-green/10 active:scale-95 active:bg-drs-green/15 motion-reduce:active:scale-100";
 
 export function CartButton() {
   const { count } = useCart();
@@ -42,6 +44,25 @@ export function AccountButton() {
 }
 
 /** Product search: a plain GET form so it works before hydration and stays shareable. */
+/**
+ * Tablet (md–lg): the nav is inline but there's no room for the search box, so it opens from
+ * an icon in a popover. Phones search from the menu; from lg the box is in the header.
+ */
+export function SearchToggle() {
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <button type="button" aria-label="Search" className={cn(iconBtn, "hidden md:grid lg:hidden")}>
+          <SearchIcon aria-hidden className="size-5" strokeWidth={1.75} />
+        </button>
+      </PopoverTrigger>
+      <PopoverContent align="end" className="w-80 p-3">
+        <SearchForm id="store-search-tablet" />
+      </PopoverContent>
+    </Popover>
+  );
+}
+
 export function SearchForm({ className, id = "store-search" }: { className?: string; id?: string }) {
   const router = useRouter();
   const [q, setQ] = useState("");
@@ -61,7 +82,7 @@ export function SearchForm({ className, id = "store-search" }: { className?: str
       </label>
       <SearchIcon
         aria-hidden
-        className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-drs-ink/60"
+        className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-drs-ink/70"
       />
       <input
         id={id}
@@ -70,7 +91,7 @@ export function SearchForm({ className, id = "store-search" }: { className?: str
         value={q}
         onChange={(e) => setQ(e.target.value)}
         placeholder="Search milk, ghee, paneer…"
-        className="h-11 w-full rounded-full border border-drs-ink/15 bg-drs-white pr-4 pl-10 text-sm text-drs-ink placeholder:text-drs-ink/60 transition-colors hover:border-drs-green/40 focus-visible:border-drs-green"
+        className="h-11 w-full rounded-full border border-drs-ink/15 bg-drs-white pr-4 pl-10 text-sm text-drs-ink placeholder:text-drs-ink/70 transition-colors hover:border-drs-green/40 focus-visible:border-drs-green"
       />
     </form>
   );
@@ -95,7 +116,7 @@ export function MobileMenu() {
     <>
       <button
         type="button"
-        className={cn(iconBtn, "lg:hidden")}
+        className={cn(iconBtn, "md:hidden")}
         aria-label="Open menu"
         aria-expanded={open}
         aria-controls="store-menu"
@@ -106,59 +127,65 @@ export function MobileMenu() {
       >
         <MenuIcon aria-hidden className="size-6" strokeWidth={1.75} />
       </button>
-      {open && (
-        <div
-          className="fixed inset-0 z-50 lg:hidden"
-          role="dialog"
-          aria-modal="true"
-          aria-label="Menu"
-          id="store-menu"
-        >
-          <button
-            type="button"
-            aria-label="Close menu"
-            className="absolute inset-0 bg-drs-ink/40"
-            onClick={() => setOpen(false)}
-          />
-          <div className="absolute inset-y-0 left-0 flex w-[min(20rem,85vw)] flex-col bg-drs-cream shadow-xl">
-            <div className="flex items-center justify-between border-b border-drs-ink/10 px-4 py-3">
-              <span className="text-sm font-semibold tracking-[0.18em] text-drs-green uppercase">Menu</span>
-              <button
-                type="button"
-                className={iconBtn}
-                aria-label="Close menu"
-                onClick={() => setOpen(false)}
-              >
-                <XIcon aria-hidden className="size-5" />
-              </button>
-            </div>
-            <div className="p-4">
-              <SearchForm id="store-search-mobile" />
-            </div>
-            <nav aria-label="Store" className="flex flex-col px-2">
-              {STORE_NAV.map((l) => (
-                <Link
-                  key={l.href}
-                  href={l.href}
+      {/* Portalled to <body>: the sticky header's backdrop-filter would otherwise become the
+          containing block for this fixed overlay (collapsing it to the header bar), and its
+          z-40 stacking context would trap it under the page. z-[60] also outranks the cookie
+          notice (z-40). */}
+      {open &&
+        createPortal(
+          <div
+            className="fixed inset-0 z-[60] md:hidden"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Menu"
+            id="store-menu"
+          >
+            <button
+              type="button"
+              aria-label="Close menu"
+              className="absolute inset-0 bg-drs-ink/40"
+              onClick={() => setOpen(false)}
+            />
+            <div className="absolute inset-y-0 left-0 flex w-[min(20rem,85vw)] flex-col bg-drs-cream shadow-xl">
+              <div className="flex items-center justify-between border-b border-drs-ink/10 px-4 py-3">
+                <span className="text-sm font-semibold tracking-[0.18em] text-drs-green uppercase">Menu</span>
+                <button
+                  type="button"
+                  className={iconBtn}
+                  aria-label="Close menu"
                   onClick={() => setOpen(false)}
-                  aria-current={pathname === l.href ? "page" : undefined}
-                  className="flex min-h-12 items-center rounded-lg px-3 text-base font-medium text-drs-ink hover:bg-drs-green/5 aria-[current=page]:text-drs-green"
                 >
-                  {l.label}
+                  <XIcon aria-hidden className="size-5" />
+                </button>
+              </div>
+              <div className="p-4">
+                <SearchForm id="store-search-mobile" />
+              </div>
+              <nav aria-label="Store" className="flex flex-col px-2">
+                {STORE_NAV.map((l) => (
+                  <Link
+                    key={l.href}
+                    href={l.href}
+                    onClick={() => setOpen(false)}
+                    aria-current={pathname === l.href ? "page" : undefined}
+                    className="flex min-h-12 items-center rounded-lg px-3 text-base font-medium text-drs-ink hover:bg-drs-green/5 aria-[current=page]:text-drs-green"
+                  >
+                    {l.label}
+                  </Link>
+                ))}
+                <Link
+                  href="/account"
+                  prefetch={false}
+                  onClick={() => setOpen(false)}
+                  className="mt-2 flex min-h-12 items-center rounded-lg border-t border-drs-ink/10 px-3 text-base font-medium text-drs-ink hover:bg-drs-green/5"
+                >
+                  Your account
                 </Link>
-              ))}
-              <Link
-                href="/account"
-                prefetch={false}
-                onClick={() => setOpen(false)}
-                className="mt-2 flex min-h-12 items-center rounded-lg border-t border-drs-ink/10 px-3 text-base font-medium text-drs-ink hover:bg-drs-green/5"
-              >
-                Your account
-              </Link>
-            </nav>
-          </div>
-        </div>
-      )}
+              </nav>
+            </div>
+          </div>,
+          document.body,
+        )}
     </>
   );
 }
