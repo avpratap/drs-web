@@ -1,11 +1,12 @@
 /**
  * Route zones (used by the proxy):
  * - admin: /admin/** except /admin/login → admin token, else /admin/login?next=
- * - customer: account, checkout, orders, subscriptions, wallet (except /account/login)
+ * - customer: account, checkout, orders, wallet (except /account/login)
  *   → customer|subscriber token, else /account/login?next=
  * - subscriber: the B2B pages (SUBSCRIBER_PATHS) → subscriber token; a retail customer is
  *   sent back to /account, a visitor to /account/login?next=
- * - public: everything else (storefront home, catalogue, cart, CMS pages).
+ * - public: everything else (storefront home, catalogue, cart, CMS pages, the /subscriptions
+ *   landing page).
  */
 export type Zone = "admin" | "admin-login" | "customer" | "subscriber" | "customer-login" | "public";
 
@@ -18,7 +19,7 @@ export const SUBSCRIBER_PATHS = [
   "/account/invoices",
   "/account/shops",
 ] as const;
-const CUSTOMER_PREFIXES = ["/account", "/checkout", "/orders", "/subscriptions", "/wallet"];
+const CUSTOMER_PREFIXES = ["/account", "/checkout", "/orders", "/wallet"];
 
 const under = (pathname: string, prefix: string) => pathname === prefix || pathname.startsWith(`${prefix}/`);
 

@@ -53,6 +53,21 @@ export async function getFeaturedProducts(limit = 8): Promise<Loaded<StoreProduc
   }
 }
 
+/** Everything available on a daily subscription (the backend has no filter for it). */
+export async function getSubscribableProducts(): Promise<Loaded<StoreProduct[]>> {
+  "use cache";
+  cacheLife("minutes");
+  cacheTag("catalog");
+  try {
+    const { data, response } = await serverApi().GET("/api/v1/products", {
+      params: { query: { limit: 100 } },
+    });
+    return response.ok && data ? { ok: true, data: data.filter((p) => p.is_subscribable) } : failed();
+  } catch {
+    return failed();
+  }
+}
+
 export const PAGE_SIZE = 24;
 
 /** Backend sorts: rating | newest | name; "featured" (or none) is the catalogue order. */
