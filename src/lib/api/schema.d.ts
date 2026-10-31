@@ -522,7 +522,8 @@ export interface paths {
      * Delivery Route
      * @description The caller's assigned stops for a date as an ordered route with sequence numbers.
      *     Ordered by shop_id (stable); geo nearest-neighbor from the driver's latest location
-     *     is a future enhancement once shops carry geo.
+     *     is a future enhancement once shops carry geo. Delivery staff (and admins) only, like
+     *     the rest of the driver endpoints; subscribers use GET /delivery/orders.
      */
     get: operations["delivery_route"];
     put?: never;
@@ -567,6 +568,29 @@ export interface paths {
      * @description Mark an assigned stop failed with a reason (no billing/stock movement).
      */
     post: operations["fail_delivery_order"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/delivery/route/start": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Start Delivery Route
+     * @description The rider is leaving with today's load: every customer with an open stop on the
+     *     caller's route gets an "out for delivery" push (event delivery.out_for_delivery,
+     *     deep-linking to that delivery). Idempotent per stop — calling again only notifies
+     *     stops not already told. Delivery staff/admin only; riders only for today.
+     */
+    post: operations["start_delivery_route"];
     delete?: never;
     options?: never;
     head?: never;
@@ -623,7 +647,8 @@ export interface paths {
      * @description Line-item statement for an account on credit terms (B2B postpaid): every charge,
      *     payment and credit note with the running outstanding, newest first (`?limit=&offset=`,
      *     total in `X-Total-Count`). Scoped to the caller's own account; an account that was
-     *     never on credit simply has no lines.
+     *     never on credit simply has no lines. `?shop_id=` narrows it to one of the account's
+     *     shops (404 for a shop that isn't theirs).
      */
     get: operations["my_credit_statement"];
     put?: never;
@@ -1651,6 +1676,54 @@ export interface paths {
     head?: never;
     /** Update User */
     patch: operations["update_user"];
+    trace?: never;
+  };
+  "/api/v1/admin/staff": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * List Staff
+     * @description Staff users (admins + delivery) with their shop scope, for the staff management
+     *     screen (`?limit=&offset=`, total in `X-Total-Count`). Erased accounts are excluded.
+     */
+    get: operations["admin_list_staff"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/admin/users/{user_id}/shop-scope": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Get Shop Scope
+     * @description The shops this user may access, exactly as authorization enforces it.
+     */
+    get: operations["admin_get_shop_scope"];
+    /**
+     * Set Shop Scope
+     * @description Replace a delivery staff member's shop scope with exactly `shop_ids`: missing
+     *     assignments are created/reactivated, others deactivated (history kept). Only delivery
+     *     users have an editable scope — admins see all shops, and a subscriber's/customer's
+     *     scope follows the shops their account owns.
+     */
+    put: operations["admin_set_shop_scope"];
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
     trace?: never;
   };
   "/api/v1/admin/users/{user_id}/erase": {
@@ -3573,7 +3646,13 @@ export interface paths {
      *     the previous owner). We audit that reassignment rather than doing it silently.
      */
     post: operations["register_device_token"];
-    delete?: never;
+    /**
+     * Unregister Device Token Body
+     * @description Deactivate a device token, sent in the BODY (preferred: the DELETE /{token} form
+     *     puts the push token in the URL, i.e. in access logs and traces). Only the caller's
+     *     own token is touched; 204 either way, so another user's tokens can't be probed.
+     */
+    delete: operations["delete_device_token"];
     options?: never;
     head?: never;
     patch?: never;
@@ -3591,7 +3670,8 @@ export interface paths {
     /**
      * Unregister Device Token Body
      * @description Deactivate a device token, sent in the BODY (preferred: the DELETE /{token} form
-     *     puts the push token in the URL, i.e. in access logs and traces).
+     *     puts the push token in the URL, i.e. in access logs and traces). Only the caller's
+     *     own token is touched; 204 either way, so another user's tokens can't be probed.
      */
     post: operations["unregister_device_token_body"];
     delete?: never;
@@ -5045,6 +5125,8 @@ export interface components {
     CompleteIn: {
       /** Output Batch No */
       output_batch_no: string;
+      /** Produced Qty */
+      produced_qty?: number | null;
       /** Mfg Date */
       mfg_date?: string | null;
       /** Expiry Date */
@@ -6757,6 +6839,8 @@ export interface components {
       status: string;
       /** Output Batch No */
       output_batch_no?: string | null;
+      /** Produced Qty */
+      produced_qty?: number | null;
     };
     /** ProfileOut */
     ProfileOut: {
@@ -7215,6 +7299,18 @@ export interface components {
       /** Total Distance Km */
       total_distance_km: number;
     };
+    /** RouteStartOut */
+    RouteStartOut: {
+      /**
+       * Date
+       * Format: date
+       */
+      date: string;
+      /** Stops */
+      stops: number;
+      /** Notified */
+      notified: number;
+    };
     /** ServiceabilityOut */
     ServiceabilityOut: {
       /** Serviceable */
@@ -7352,6 +7448,48 @@ export interface components {
       pincode?: string | null;
       /** Status */
       status?: string | null;
+    };
+    /** ShopScopeIn */
+    ShopScopeIn: {
+      /** Shop Ids */
+      shop_ids: number[];
+    };
+    /** ShopScopeOut */
+    ShopScopeOut: {
+      /** User Id */
+      user_id: number;
+      /** Role */
+      role: string;
+      /** All Shops */
+      all_shops: boolean;
+      /** Shop Ids */
+      shop_ids: number[];
+      /** Editable */
+      editable: boolean;
+      /**
+       * Source
+       * @enum {string}
+       */
+      source: "admin" | "delivery_assignments" | "account_ownership" | "none";
+    };
+    /** StaffOut */
+    StaffOut: {
+      /** Id */
+      id: number;
+      /** Phone */
+      phone: string;
+      /** Email */
+      email?: string | null;
+      /** Full Name */
+      full_name?: string | null;
+      /** Role */
+      role: string;
+      /** Status */
+      status: string;
+      /** All Shops */
+      all_shops: boolean;
+      /** Shop Ids */
+      shop_ids: number[];
     };
     /** StaffUserIn */
     StaffUserIn: {
@@ -9186,6 +9324,37 @@ export interface operations {
       };
     };
   };
+  start_delivery_route: {
+    parameters: {
+      query?: {
+        date?: string | null;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["RouteStartOut"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
   my_billing: {
     parameters: {
       query?: never;
@@ -9241,6 +9410,8 @@ export interface operations {
   my_credit_statement: {
     parameters: {
       query?: {
+        /** @description Only lines attributable to this shop (its delivery charges and the cash collected at its door). Account-level payments are omitted, and `balance_after` stays the ACCOUNT's running outstanding. */
+        shop_id?: number | null;
         limit?: number;
         offset?: number;
       };
@@ -10907,6 +11078,8 @@ export interface operations {
   list_invoices: {
     parameters: {
       query?: {
+        /** @description Only invoices/credit notes for deliveries or orders of this shop (must be one of the caller's shops). */
+        shop_id?: number | null;
         limit?: number;
         offset?: number;
       };
@@ -11666,6 +11839,108 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["UserAdminOut"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  admin_list_staff: {
+    parameters: {
+      query?: {
+        role?: string | null;
+        status_filter?: string | null;
+        /** @description Phone or name contains */
+        q?: string | null;
+        limit?: number;
+        offset?: number;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["StaffOut"][];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  admin_get_shop_scope: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        user_id: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ShopScopeOut"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  admin_set_shop_scope: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        user_id: number;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["ShopScopeIn"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ShopScopeOut"];
         };
       };
       /** @description Validation Error */
@@ -15307,7 +15582,9 @@ export interface operations {
   redeem_gift_card: {
     parameters: {
       query?: never;
-      header?: never;
+      header?: {
+        "Idempotency-Key"?: string | null;
+      };
       path?: never;
       cookie?: never;
     };
@@ -15936,6 +16213,37 @@ export interface operations {
         content: {
           "application/json": components["schemas"]["DeviceTokenOut"];
         };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  delete_device_token: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["DeviceTokenUnregisterIn"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
       };
       /** @description Validation Error */
       422: {

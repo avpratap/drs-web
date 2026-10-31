@@ -17,7 +17,7 @@
           "health"
         ],
         "summary": "Healthz",
-        "description": "Liveness \u2014 the process is up.",
+        "description": "Liveness — the process is up.",
         "operationId": "healthz",
         "responses": {
           "200": {
@@ -37,7 +37,7 @@
           "health"
         ],
         "summary": "Readyz",
-        "description": "Readiness \u2014 can reach Postgres + Redis.",
+        "description": "Readiness — can reach Postgres + Redis.",
         "operationId": "readyz",
         "responses": {
           "200": {
@@ -1489,7 +1489,7 @@
           "delivery"
         ],
         "summary": "Delivery Route",
-        "description": "The caller's assigned stops for a date as an ordered route with sequence numbers.\nOrdered by shop_id (stable); geo nearest-neighbor from the driver's latest location\nis a future enhancement once shops carry geo.",
+        "description": "The caller's assigned stops for a date as an ordered route with sequence numbers.\nOrdered by shop_id (stable); geo nearest-neighbor from the driver's latest location\nis a future enhancement once shops carry geo. Delivery staff (and admins) only, like\nthe rest of the driver endpoints; subscribers use GET /delivery/orders.",
         "operationId": "delivery_route",
         "security": [
           {
@@ -1657,6 +1657,62 @@
         }
       }
     },
+    "/api/v1/delivery/route/start": {
+      "post": {
+        "tags": [
+          "delivery"
+        ],
+        "summary": "Start Delivery Route",
+        "description": "The rider is leaving with today's load: every customer with an open stop on the\ncaller's route gets an \"out for delivery\" push (event delivery.out_for_delivery,\ndeep-linking to that delivery). Idempotent per stop — calling again only notifies\nstops not already told. Delivery staff/admin only; riders only for today.",
+        "operationId": "start_delivery_route",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "date",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Date"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RouteStartOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/billing/me": {
       "get": {
         "tags": [
@@ -1755,7 +1811,7 @@
           "billing"
         ],
         "summary": "My Credit Statement",
-        "description": "Line-item statement for an account on credit terms (B2B postpaid): every charge,\npayment and credit note with the running outstanding, newest first (`?limit=&offset=`,\ntotal in `X-Total-Count`). Scoped to the caller's own account; an account that was\nnever on credit simply has no lines.",
+        "description": "Line-item statement for an account on credit terms (B2B postpaid): every charge,\npayment and credit note with the running outstanding, newest first (`?limit=&offset=`,\ntotal in `X-Total-Count`). Scoped to the caller's own account; an account that was\nnever on credit simply has no lines. `?shop_id=` narrows it to one of the account's\nshops (404 for a shop that isn't theirs).",
         "operationId": "my_credit_statement",
         "security": [
           {
@@ -1763,6 +1819,24 @@
           }
         ],
         "parameters": [
+          {
+            "name": "shop_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Only lines attributable to this shop (its delivery charges and the cash collected at its door). Account-level payments are omitted, and `balance_after` stays the ACCOUNT's running outstanding.",
+              "title": "Shop Id"
+            },
+            "description": "Only lines attributable to this shop (its delivery charges and the cash collected at its door). Account-level payments are omitted, and `balance_after` stays the ACCOUNT's running outstanding."
+          },
           {
             "name": "limit",
             "in": "query",
@@ -2070,7 +2144,7 @@
           "payments"
         ],
         "summary": "Refund Payment",
-        "description": "Refund a successful payment (full or partial). Top-up refunds reverse the wallet\ncredit; order-payment refunds return money to source and mark the order refunded.\n\nDouble-refund safety: the payment row is locked FOR UPDATE for the whole read-cap +\ninsert-'initiated' section; the cap counts EVERY non-'failed' refund; and while any\nrefund on the payment is unresolved (initiated/pending \u2014 the gateway outcome is\nunknown) a NEW refund is refused, so retrying a timed-out partial refund can never\nissue a second real one. Unresolved refunds are settled via the reconcile endpoint.",
+        "description": "Refund a successful payment (full or partial). Top-up refunds reverse the wallet\ncredit; order-payment refunds return money to source and mark the order refunded.\n\nDouble-refund safety: the payment row is locked FOR UPDATE for the whole read-cap +\ninsert-'initiated' section; the cap counts EVERY non-'failed' refund; and while any\nrefund on the payment is unresolved (initiated/pending — the gateway outcome is\nunknown) a NEW refund is refused, so retrying a timed-out partial refund can never\nissue a second real one. Unresolved refunds are settled via the reconcile endpoint.",
         "operationId": "refund_payment",
         "security": [
           {
@@ -3783,7 +3857,7 @@
           "account"
         ],
         "summary": "Erase My Account",
-        "description": "Right to erasure \u2014 anonymizes PII; tax/financial records are retained by law.\nIrreversible, so it requires step-up confirmation with a fresh OTP.",
+        "description": "Right to erasure — anonymizes PII; tax/financial records are retained by law.\nIrreversible, so it requires step-up confirmation with a fresh OTP.",
         "operationId": "erase_my_account",
         "requestBody": {
           "content": {
@@ -4264,7 +4338,7 @@
           "account"
         ],
         "summary": "Save Payment Method From Payment",
-        "description": "Save the instrument of one of the caller's own SUCCESSFUL gateway payments. The\ntoken, customer id, brand and last digits come from the gateway's record of that\npayment \u2014 never from the client.",
+        "description": "Save the instrument of one of the caller's own SUCCESSFUL gateway payments. The\ntoken, customer id, brand and last digits come from the gateway's record of that\npayment — never from the client.",
         "operationId": "save_payment_method_from_payment",
         "requestBody": {
           "content": {
@@ -4562,6 +4636,24 @@
           }
         ],
         "parameters": [
+          {
+            "name": "shop_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Only invoices/credit notes for deliveries or orders of this shop (must be one of the caller's shops).",
+              "title": "Shop Id"
+            },
+            "description": "Only invoices/credit notes for deliveries or orders of this shop (must be one of the caller's shops)."
+          },
           {
             "name": "limit",
             "in": "query",
@@ -5881,6 +5973,229 @@
         }
       }
     },
+    "/api/v1/admin/staff": {
+      "get": {
+        "tags": [
+          "management"
+        ],
+        "summary": "List Staff",
+        "description": "Staff users (admins + delivery) with their shop scope, for the staff management\nscreen (`?limit=&offset=`, total in `X-Total-Count`). Erased accounts are excluded.",
+        "operationId": "admin_list_staff",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "role",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "pattern": "^(admin|delivery)$"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Role"
+            }
+          },
+          {
+            "name": "status_filter",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "pattern": "^(active|suspended)$"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status Filter"
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 64
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Phone or name contains",
+              "title": "Q"
+            },
+            "description": "Phone or name contains"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 200,
+              "minimum": 1,
+              "default": 50,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/StaffOut"
+                  },
+                  "title": "Response Admin List Staff"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/users/{user_id}/shop-scope": {
+      "get": {
+        "tags": [
+          "management"
+        ],
+        "summary": "Get Shop Scope",
+        "description": "The shops this user may access, exactly as authorization enforces it.",
+        "operationId": "admin_get_shop_scope",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "User Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShopScopeOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "management"
+        ],
+        "summary": "Set Shop Scope",
+        "description": "Replace a delivery staff member's shop scope with exactly `shop_ids`: missing\nassignments are created/reactivated, others deactivated (history kept). Only delivery\nusers have an editable scope — admins see all shops, and a subscriber's/customer's\nscope follows the shops their account owns.",
+        "operationId": "admin_set_shop_scope",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "User Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShopScopeIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShopScopeOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/admin/users/{user_id}/erase": {
       "post": {
         "tags": [
@@ -6841,7 +7156,7 @@
           "management"
         ],
         "summary": "Admin Unpriced Packs",
-        "description": "Every ACTIVE sellable pack the B2C storefront shows as \"price unavailable\": no\nRETAIL price row applies at its pack size today (none configured, none valid today,\nor min_qty above the pack size \u2014 e.g. min_qty 1 vs a 0.5 L pack).",
+        "description": "Every ACTIVE sellable pack the B2C storefront shows as \"price unavailable\": no\nRETAIL price row applies at its pack size today (none configured, none valid today,\nor min_qty above the pack size — e.g. min_qty 1 vs a 0.5 L pack).",
         "operationId": "admin_unpriced_packs",
         "responses": {
           "200": {
@@ -9546,7 +9861,7 @@
           "cart"
         ],
         "summary": "Cart Quote",
-        "description": "One-call pre-pay quote the web checkout can show before paying: line totals,\nsubtotal, coupon discount, indicative GST (on the discounted base), and \u2014 if a\npincode is given \u2014 courier serviceability. Read-only; never reserves the coupon.",
+        "description": "One-call pre-pay quote the web checkout can show before paying: line totals,\nsubtotal, coupon discount, indicative GST (on the discounted base), and — if a\npincode is given — courier serviceability. Read-only; never reserves the coupon.",
         "operationId": "cart_quote",
         "requestBody": {
           "content": {
@@ -12179,15 +12494,38 @@
         ],
         "summary": "Redeem Gift Card",
         "operationId": "redeem_gift_card",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Idempotency-Key"
+            }
+          }
+        ],
         "requestBody": {
+          "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/RedeemGiftIn"
               }
             }
-          },
-          "required": true
+          }
         },
         "responses": {
           "200": {
@@ -12210,12 +12548,7 @@
               }
             }
           }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ]
+        }
       }
     },
     "/api/v1/admin/loyalty/{account_id}/adjust": {
@@ -13374,6 +13707,44 @@
             "HTTPBearer": []
           }
         ]
+      },
+      "delete": {
+        "tags": [
+          "devices"
+        ],
+        "summary": "Unregister Device Token Body",
+        "description": "Deactivate a device token, sent in the BODY (preferred: the DELETE /{token} form\nputs the push token in the URL, i.e. in access logs and traces). Only the caller's\nown token is touched; 204 either way, so another user's tokens can't be probed.",
+        "operationId": "delete_device_token",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeviceTokenUnregisterIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
       }
     },
     "/api/v1/account/device-tokens/unregister": {
@@ -13382,7 +13753,7 @@
           "devices"
         ],
         "summary": "Unregister Device Token Body",
-        "description": "Deactivate a device token, sent in the BODY (preferred: the DELETE /{token} form\nputs the push token in the URL, i.e. in access logs and traces).",
+        "description": "Deactivate a device token, sent in the BODY (preferred: the DELETE /{token} form\nputs the push token in the URL, i.e. in access logs and traces). Only the caller's\nown token is touched; 204 either way, so another user's tokens can't be probed.",
         "operationId": "unregister_device_token_body",
         "requestBody": {
           "content": {
@@ -13581,7 +13952,7 @@
           "newsletter"
         ],
         "summary": "Subscribe",
-        "description": "Double opt-in: a subscribe creates/keeps a PENDING record with a confirm token\nand emails a confirmation link. Consent (consent_at) is recorded only when the real\nemail owner confirms \u2014 so one can't subscribe or forge consent for someone else.\nAlready-subscribed emails stay subscribed (idempotent).",
+        "description": "Double opt-in: a subscribe creates/keeps a PENDING record with a confirm token\nand emails a confirmation link. Consent (consent_at) is recorded only when the real\nemail owner confirms — so one can't subscribe or forge consent for someone else.\nAlready-subscribed emails stay subscribed (idempotent).",
         "operationId": "newsletter_subscribe",
         "requestBody": {
           "content": {
@@ -13623,7 +13994,7 @@
           "newsletter"
         ],
         "summary": "Confirm Status",
-        "description": "NON-mutating: report whether a confirm token is still valid so the landing page can\nrender a 'Confirm subscription' button. Consent is NOT recorded here \u2014 an email client\nor link-scanner that prefetches the GET link must not auto-confirm (DPDP intent). The\nactual confirmation is the POST below, triggered by an explicit user click.",
+        "description": "NON-mutating: report whether a confirm token is still valid so the landing page can\nrender a 'Confirm subscription' button. Consent is NOT recorded here — an email client\nor link-scanner that prefetches the GET link must not auto-confirm (DPDP intent). The\nactual confirmation is the POST below, triggered by an explicit user click.",
         "operationId": "newsletter_confirm_status",
         "parameters": [
           {
@@ -13664,7 +14035,7 @@
           "newsletter"
         ],
         "summary": "Confirm",
-        "description": "Confirm a pending subscription via the emailed token \u2014 records consent. POST so a\nprefetch/scanner GET of the email link can't record consent without a user action.",
+        "description": "Confirm a pending subscription via the emailed token — records consent. POST so a\nprefetch/scanner GET of the email link can't record consent without a user action.",
         "operationId": "newsletter_confirm",
         "requestBody": {
           "required": true,
@@ -15403,7 +15774,7 @@
           "uploads"
         ],
         "summary": "Upload File",
-        "description": "Upload an image (JPEG/PNG/WEBP, \u22645 MB); returns a URL to attach to an RMA or ticket.\nThe file is validated by magic bytes and stored with a server-chosen content-type.",
+        "description": "Upload an image (JPEG/PNG/WEBP, ≤5 MB); returns a URL to attach to an RMA or ticket.\nThe file is validated by magic bytes and stored with a server-chosen content-type.",
         "operationId": "upload_file",
         "requestBody": {
           "content": {
@@ -18389,6 +18760,19 @@
             "minLength": 1,
             "title": "Output Batch No"
           },
+          "produced_qty": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 1000000.0,
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Produced Qty"
+          },
           "mfg_date": {
             "anyOf": [
               {
@@ -19238,7 +19622,7 @@
           "consents"
         ],
         "title": "DataExportOut",
-        "description": "DPDP data export. Values are intentionally loose (dict/list) \u2014 this is a\nportability dump, not a stable typed resource. Every PII-bearing table keyed to the\nsubject (user id or their accounts) is included, all columns except secrets."
+        "description": "DPDP data export. Values are intentionally loose (dict/list) — this is a\nportability dump, not a stable typed resource. Every PII-bearing table keyed to the\nsubject (user id or their accounts) is included, all columns except secrets."
       },
       "DeliverItem": {
         "properties": {
@@ -23471,6 +23855,17 @@
               }
             ],
             "title": "Output Batch No"
+          },
+          "produced_qty": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Produced Qty"
           }
         },
         "type": "object",
@@ -24867,6 +25262,30 @@
         ],
         "title": "RouteOut"
       },
+      "RouteStartOut": {
+        "properties": {
+          "date": {
+            "type": "string",
+            "format": "date",
+            "title": "Date"
+          },
+          "stops": {
+            "type": "integer",
+            "title": "Stops"
+          },
+          "notified": {
+            "type": "integer",
+            "title": "Notified"
+          }
+        },
+        "type": "object",
+        "required": [
+          "date",
+          "stops",
+          "notified"
+        ],
+        "title": "RouteStartOut"
+      },
       "ServiceabilityOut": {
         "properties": {
           "serviceable": {
@@ -25365,6 +25784,133 @@
         },
         "type": "object",
         "title": "ShopPatch"
+      },
+      "ShopScopeIn": {
+        "properties": {
+          "shop_ids": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "maxItems": 1000,
+            "title": "Shop Ids"
+          }
+        },
+        "type": "object",
+        "required": [
+          "shop_ids"
+        ],
+        "title": "ShopScopeIn"
+      },
+      "ShopScopeOut": {
+        "properties": {
+          "user_id": {
+            "type": "integer",
+            "title": "User Id"
+          },
+          "role": {
+            "type": "string",
+            "title": "Role"
+          },
+          "all_shops": {
+            "type": "boolean",
+            "title": "All Shops"
+          },
+          "shop_ids": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Shop Ids"
+          },
+          "editable": {
+            "type": "boolean",
+            "title": "Editable"
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "admin",
+              "delivery_assignments",
+              "account_ownership",
+              "none"
+            ],
+            "title": "Source"
+          }
+        },
+        "type": "object",
+        "required": [
+          "user_id",
+          "role",
+          "all_shops",
+          "shop_ids",
+          "editable",
+          "source"
+        ],
+        "title": "ShopScopeOut"
+      },
+      "StaffOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "phone": {
+            "type": "string",
+            "title": "Phone"
+          },
+          "email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Email"
+          },
+          "full_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Full Name"
+          },
+          "role": {
+            "type": "string",
+            "title": "Role"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "all_shops": {
+            "type": "boolean",
+            "title": "All Shops"
+          },
+          "shop_ids": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Shop Ids"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "phone",
+          "role",
+          "status",
+          "all_shops",
+          "shop_ids"
+        ],
+        "title": "StaffOut"
       },
       "StaffUserIn": {
         "properties": {
