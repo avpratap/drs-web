@@ -20,7 +20,7 @@ async function RoleNav() {
 export default function AccountLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="mx-auto max-w-6xl px-4 pt-6 pb-16 md:px-6 md:pt-10 md:pb-24 lg:grid lg:grid-cols-[14rem_minmax(0,1fr)] lg:items-start lg:gap-10">
-      <div className="lg:sticky lg:top-28">
+      <div className="lg:sticky lg:top-[calc(var(--header-h)+0.75rem)]">
         <Suspense fallback={<AccountNav />}>
           <RoleNav />
         </Suspense>

@@ -98,7 +98,7 @@ export function PurchasePanel({ productId, options }: { productId: number; optio
               <label
                 key={o.key}
                 className={cn(
-                  "relative flex min-h-16 flex-col justify-center rounded-xl border-2 px-3.5 py-2.5 transition-colors has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-drs-green",
+                  "relative flex min-h-16 flex-col justify-center rounded-xl border-2 px-3.5 py-2.5 transition-colors focus-ring-within",
                   checked
                     ? "border-drs-green bg-drs-green/5"
                     : "border-drs-ink/15 bg-drs-white hover:border-drs-green/50",

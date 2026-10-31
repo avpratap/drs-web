@@ -82,7 +82,7 @@ export function SearchForm({ className, id = "store-search" }: { className?: str
       </label>
       <SearchIcon
         aria-hidden
-        className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-drs-ink/60"
+        className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-drs-ink/70"
       />
       <input
         id={id}
@@ -91,7 +91,7 @@ export function SearchForm({ className, id = "store-search" }: { className?: str
         value={q}
         onChange={(e) => setQ(e.target.value)}
         placeholder="Search milk, ghee, paneer…"
-        className="h-11 w-full rounded-full border border-drs-ink/15 bg-drs-white pr-4 pl-10 text-sm text-drs-ink placeholder:text-drs-ink/60 transition-colors hover:border-drs-green/40 focus-visible:border-drs-green"
+        className="h-11 w-full rounded-full border border-drs-ink/15 bg-drs-white pr-4 pl-10 text-sm text-drs-ink placeholder:text-drs-ink/70 transition-colors hover:border-drs-green/40 focus-visible:border-drs-green"
       />
     </form>
   );

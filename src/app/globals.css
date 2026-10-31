@@ -65,8 +65,20 @@
 }
 
 @layer base {
+  /* One header height for every sticky offset and in-page anchor (the announcement bar
+     (36px) + the header bar (64px, 72px from md)). */
+  :root {
+    --header-h: 100px;
+  }
+  @media (min-width: 768px) {
+    :root {
+      --header-h: 108px;
+    }
+  }
   html {
     -webkit-text-size-adjust: 100%;
+    /* In-page anchors (#reviews, #subscribable…) land below the sticky header. */
+    scroll-padding-top: calc(var(--header-h) + 1rem);
   }
   body {
     @apply bg-drs-cream text-drs-ink font-sans antialiased;
@@ -149,6 +161,11 @@
   }
   .on-dark :focus-visible {
     outline-color: var(--color-drs-gold);
+  }
+  /* The same focus ring on a card or chip whose input is visually hidden (radio cards). */
+  .focus-ring-within:has(:focus-visible) {
+    outline: 2px solid var(--color-drs-green);
+    outline-offset: 2px;
   }
   @media (prefers-reduced-motion: reduce) {
     *,

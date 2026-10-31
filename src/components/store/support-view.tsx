@@ -12,6 +12,7 @@ import type { components } from "@/lib/api/client";
 import { cn } from "@/lib/utils";
 import { detailOf } from "./cart";
 import { LoadError, PanelSkeleton, useLoad } from "./use-load";
+import { EmptyState } from "./empty-state";
 
 type Ticket = components["schemas"]["TicketOut"];
 
@@ -153,9 +154,11 @@ export function SupportList() {
       ) : !list.data ? (
         <PanelSkeleton rows={2} label="Loading requests" />
       ) : list.data.length === 0 ? (
-        <p className="rounded-2xl border border-dashed border-drs-ink/20 bg-drs-white/70 px-6 py-10 text-center text-sm text-drs-ink/75">
-          No requests yet. We&apos;re here if anything isn&apos;t right.
-        </p>
+        <EmptyState
+          icon={LifeBuoyIcon}
+          title="No requests yet"
+          body="We're here if anything isn't right with an order or a delivery."
+        />
       ) : (
         <ul aria-label="Your requests" className="space-y-3">
           {list.data.map((t) => {

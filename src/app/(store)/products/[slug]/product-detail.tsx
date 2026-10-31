@@ -78,7 +78,7 @@ export async function ProductDetail({ params }: { params: Promise<{ slug: string
       <div className="mt-5 grid gap-8 md:mt-8 lg:grid-cols-2 lg:gap-14">
         <div
           className={cn(
-            "relative grid aspect-square place-items-center overflow-hidden rounded-3xl border border-drs-ink/5 lg:sticky lg:top-28 lg:self-start",
+            "relative grid aspect-square place-items-center overflow-hidden rounded-3xl border border-drs-ink/5 lg:sticky lg:top-[calc(var(--header-h)+0.75rem)] lg:self-start",
             meta.milkLine ? "bg-drs-sky/15" : "bg-drs-white",
           )}
         >
@@ -159,7 +159,11 @@ export async function ProductDetail({ params }: { params: Promise<{ slug: string
         </div>
       </div>
 
-      <section id="reviews" aria-labelledby="reviews-heading" className="mt-14 scroll-mt-28 md:mt-20">
+      <section
+        id="reviews"
+        aria-labelledby="reviews-heading"
+        className="mt-14 scroll-mt-[calc(var(--header-h)+1rem)] md:mt-20"
+      >
         <h2 id="reviews-heading" className="text-2xl font-semibold text-drs-green md:text-[2rem]">
           Ratings &amp; reviews
         </h2>

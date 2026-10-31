@@ -86,7 +86,7 @@ function TopUp({ enabled, onAdded }: { enabled: boolean; onAdded: (amount: numbe
               <label
                 key={v}
                 className={cn(
-                  "inline-flex min-h-11 cursor-pointer items-center rounded-full border-2 px-4 text-sm font-semibold transition-colors has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-drs-green",
+                  "inline-flex min-h-11 cursor-pointer items-center rounded-full border-2 px-4 text-sm font-semibold transition-colors focus-ring-within",
                   on
                     ? "border-drs-green bg-drs-green/5 text-drs-green"
                     : "border-drs-ink/15 text-drs-ink hover:border-drs-green/50",

@@ -62,7 +62,7 @@ export async function CmsPageView({ route }: { route: CmsRoute }) {
               : "We couldn't load this page just now. Please try again in a moment."}
           </p>
           <div className="mt-5 flex flex-wrap gap-3">
-            <Link href="/account/support" className={buttonClass("primary", "rounded-full px-5")}>
+            <Link href="/account/support" className={buttonClass("primary", "px-5", "pill")}>
               Ask us a question <ArrowRightIcon aria-hidden className="size-4" />
             </Link>
             <Link href="/products" className={buttonClass("secondary", "rounded-full px-5")}>

@@ -72,7 +72,11 @@ export default function StoreHome() {
           <PromoBanners />
         </Suspense>
 
-        <section aria-labelledby="categories-heading" id="categories" className="scroll-mt-32">
+        <section
+          aria-labelledby="categories-heading"
+          id="categories"
+          className="scroll-mt-[calc(var(--header-h)+1rem)]"
+        >
           <SectionHeading
             id="categories-heading"
             eyebrow="Our range"

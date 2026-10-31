@@ -12,6 +12,7 @@ import { detailOf } from "../cart";
 import { packLabel } from "../product-card";
 import { LoadError, PanelSkeleton, useLoad } from "../use-load";
 import { ShopSwitcher, useShops } from "./shops";
+import { EmptyState } from "../empty-state";
 
 const ORIGIN: Record<string, string> = { subscription: "Standing order", one_time: "One-off order" };
 
@@ -165,17 +166,15 @@ function Deliveries() {
             ))}
           </ul>
         ) : (
-          <div className="flex flex-col items-center rounded-2xl border border-dashed border-drs-ink/20 bg-drs-white px-6 py-10 text-center">
-            <TruckIcon aria-hidden className="size-8 text-drs-green" />
-            <p className="mt-2 font-medium text-drs-ink">
-              No deliveries {date > today ? "planned" : "recorded"}.
-            </p>
-            <p className="mt-1 text-sm text-drs-ink/75">
-              {date > today
+          <EmptyState
+            icon={TruckIcon}
+            title={`No deliveries ${date > today ? "planned" : "recorded"}.`}
+            body={
+              date > today
                 ? "Orders appear here once the evening cutoff fixes them — check your standing order to see what's coming."
-                : "Nothing was delivered to this shop on that day."}
-            </p>
-          </div>
+                : "Nothing was delivered to this shop on that day."
+            }
+          />
         )}
       </section>
     </div>

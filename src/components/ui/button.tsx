@@ -6,17 +6,18 @@ type Size = "md" | "pill";
 
 /**
  * Hover only while enabled (disabled buttons get pointer-events: none), one disabled look per
- * variant, and a subtle pressed state everywhere.
+ * variant, and a subtle pressed state everywhere. Focus is the global outline; filled buttons
+ * use an ink outline a little further out, since green-on-green would vanish.
  */
 const styles: Record<Variant, string> = {
   primary:
-    "bg-drs-green text-drs-cream hover:bg-drs-green/90 active:bg-drs-green/85 disabled:bg-drs-ink/15 disabled:text-drs-ink/70 disabled:shadow-none",
+    "bg-drs-green text-drs-cream hover:bg-drs-green/90 active:bg-drs-green/85 disabled:bg-drs-ink/15 disabled:text-drs-ink/70 disabled:shadow-none focus-visible:outline-drs-ink focus-visible:outline-offset-[3px]",
   secondary:
     "bg-drs-white text-drs-green border border-drs-green/30 hover:border-drs-green hover:bg-drs-green/5 active:bg-drs-green/10 disabled:border-drs-ink/15 disabled:bg-drs-white disabled:text-drs-ink/50",
   ghost:
     "text-drs-green hover:bg-drs-green/10 active:bg-drs-green/15 disabled:bg-transparent disabled:text-drs-ink/50",
   danger:
-    "bg-drs-maroon text-drs-cream hover:bg-drs-maroon/90 active:bg-drs-maroon/85 disabled:bg-drs-ink/15 disabled:text-drs-ink/70",
+    "bg-drs-maroon text-drs-cream hover:bg-drs-maroon/90 active:bg-drs-maroon/85 disabled:bg-drs-ink/15 disabled:text-drs-ink/70 focus-visible:outline-drs-ink focus-visible:outline-offset-[3px]",
   // On green surfaces (e.g. the subscription band).
   inverse:
     "bg-drs-cream text-drs-green hover:bg-drs-white active:bg-drs-white/90 disabled:bg-drs-cream/40 disabled:text-drs-green/60",

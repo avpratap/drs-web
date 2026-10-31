@@ -37,7 +37,7 @@ export function ShopSearch({ params, className }: { params: ShopParams; classNam
       </label>
       <SearchIcon
         aria-hidden
-        className="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-drs-ink/60"
+        className="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-drs-ink/70"
       />
       <input
         id={id}
@@ -45,7 +45,7 @@ export function ShopSearch({ params, className }: { params: ShopParams; classNam
         type="search"
         defaultValue={params.q ?? ""}
         placeholder="Search by name"
-        className="h-11 w-full rounded-lg border border-drs-ink/20 bg-drs-white pr-3 pl-10 text-sm text-drs-ink transition-colors placeholder:text-drs-ink/60 hover:border-drs-green/50 focus-visible:border-drs-green"
+        className="h-11 w-full rounded-lg border border-drs-ink/20 bg-drs-white pr-3 pl-10 text-sm text-drs-ink transition-colors placeholder:text-drs-ink/70 hover:border-drs-green/50 focus-visible:border-drs-green"
       />
       {params.category && <input type="hidden" name="category" value={params.category} />}
       {params.sort && params.sort !== "featured" && <input type="hidden" name="sort" value={params.sort} />}

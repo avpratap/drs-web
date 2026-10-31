@@ -47,7 +47,7 @@ export function ErrorState({
         <button
           type="button"
           onClick={() => (retry ?? reset)()}
-          className={buttonClass("primary", "rounded-full px-6")}
+          className={buttonClass("primary", "px-6", "pill")}
         >
           <RefreshCwIcon aria-hidden className="size-4" /> Try again
         </button>

@@ -11,6 +11,7 @@ import { detailOf } from "./cart";
 import { useAttemptKey } from "./use-attempt-key";
 import { rupees } from "./product-card";
 import { LoadError, PanelSkeleton, useLoad } from "./use-load";
+import { EmptyState } from "./empty-state";
 
 type GiftCard = components["schemas"]["GiftCardOut"];
 
@@ -234,9 +235,7 @@ export function GiftCardsView() {
         ) : !cards.data ? (
           <PanelSkeleton label="Loading gift cards" />
         ) : cards.data.length === 0 ? (
-          <p className="rounded-2xl border border-dashed border-drs-ink/20 bg-drs-white/70 px-6 py-10 text-center text-sm text-drs-ink/75">
-            No gift cards yet. Got one? Enter its code above.
-          </p>
+          <EmptyState icon={GiftIcon} title="No gift cards yet" body="Got one? Enter its code above." />
         ) : (
           <ul aria-label="Your gift cards" className="grid gap-3 md:grid-cols-2">
             {cards.data.map((g) => (

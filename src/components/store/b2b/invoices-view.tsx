@@ -1,6 +1,6 @@
 "use client";
 
-import { ExternalLinkIcon, FileTextIcon, ReceiptTextIcon } from "lucide-react";
+import { ExternalLinkIcon, FileTextIcon, ReceiptTextIcon, WalletIcon } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { Badge, StatusBadge } from "@/components/ui/badge";
 import { Button, buttonClass } from "@/components/ui/button";
@@ -12,6 +12,7 @@ import { mediaUrl } from "@/lib/media";
 import { ledgerLabel, ledgerReduces, type CreditLine, type Invoice } from "@/modules/store/b2b";
 import { detailOf } from "../cart";
 import { LoadError, PanelSkeleton } from "../use-load";
+import { EmptyState } from "../empty-state";
 
 const PAGE = 20;
 
@@ -148,11 +149,11 @@ function InvoiceList() {
   if (!inv.rows) return <PanelSkeleton rows={2} label="Loading invoices" />;
   if (!inv.rows.length)
     return (
-      <div className="flex flex-col items-center rounded-2xl border border-dashed border-drs-ink/20 bg-drs-white px-6 py-10 text-center">
-        <ReceiptTextIcon aria-hidden className="size-8 text-drs-green" />
-        <p className="mt-2 font-medium text-drs-ink">No invoices yet.</p>
-        <p className="mt-1 text-sm text-drs-ink/75">A GST invoice is issued for every delivery.</p>
-      </div>
+      <EmptyState
+        icon={ReceiptTextIcon}
+        title="No invoices yet"
+        body="A GST invoice is issued for every delivery."
+      />
     );
   return (
     <>
@@ -193,10 +194,11 @@ function CreditStatement() {
   if (!st.rows) return <PanelSkeleton rows={2} label="Loading credit statement" />;
   if (!st.rows.length)
     return (
-      <p className="rounded-2xl border border-dashed border-drs-ink/20 bg-drs-white px-6 py-10 text-center text-sm text-drs-ink/75">
-        Your account isn&apos;t on credit terms, so there&apos;s no statement. Deliveries are paid from your
-        wallet.
-      </p>
+      <EmptyState
+        icon={WalletIcon}
+        title="No credit statement"
+        body="Your account isn't on credit terms — deliveries are paid from your wallet."
+      />
     );
   const outstanding = st.rows[0].balance_after;
   return (

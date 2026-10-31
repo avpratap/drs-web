@@ -91,8 +91,8 @@ function CalendarDayButton({ day, modifiers, className, ...props }: DayButtonPro
       data-selected={modifiers.selected || undefined}
       data-today={modifiers.today || undefined}
       className={cn(
-        "mx-auto grid size-10 place-items-center rounded-md text-sm transition-colors outline-none md:size-9",
-        "hover:bg-drs-green/10 hover:text-drs-green focus-visible:ring-2 focus-visible:ring-drs-green focus-visible:ring-offset-1",
+        "mx-auto grid size-10 place-items-center rounded-md text-sm transition-colors md:size-9",
+        "hover:bg-drs-green/10 hover:text-drs-green",
         modifiers.today &&
           !modifiers.selected &&
           "font-semibold text-drs-green ring-1 ring-drs-gold ring-inset",

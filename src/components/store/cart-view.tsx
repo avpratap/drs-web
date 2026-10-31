@@ -42,7 +42,7 @@ function SignedOut() {
       <p className="mt-1 max-w-sm text-sm text-drs-ink/75">
         Your cart is saved to your account, on every device.
       </p>
-      <Link href="/account/login?next=%2Fcart" className={buttonClass("primary", "mt-6 rounded-full px-6")}>
+      <Link href="/account/login?next=%2Fcart" className={buttonClass("primary", "mt-6 px-6", "pill")}>
         Sign in
       </Link>
     </div>
@@ -59,7 +59,7 @@ function EmptyCart() {
       <p className="mt-1 max-w-sm text-sm text-drs-ink/75">
         Fresh milk, curd, paneer and ghee — delivered before 7 am.
       </p>
-      <Link href="/products" className={buttonClass("primary", "mt-6 rounded-full px-6")}>
+      <Link href="/products" className={buttonClass("primary", "mt-6 px-6", "pill")}>
         Start shopping <ArrowRightIcon aria-hidden className="size-4" />
       </Link>
     </div>
@@ -212,7 +212,7 @@ export function CouponBox() {
           autoCapitalize="characters"
           aria-invalid={state.kind === "error" || undefined}
           aria-describedby={state.kind === "error" ? `${id}-err` : undefined}
-          className="h-11 min-w-0 flex-1 rounded-lg border border-drs-ink/20 bg-drs-white px-3 text-sm uppercase text-drs-ink placeholder:normal-case placeholder:text-drs-ink/60 hover:border-drs-green/50 focus-visible:border-drs-green aria-[invalid=true]:border-drs-maroon"
+          className="h-11 min-w-0 flex-1 rounded-lg border border-drs-ink/20 bg-drs-white px-3 text-sm uppercase text-drs-ink placeholder:normal-case placeholder:text-drs-ink/70 hover:border-drs-green/50 focus-visible:border-drs-green aria-[invalid=true]:border-drs-maroon"
           placeholder="e.g. WELCOME50"
         />
         <button
@@ -253,7 +253,7 @@ export function CartView() {
           ))}
         </ul>
       )}
-      <div className="lg:sticky lg:top-28">
+      <div className="lg:sticky lg:top-[calc(var(--header-h)+0.75rem)]">
         <OrderSummary quote={quote} count={count}>
           {error && coupon && (
             <p role="alert" className="mt-3 text-sm text-drs-maroon">
@@ -264,10 +264,7 @@ export function CartView() {
             </p>
           )}
           <CouponBox />
-          <Link
-            href="/checkout"
-            className={buttonClass("primary", "mt-5 min-h-12 w-full rounded-full text-base")}
-          >
+          <Link href="/checkout" className={buttonClass("primary", "mt-5 w-full text-base", "pill")}>
             Checkout <ArrowRightIcon aria-hidden className="size-4" />
           </Link>
           <p className="mt-3 text-center text-xs text-drs-ink/70">

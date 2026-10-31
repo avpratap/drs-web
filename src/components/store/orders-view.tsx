@@ -11,7 +11,6 @@ import {
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
-import { buttonClass } from "@/components/ui/button";
 import { api } from "@/lib/api/browser";
 import type { components } from "@/lib/api/client";
 import { cn } from "@/lib/utils";
@@ -24,6 +23,7 @@ import { InvoiceLink } from "./invoice-link";
 import { PaymentPanel } from "./payment-panel";
 import { rupees } from "./product-card";
 import { useProducts } from "./use-products";
+import { EmptyState } from "./empty-state";
 
 type Order = components["schemas"]["OrderOut"];
 type Tracking = components["schemas"]["OrderTrackingOut"];
@@ -79,14 +79,13 @@ export function OrdersList() {
   if (!state.orders) return <OrdersSkeleton />;
   if (!state.orders.length) {
     return (
-      <div className="flex flex-col items-center rounded-2xl border border-dashed border-drs-ink/20 bg-drs-white/70 px-6 py-14 text-center">
-        <PackageIcon aria-hidden className="size-10 text-drs-green" strokeWidth={1.5} />
-        <h2 className="mt-4 text-xl font-semibold text-drs-ink">No orders yet</h2>
-        <p className="mt-1 max-w-sm text-sm text-drs-ink/75">Your first fresh delivery is a few taps away.</p>
-        <Link href="/products" className={buttonClass("primary", "mt-6 rounded-full px-6")}>
-          Shop fresh dairy
-        </Link>
-      </div>
+      <EmptyState
+        as="h2"
+        icon={PackageIcon}
+        title="No orders yet"
+        body="Your first fresh delivery is a few taps away."
+        action={{ href: "/products", label: "Shop fresh dairy" }}
+      />
     );
   }
   return (
@@ -391,7 +390,7 @@ export function OrderDetail({
 
       <aside
         aria-labelledby="totals-heading"
-        className="rounded-2xl border border-drs-ink/10 bg-drs-white p-5 shadow-sm md:p-6 xl:sticky xl:top-28"
+        className="rounded-2xl border border-drs-ink/10 bg-drs-white p-5 shadow-sm md:p-6 xl:sticky xl:top-[calc(var(--header-h)+0.75rem)]"
       >
         <h2 id="totals-heading" className="text-lg font-semibold text-drs-ink">
           Bill details
