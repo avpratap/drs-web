@@ -13,7 +13,7 @@ async function signInCustomer(page: Page, baseURL: string) {
 }
 
 test("Farm to door: the connectors join the steps into one line (M)", async ({ page }) => {
-  await visit(page, "/about", /DRS|story|Dhanna/i);
+  await visit(page, "/about", "A name we carry with pride.");
   const steps = page.getByRole("region", { name: /From the farm to your door/ }).getByRole("listitem");
   const connectors = page.getByTestId("journey-connector");
   await expect(connectors).toHaveCount((await steps.count()) - 1);
