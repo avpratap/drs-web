@@ -172,7 +172,7 @@ export default function SubscriptionsPage() {
       <section
         aria-labelledby="subscribable-heading"
         id="subscribable"
-        className="mt-14 scroll-mt-[calc(var(--header-h)+1rem)] md:mt-20"
+        className="mt-14 scroll-mt-4 md:mt-20"
       >
         <SectionHeading
           id="subscribable-heading"

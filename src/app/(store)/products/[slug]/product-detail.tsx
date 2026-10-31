@@ -162,7 +162,7 @@ export async function ProductDetail({ params }: { params: Promise<{ slug: string
       <section
         id="reviews"
         aria-labelledby="reviews-heading"
-        className="mt-14 scroll-mt-[calc(var(--header-h)+1rem)] md:mt-20"
+        className="mt-14 scroll-mt-4 md:mt-20"
       >
         <h2 id="reviews-heading" className="text-2xl font-semibold text-drs-green md:text-[2rem]">
           Ratings &amp; reviews

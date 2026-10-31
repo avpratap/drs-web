@@ -390,7 +390,7 @@ export function OrderDetail({
 
       <aside
         aria-labelledby="totals-heading"
-        className="rounded-2xl border border-drs-ink/10 bg-drs-white p-5 shadow-sm md:p-6 xl:sticky xl:top-[calc(var(--header-h)+0.75rem)]"
+        className="rounded-2xl border border-drs-ink/10 bg-drs-white p-5 shadow-sm md:p-6 xl:sticky xl:top-3"
       >
         <h2 id="totals-heading" className="text-lg font-semibold text-drs-ink">
           Bill details

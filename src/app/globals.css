@@ -159,6 +159,16 @@
   ::-webkit-scrollbar-thumb:hover {
     background-color: var(--sb-thumb-hover);
   }
+  /* Horizontal chip/tab/carousel strips: the row still scrolls (swipe/wheel/keys), but the
+     scrollbar is hidden so a short overflow on small screens doesn't show an ugly bar. */
+  .no-scrollbar {
+    scrollbar-width: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+    display: none;
+  }
   .on-dark :focus-visible {
     outline-color: var(--color-drs-gold);
   }

@@ -222,7 +222,7 @@ export async function Shop({ searchParams }: { searchParams: Promise<SearchParam
 
       {categories.ok && categories.data.length > 0 && (
         <nav aria-label="Categories" className="mt-6">
-          <ul className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 md:mx-0 md:flex-wrap md:px-0">
+          <ul className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 pb-1 md:mx-0 md:flex-wrap md:px-0">
             <li>
               <Link
                 href={shopHref({ ...filters, category: undefined })}

@@ -7,7 +7,7 @@ import { STORE_NAV } from "./nav";
 
 export function StoreHeader() {
   return (
-    <header className="sticky top-0 z-40">
+    <header className="relative z-40 shrink-0">
       <div className="on-dark bg-drs-green text-drs-cream">
         <p className="mx-auto flex min-h-9 max-w-7xl items-center justify-center gap-2 px-4 text-center text-xs font-medium tracking-wide md:text-[0.8125rem]">
           <SunriseIcon aria-hidden className="size-4 shrink-0 text-drs-gold" strokeWidth={1.75} />

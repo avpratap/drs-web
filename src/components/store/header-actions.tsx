@@ -146,7 +146,7 @@ export function MobileMenu() {
               className="absolute inset-0 bg-drs-ink/40"
               onClick={() => setOpen(false)}
             />
-            <div className="absolute inset-y-0 left-0 flex w-[min(20rem,85vw)] flex-col bg-drs-cream shadow-xl">
+            <div className="absolute inset-y-0 left-0 flex w-full flex-col bg-drs-cream shadow-xl">
               <div className="flex items-center justify-between border-b border-drs-ink/10 px-4 py-3">
                 <span className="text-sm font-semibold tracking-[0.18em] text-drs-green uppercase">Menu</span>
                 <button

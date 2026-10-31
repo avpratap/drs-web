@@ -127,7 +127,7 @@ function NavLinks({ items, pathname }: { items: readonly NavItem[]; pathname?: s
 export function AccountNav({ pathname, subscriber }: { pathname?: string; subscriber?: boolean }) {
   return (
     <nav aria-label="Account" className="mb-6 lg:mb-0">
-      <ul className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 lg:mx-0 lg:flex-col lg:gap-1 lg:overflow-visible lg:rounded-2xl lg:border lg:border-drs-ink/10 lg:bg-drs-white lg:p-2 lg:shadow-sm">
+      <ul className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 pb-1 lg:mx-0 lg:flex-col lg:gap-1 lg:overflow-visible lg:rounded-2xl lg:border lg:border-drs-ink/10 lg:bg-drs-white lg:p-2 lg:shadow-sm">
         <NavLinks items={ACCOUNT_NAV.slice(0, 1)} pathname={pathname} />
         {subscriber && (
           <>

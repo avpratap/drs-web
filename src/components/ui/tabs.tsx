@@ -32,7 +32,7 @@ export function Tabs({
     <div>
       <div
         role="tablist"
-        className="mb-4 flex gap-1 overflow-x-auto border-b border-drs-ink/10"
+        className="no-scrollbar mb-4 flex gap-1 overflow-x-auto border-b border-drs-ink/10"
         onKeyDown={onKey}
       >
         {tabs.map((t, i) => {

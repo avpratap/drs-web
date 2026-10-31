@@ -141,7 +141,7 @@ export async function FeaturedProducts() {
   return (
     <ul
       aria-label="Featured products"
-      className="-mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-2 md:mx-0 md:grid md:grid-cols-3 md:overflow-visible md:px-0 lg:grid-cols-4"
+      className="no-scrollbar -mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-2 md:mx-0 md:grid md:grid-cols-3 md:overflow-visible md:px-0 lg:grid-cols-4"
     >
       {res.data.slice(0, 8).map((p) => (
         <li key={p.id} className="shrink-0 snap-start max-sm:w-[72%] sm:max-md:w-[45%]">

@@ -9,7 +9,7 @@ test("mobile menu covers the whole viewport and sits above the page (A)", async 
   test.skip(!hasHamburger(page), "the menu button shows below md");
   await page.request.post(`${API}/__reset`);
   await page.goto("/products");
-  await page.evaluate(() => window.scrollTo(0, 600)); // the sticky header is mid-page
+  await page.locator("#scroll-region").evaluate((el) => el.scrollTo(0, 600)); // content scrolled under the fixed header
   await page.getByRole("button", { name: "Open menu" }).click();
   const menu = page.getByRole("dialog", { name: "Menu" });
   await expect(menu).toBeVisible();
@@ -39,7 +39,7 @@ test("cookie notice never covers the footer or the open menu (C)", async ({ brow
   const notice = page.getByRole("region", { name: "Your data, your choice" });
   await expect(notice).toBeVisible();
   // At the very bottom of the page, the footer ends above the notice.
-  await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+  await page.locator("#scroll-region").evaluate((el) => el.scrollTo(0, el.scrollHeight));
   const copyright = page.getByRole("contentinfo").getByText(/All rights reserved/);
   await expect(copyright).toBeVisible();
   await expect

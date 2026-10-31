@@ -74,7 +74,7 @@ function Deliveries() {
     <div className="space-y-5">
       <ShopSwitcher />
       <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-        <div role="group" aria-label="Delivery date" className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
+        <div role="group" aria-label="Delivery date" className="no-scrollbar -mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
           {chips.map((d) => (
             <button
               key={d}

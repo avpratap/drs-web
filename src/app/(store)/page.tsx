@@ -75,7 +75,7 @@ export default function StoreHome() {
         <section
           aria-labelledby="categories-heading"
           id="categories"
-          className="scroll-mt-[calc(var(--header-h)+1rem)]"
+          className="scroll-mt-4"
         >
           <SectionHeading
             id="categories-heading"

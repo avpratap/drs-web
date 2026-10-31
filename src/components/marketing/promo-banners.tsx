@@ -66,7 +66,7 @@ export async function PromoBanners() {
   return (
     // minmax(0,1fr) tracks: a card's content must never widen the grid past the page (md+).
     <section aria-label="Offers">
-      <ul className="-mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-1 md:mx-0 md:grid md:grid-cols-[repeat(2,minmax(0,1fr))] md:overflow-visible md:px-0">
+      <ul className="no-scrollbar -mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-1 md:mx-0 md:grid md:grid-cols-[repeat(2,minmax(0,1fr))] md:overflow-visible md:px-0">
         {res.data.slice(0, 4).map((b, i) => (
           <li key={b.id} className="w-[85%] shrink-0 snap-start md:w-auto md:min-w-0">
             <BannerCard b={b} priority={i === 0} />

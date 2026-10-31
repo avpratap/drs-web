@@ -604,7 +604,7 @@ function DayPlan({ sub, products }: { sub: SubscriptionDetail; products: Product
       <div
         role="group"
         aria-label="Delivery date"
-        className="-mx-1 mt-4 flex gap-2 overflow-x-auto px-1 pb-1"
+        className="no-scrollbar -mx-1 mt-4 flex gap-2 overflow-x-auto px-1 pb-1"
       >
         {dates.map((d) => (
           <button

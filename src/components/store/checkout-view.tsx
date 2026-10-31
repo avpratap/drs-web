@@ -330,7 +330,7 @@ export function CheckoutView({ paymentsEnabled }: { paymentsEnabled: boolean }) 
         </Link>
       </div>
 
-      <div className="lg:sticky lg:top-[calc(var(--header-h)+0.75rem)]">
+      <div className="lg:sticky lg:top-3">
         <OrderSummary quote={quote} count={count}>
           {coupon && quote && quote.discount > 0 && (
             <p className="mt-3 text-sm text-drs-green">Coupon {coupon} applied</p>
