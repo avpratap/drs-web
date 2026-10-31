@@ -82,8 +82,9 @@ test("tablets get the inline nav and a search toggle (D)", async ({ page }) => {
   );
   expect(right).toBeLessThanOrEqual(w);
   await header.getByRole("button", { name: "Search" }).click();
-  await page.getByLabel("Search products").fill("paneer");
-  await page.getByLabel("Search products").press("Enter");
+  const search = page.getByLabel("Search products").filter({ visible: true });
+  await search.fill("paneer");
+  await search.press("Enter");
   await expect(page).toHaveURL(/\/products\?q=paneer$/);
 });
 
