@@ -1,4 +1,5 @@
 import { LeafIcon, RepeatIcon, SnowflakeIcon, StarIcon } from "lucide-react";
+import { JsonLd, productLd } from "@/components/marketing/json-ld";
 import { ProductImage } from "@/components/store/product-image";
 import Link from "next/link";
 import { notFound, permanentRedirect } from "next/navigation";
@@ -26,9 +27,15 @@ export async function ProductDetail({ params }: { params: Promise<{ slug: string
   const meta = categoryMeta(p.category ?? "");
   const Icon = meta.icon;
   const options = packOptions(p);
+  const ld = productLd({
+    ...p,
+    path: `/products/${productSlug(p)}`,
+    packs: options.map((o) => ({ label: o.label, price: o.price })),
+  });
 
   return (
     <>
+      <JsonLd data={ld} />
       <nav aria-label="Breadcrumb" className="text-sm text-drs-ink/75">
         <ol className="flex flex-wrap items-center gap-1.5">
           <li>

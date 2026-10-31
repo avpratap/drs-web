@@ -13,7 +13,7 @@ import type { components } from "@/lib/api/client";
 import { cn } from "@/lib/cn";
 import { humanize } from "@/lib/format";
 import { useApiAction } from "@/lib/use-api-action";
-import { mediaUrl } from "@/modules/delivery/actions";
+import { mediaUrl } from "@/lib/media";
 import { customerActions } from "@/modules/customers/handlers";
 import { OPTIONS } from "@/modules/options";
 import { Select } from "@/components/ui/select";

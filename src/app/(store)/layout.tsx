@@ -1,9 +1,10 @@
 import { CartProvider } from "@/components/store/cart";
+import { CookieBanner } from "@/components/store/cookie-banner";
 import { EngagementProvider } from "@/components/store/engagement";
 import { StoreFooter } from "@/components/store/store-footer";
 import { StoreHeader } from "@/components/store/store-header";
 
-/** Customer storefront chrome: header (nav, search, account, notifications, cart), page, footer. */
+/** Customer storefront chrome: header (nav, search, account, notifications, cart), page, footer, cookie notice. */
 export default function StoreLayout({ children }: { children: React.ReactNode }) {
   return (
     <CartProvider>
@@ -21,6 +22,7 @@ export default function StoreLayout({ children }: { children: React.ReactNode })
           </main>
           <StoreFooter />
         </div>
+        <CookieBanner />
       </EngagementProvider>
     </CartProvider>
   );

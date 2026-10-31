@@ -54,18 +54,21 @@ export async function getFeaturedProducts(limit = 8): Promise<Loaded<StoreProduc
 }
 
 export const PAGE_SIZE = 24;
+/** The backend's page cap; the storefront catalogue is far smaller, so one read covers it. */
+const CATALOGUE_LIMIT = 200;
 
 /** Backend sorts: rating | newest | name; "featured" (or none) is the catalogue order. */
-export type ProductQuery = { category?: string; q?: string; sort?: string; page?: number };
+export type ProductQuery = { category?: string; q?: string; sort?: string };
 
-/** One page of the shop grid (plus one extra row to know whether a next page exists). */
-export async function getProducts(
-  query: ProductQuery,
-): Promise<Loaded<{ items: StoreProduct[]; more: boolean }>> {
+/**
+ * Every product matching the category/search, in the chosen order (one cached read). Price,
+ * pack-size and rating facets and the page numbers are applied over it on the web server
+ * (modules/store/facets), since the backend list has no such filters.
+ */
+export async function getCatalogue(query: ProductQuery): Promise<Loaded<StoreProduct[]>> {
   "use cache";
   cacheLife("minutes");
   cacheTag("catalog");
-  const page = Math.max(1, query.page ?? 1);
   try {
     const { data, response } = await serverApi().GET("/api/v1/products", {
       params: {
@@ -73,13 +76,11 @@ export async function getProducts(
           category: query.category || undefined,
           q: query.q || undefined,
           sort: query.sort && query.sort !== "featured" ? query.sort : undefined,
-          limit: PAGE_SIZE + 1,
-          offset: (page - 1) * PAGE_SIZE,
+          limit: CATALOGUE_LIMIT,
         },
       },
     });
-    if (!response.ok || !data) return failed();
-    return { ok: true, data: { items: data.slice(0, PAGE_SIZE), more: data.length > PAGE_SIZE } };
+    return response.ok && data ? { ok: true, data } : failed();
   } catch {
     return failed();
   }

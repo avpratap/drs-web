@@ -2,7 +2,7 @@ import { BookOpenIcon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import { mediaUrl } from "@/modules/delivery/actions";
+import { mediaUrl } from "@/lib/media";
 import type { Article } from "@/modules/store/content";
 
 export const articleDate = new Intl.DateTimeFormat("en-IN", {

@@ -21,6 +21,3 @@ export const deliveryActions = {
   cancelOrder: (orderId: number) =>
     unwrap(api.POST("/api/v1/admin/orders/{order_id}/cancel", { params: { path: { order_id: orderId } } })),
 };
-
-/** POD photos and invoice PDFs are media-store paths (see lib/media). */
-export { mediaUrl } from "@/lib/media";

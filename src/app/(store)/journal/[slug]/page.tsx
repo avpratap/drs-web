@@ -9,7 +9,7 @@ import { JsonLd, siteUrl } from "@/components/marketing/json-ld";
 import { pulse, Unavailable } from "@/components/store/sections";
 import { htmlToText } from "@/lib/sanitize";
 import { cn } from "@/lib/utils";
-import { mediaUrl } from "@/modules/delivery/actions";
+import { mediaUrl } from "@/lib/media";
 import { getArticle } from "@/modules/store/content";
 
 type Params = Promise<{ slug: string }>;
