@@ -91,7 +91,7 @@ function SignOut({ className }: { className?: string }) {
 
 const linkClass = (active: boolean) =>
   cn(
-    "flex min-h-11 items-center gap-2.5 rounded-full border px-4 text-sm font-medium whitespace-nowrap transition-colors lg:rounded-xl lg:border-transparent lg:px-3",
+    "flex min-h-11 items-center gap-2.5 rounded-full border px-4 text-sm font-medium whitespace-nowrap transition-[border-color] lg:rounded-xl lg:border-transparent lg:px-3",
     active
       ? "border-drs-green bg-drs-green text-drs-cream lg:bg-drs-green/10 lg:text-drs-green"
       : "border-drs-ink/15 bg-drs-white text-drs-ink hover:border-drs-green/50 lg:bg-transparent lg:hover:bg-drs-green/5",

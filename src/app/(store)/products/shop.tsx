@@ -12,8 +12,10 @@ import { parseShopParams, shopHref, type ShopParams } from "@/modules/store/shop
 
 export type SearchParams = Record<string, string | string[] | undefined>;
 
+// Selected chips are cream on green. Only the border animates (on hover): fading the
+// background while the text is already cream gave a moment of cream-on-white (AA fail).
 const chip =
-  "inline-flex min-h-11 shrink-0 items-center rounded-full border px-4 text-sm font-medium whitespace-nowrap transition-colors";
+  "inline-flex min-h-11 shrink-0 items-center rounded-full border px-4 text-sm font-medium whitespace-nowrap transition-[border-color]";
 
 const FACETS = [
   { key: "price", legend: "Price" },
