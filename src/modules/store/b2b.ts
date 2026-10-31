@@ -148,6 +148,18 @@ const LEDGER: Record<string, string> = {
 export const ledgerLabel = (t: string) =>
   LEDGER[t] ?? t.replace(/_/g, " ").replace(/^\w/, (c) => c.toUpperCase());
 
+/**
+ * What's owed now: the running balance after the most recent line. Picked by id/date rather
+ * than trusting the API's newest-first order (a reorder upstream would show a stale figure).
+ */
+export function latestBalance(lines: readonly CreditLine[]): number {
+  let latest = lines[0];
+  for (const l of lines)
+    if (l.created_at > latest.created_at || (l.created_at === latest.created_at && l.id > latest.id))
+      latest = l;
+  return latest.balance_after;
+}
+
 /** Payments and credit notes reduce what's owed. */
 export const ledgerReduces = (t: string) => t === "payment" || t === "credit_note";
 

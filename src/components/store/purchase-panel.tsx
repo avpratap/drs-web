@@ -18,7 +18,8 @@ export type PackOption = {
   strike: boolean;
 };
 
-export const MAX_PACKS = 20;
+/** The most packs of one product per order: the PDP stepper and the cart line share it (adds accumulate in the cart, so one limit keeps them consistent). */
+export const MAX_PACKS = 50;
 
 /** What the cart is asked for: the product in base units, so the cart line equals the price shown. */
 export const cartQty = (pack: Pick<PackOption, "packSize">, packs: number) =>
