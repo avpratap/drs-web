@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api/browser";
 import type { components } from "@/lib/api/client";
 import { detailOf } from "./cart";
+import { useAttemptKey } from "./use-attempt-key";
 import { rupees } from "./product-card";
 import { LoadError, PanelSkeleton, useLoad } from "./use-load";
 
@@ -106,6 +107,9 @@ export function GiftCardsView() {
     }
   }
 
+  // Moves money into the wallet: one Idempotency-Key per redeem attempt.
+  const redeemAttempt = useAttemptKey();
+
   async function redeem() {
     if (!checked) return;
     const amt = Number(amount);
@@ -113,9 +117,10 @@ export function GiftCardsView() {
       return setState({ kind: "error", text: `Enter an amount up to ${rupees(checked.balance)}.` });
     setState({ kind: "busy" });
     try {
-      const { data, error } = await api.POST("/api/v1/loyalty/gift-cards/redeem", {
-        body: { code: checked.code, amount: amt },
-      });
+      const body = { code: checked.code, amount: amt };
+      const { data, error } = await redeemAttempt.send(body, (headers) =>
+        api.POST("/api/v1/loyalty/gift-cards/redeem", { body, headers }),
+      );
       if (!data) return setState({ kind: "error", text: detailOf(error) ?? "Couldn't redeem this card." });
       setChecked(data);
       setAmount(data.balance > 0 ? String(data.balance) : "");
