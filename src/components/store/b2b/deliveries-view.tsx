@@ -86,7 +86,7 @@ function Deliveries() {
               aria-pressed={d === date}
               onClick={() => setDate(d)}
               className={cn(
-                "min-h-11 shrink-0 rounded-full border px-4 text-sm font-medium whitespace-nowrap transition-colors",
+                "min-h-11 shrink-0 rounded-full border px-4 text-sm font-medium whitespace-nowrap transition-[border-color]",
                 d === date
                   ? "border-drs-green bg-drs-green text-drs-cream"
                   : "border-drs-ink/15 bg-drs-white text-drs-ink hover:border-drs-green/50",

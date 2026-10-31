@@ -1,3 +1,4 @@
+import AxeBuilder from "@axe-core/playwright";
 import { expect, expectAccessible, expectNoHorizontalScroll, isMobile, test, visit } from "./fixtures";
 
 const API = "http://127.0.0.1:8787";
@@ -25,6 +26,31 @@ test("cookie notice: shown until the visitor chooses, remembered after", async (
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
   await expect(page.getByRole("region", { name: "Your data, your choice" })).toHaveCount(0);
   await context.close();
+});
+
+test("selected facet chips are AA from the first frame (colours never fade in)", async ({ page }) => {
+  await page.request.post(`${API}/__reset`);
+  await visit(page, "/products", "Shop all");
+  const filters = page.getByRole("region", { name: "Filters" });
+  if (isMobile(page)) await filters.getByText("Filters", { exact: true }).click();
+  const chip = filters.getByRole("group", { name: "Rating" }).getByRole("link").first();
+  await chip.click();
+  await expect(chip).toHaveAttribute("aria-current", "true");
+  // Fading the background while the text is already cream gave a moment of cream-on-white
+  // (axe caught 1.1:1 mid-transition); only the border may animate.
+  const chips = filters.locator("ul a");
+  for (const prop of await chips.evaluateAll((els) =>
+    els.map((el) => getComputedStyle(el).transitionProperty),
+  ))
+    expect(
+      prop.split(",").map((p) => p.trim()),
+      prop,
+    ).not.toEqual(expect.arrayContaining([expect.stringMatching(/^(all|color|background-color)$/)]));
+  const results = await new AxeBuilder({ page })
+    .include("[aria-current='true']")
+    .withRules(["color-contrast"])
+    .analyze();
+  expect(results.violations).toEqual([]);
 });
 
 test("shop facets: price, pack size and rating chips filter the grid and clear", async ({ page }) => {

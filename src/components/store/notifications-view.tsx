@@ -82,7 +82,7 @@ export function NotificationsView() {
               aria-pressed={filter === f}
               onClick={() => setFilter(f)}
               className={cn(
-                "min-h-11 rounded-full px-4 text-sm font-medium transition-colors",
+                "min-h-11 rounded-full px-4 text-sm font-medium",
                 filter === f ? "bg-drs-green text-drs-cream" : "text-drs-ink hover:bg-drs-green/5",
               )}
             >
