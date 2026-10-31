@@ -52,10 +52,14 @@ test("purchase order: create → place → receive (GRN)", async ({ admin: page 
   await expect(page.locator("dd").filter({ hasText: "₹5,600.00" }).first()).toBeVisible();
 
   await page.getByRole("button", { name: "Place order" }).click();
+  const place = page.waitForRequest(
+    (r) => r.method() === "POST" && /purchase-orders\/\d+\/place$/.test(r.url()),
+  );
   await page
     .getByRole("dialog", { name: "Place order" })
     .getByRole("button", { name: "Place order" })
     .click();
+  expect((await place).headers()["idempotency-key"]).toMatch(/^[0-9a-f-]{36}$/);
   await expect(toast(page, "Purchase order placed")).toBeVisible();
 
   await page.getByRole("button", { name: "Receive goods" }).click();
@@ -71,7 +75,12 @@ test("transfer: dispatch a draft", async ({ admin: page }) => {
   await visit(page, "/admin/transfers", "Transfers");
   await page.getByRole("link", { name: /^TR-0001/ }).click();
   await page.getByRole("button", { name: "Dispatch" }).click();
+  const dispatch = page.waitForRequest(
+    (r) => r.method() === "POST" && /transfers\/\d+\/dispatch$/.test(r.url()),
+  );
   await page.getByRole("dialog", { name: "Dispatch" }).getByRole("button", { name: "Dispatch" }).click();
+  // Moves stock: carries an Idempotency-Key.
+  expect((await dispatch).headers()["idempotency-key"]).toMatch(/^[0-9a-f-]{36}$/);
   await expect(toast(page, "Transfer dispatched")).toBeVisible();
   await expect(page.getByRole("button", { name: "Receive" })).toBeVisible();
 });

@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef } from "react";
-import { idem } from "@/lib/api/resource";
+import { newIdempotencyKey } from "@/lib/api/resource";
 import { keepKeyForRetry } from "@/modules/store/checkout";
 
 type Key = { "Idempotency-Key": string };
@@ -17,7 +17,7 @@ export function useAttemptKey() {
   const ref = useRef<{ key: Key; scope: string } | null>(null);
   const header = (scope?: unknown): Key => {
     const s = JSON.stringify(scope ?? null);
-    if (!ref.current || ref.current.scope !== s) ref.current = { key: idem(), scope: s };
+    if (!ref.current || ref.current.scope !== s) ref.current = { key: newIdempotencyKey(), scope: s };
     return ref.current.key;
   };
   const settle = (status: number | null) => {
