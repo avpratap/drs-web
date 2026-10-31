@@ -1,5 +1,6 @@
 import { api } from "@/lib/api/browser";
 import type { components } from "@/lib/api/client";
+import { todayIST } from "@/lib/forms";
 import {
   filterBool,
   filterNumber,
@@ -16,6 +17,43 @@ type RmaStatus = "requested" | "approved" | "rejected" | "refunded" | "cancelled
 type SubStatus = "active" | "paused" | "cancelled";
 
 export const operationsHandlers: Handlers = {
+  // Admins + delivery staff with the shops each may see (delivery scope is editable).
+  staff: {
+    list: ({ pagination, filters }) =>
+      pagedList(pagination, (page) =>
+        api.GET("/api/v1/admin/staff", {
+          params: {
+            query: {
+              ...page,
+              role: filterValue(filters, "role"),
+              status_filter: filterValue(filters, "status"),
+              q: filterValue(filters, "q"),
+            },
+          },
+        }),
+      ),
+  },
+  // Sellable packs the storefront shows as "price unavailable" (no RETAIL price applies today).
+  "unpriced-packs": {
+    list: async () => {
+      const rows = await unwrap(api.GET("/api/v1/admin/catalog/unpriced-packs"));
+      const data = rows.map((r) => ({ ...r, id: `${r.product_id}:${r.variant_id ?? "base"}` }));
+      return { data, total: data.length };
+    },
+  },
+  // id = "plan"; meta = { date, deliveryId? }: one date's stops in driving order.
+  route: {
+    list: async () => ({ data: [], total: 0 }),
+    one: async (_id, meta) => {
+      const m = (meta ?? {}) as { date?: string; deliveryId?: number };
+      const r = await unwrap(
+        api.GET("/api/v1/admin/ml/route/optimize", {
+          params: { query: { date: m.date || todayIST(), delivery_id: m.deliveryId || undefined } },
+        }),
+      );
+      return { id: "plan", ...r };
+    },
+  },
   returns: {
     list: ({ pagination, filters }) =>
       pagedList(pagination, (page) =>
@@ -130,6 +168,22 @@ export const operationsHandlers: Handlers = {
 type V = Record<string, unknown>;
 
 export const operationsActions = {
+  setShopScope: (userId: number, shopIds: number[]) =>
+    unwrap(
+      api.PUT("/api/v1/admin/users/{user_id}/shop-scope", {
+        params: { path: { user_id: userId } },
+        body: { shop_ids: shopIds },
+      }),
+    ),
+  eraseUser: (userId: number) =>
+    unwrap(api.POST("/api/v1/admin/users/{user_id}/erase", { params: { path: { user_id: userId } } })),
+  creditNote: (invoiceId: number, reason: string | null) =>
+    unwrap(
+      api.POST("/api/v1/admin/invoices/{invoice_id}/credit-note", {
+        params: { path: { invoice_id: invoiceId } },
+        body: { reason },
+      }),
+    ),
   approveReturn: (id: number) =>
     unwrap(api.POST("/api/v1/admin/returns/{rr_id}/approve", { params: { path: { rr_id: id } } })),
   rejectReturn: (id: number, v: V) =>
