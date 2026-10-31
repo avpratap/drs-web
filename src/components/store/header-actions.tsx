@@ -2,6 +2,7 @@
 
 import { MenuIcon, SearchIcon, ShoppingBagIcon, UserRoundIcon, XIcon } from "lucide-react";
 import Link from "next/link";
+import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
@@ -106,59 +107,65 @@ export function MobileMenu() {
       >
         <MenuIcon aria-hidden className="size-6" strokeWidth={1.75} />
       </button>
-      {open && (
-        <div
-          className="fixed inset-0 z-50 lg:hidden"
-          role="dialog"
-          aria-modal="true"
-          aria-label="Menu"
-          id="store-menu"
-        >
-          <button
-            type="button"
-            aria-label="Close menu"
-            className="absolute inset-0 bg-drs-ink/40"
-            onClick={() => setOpen(false)}
-          />
-          <div className="absolute inset-y-0 left-0 flex w-[min(20rem,85vw)] flex-col bg-drs-cream shadow-xl">
-            <div className="flex items-center justify-between border-b border-drs-ink/10 px-4 py-3">
-              <span className="text-sm font-semibold tracking-[0.18em] text-drs-green uppercase">Menu</span>
-              <button
-                type="button"
-                className={iconBtn}
-                aria-label="Close menu"
-                onClick={() => setOpen(false)}
-              >
-                <XIcon aria-hidden className="size-5" />
-              </button>
-            </div>
-            <div className="p-4">
-              <SearchForm id="store-search-mobile" />
-            </div>
-            <nav aria-label="Store" className="flex flex-col px-2">
-              {STORE_NAV.map((l) => (
-                <Link
-                  key={l.href}
-                  href={l.href}
+      {/* Portalled to <body>: the sticky header's backdrop-filter would otherwise become the
+          containing block for this fixed overlay (collapsing it to the header bar), and its
+          z-40 stacking context would trap it under the page. z-[60] also outranks the cookie
+          notice (z-40). */}
+      {open &&
+        createPortal(
+          <div
+            className="fixed inset-0 z-[60] lg:hidden"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Menu"
+            id="store-menu"
+          >
+            <button
+              type="button"
+              aria-label="Close menu"
+              className="absolute inset-0 bg-drs-ink/40"
+              onClick={() => setOpen(false)}
+            />
+            <div className="absolute inset-y-0 left-0 flex w-[min(20rem,85vw)] flex-col bg-drs-cream shadow-xl">
+              <div className="flex items-center justify-between border-b border-drs-ink/10 px-4 py-3">
+                <span className="text-sm font-semibold tracking-[0.18em] text-drs-green uppercase">Menu</span>
+                <button
+                  type="button"
+                  className={iconBtn}
+                  aria-label="Close menu"
                   onClick={() => setOpen(false)}
-                  aria-current={pathname === l.href ? "page" : undefined}
-                  className="flex min-h-12 items-center rounded-lg px-3 text-base font-medium text-drs-ink hover:bg-drs-green/5 aria-[current=page]:text-drs-green"
                 >
-                  {l.label}
+                  <XIcon aria-hidden className="size-5" />
+                </button>
+              </div>
+              <div className="p-4">
+                <SearchForm id="store-search-mobile" />
+              </div>
+              <nav aria-label="Store" className="flex flex-col px-2">
+                {STORE_NAV.map((l) => (
+                  <Link
+                    key={l.href}
+                    href={l.href}
+                    onClick={() => setOpen(false)}
+                    aria-current={pathname === l.href ? "page" : undefined}
+                    className="flex min-h-12 items-center rounded-lg px-3 text-base font-medium text-drs-ink hover:bg-drs-green/5 aria-[current=page]:text-drs-green"
+                  >
+                    {l.label}
+                  </Link>
+                ))}
+                <Link
+                  href="/account"
+                  prefetch={false}
+                  onClick={() => setOpen(false)}
+                  className="mt-2 flex min-h-12 items-center rounded-lg border-t border-drs-ink/10 px-3 text-base font-medium text-drs-ink hover:bg-drs-green/5"
+                >
+                  Your account
                 </Link>
-              ))}
-              <Link
-                href="/account"
-                prefetch={false}
-                onClick={() => setOpen(false)}
-                className="mt-2 flex min-h-12 items-center rounded-lg border-t border-drs-ink/10 px-3 text-base font-medium text-drs-ink hover:bg-drs-green/5"
-              >
-                Your account
-              </Link>
-            </nav>
-          </div>
-        </div>
-      )}
+              </nav>
+            </div>
+          </div>,
+          document.body,
+        )}
     </>
   );
 }

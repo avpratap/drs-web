@@ -143,7 +143,7 @@ function AddressCard({ a, checked, onSelect }: { a: Address; checked: boolean; o
 
 export function CheckoutView({ paymentsEnabled }: { paymentsEnabled: boolean }) {
   const router = useRouter();
-  const { cart, session, coupon, setCoupon, refresh } = useCart();
+  const { cart, count, session, coupon, setCoupon, refresh } = useCart();
   const [{ loaded, list, error: addrError }, setAddresses] = useAddresses();
   const [picked, setPicked] = useState<number | null>(null);
   const [adding, setAdding] = useState(false);
@@ -327,7 +327,7 @@ export function CheckoutView({ paymentsEnabled }: { paymentsEnabled: boolean }) 
       </div>
 
       <div className="lg:sticky lg:top-28">
-        <OrderSummary quote={quote} count={lines.length}>
+        <OrderSummary quote={quote} count={count}>
           {coupon && quote && quote.discount > 0 && (
             <p className="mt-3 text-sm text-drs-green">Coupon {coupon} applied</p>
           )}

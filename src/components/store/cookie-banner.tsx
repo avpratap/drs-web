@@ -2,7 +2,7 @@
 
 import { CookieIcon } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { consentCookie, readConsent, type CookieChoice } from "@/modules/store/consent";
 import { useCart } from "./cart";
@@ -22,6 +22,23 @@ export function CookieBanner() {
       live = false;
     };
   }, []);
+  const ref = useRef<HTMLElement>(null);
+  // While shown, publish the notice's height as --banner-h so the page pads its bottom by it
+  // (the footer and a page's last CTA can always scroll clear of the notice).
+  useLayoutEffect(() => {
+    const el = ref.current;
+    const root = document.documentElement;
+    if (!open || !el) return;
+    const set = () =>
+      root.style.setProperty("--banner-h", `${Math.ceil(el.getBoundingClientRect().height)}px`);
+    set();
+    const ro = new ResizeObserver(set);
+    ro.observe(el);
+    return () => {
+      ro.disconnect();
+      root.style.removeProperty("--banner-h");
+    };
+  }, [open]);
   if (!open) return null;
   const choose = (c: CookieChoice) => {
     document.cookie = consentCookie(c, window.location.protocol === "https:");
@@ -29,6 +46,7 @@ export function CookieBanner() {
   };
   return (
     <section
+      ref={ref}
       aria-labelledby="cookie-h"
       className="fixed inset-x-0 bottom-0 z-40 border-t border-drs-ink/10 bg-drs-white/95 px-4 py-4 shadow-[0_-8px_24px_rgba(13,76,60,0.12)] backdrop-blur md:px-6"
     >

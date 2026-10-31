@@ -60,18 +60,21 @@ test("cart: change packs, remove, coupon and a GST-inclusive summary", async ({ 
   await expect(milk).toContainText("500 ml pack · ₹33 each");
   await expect(milk.getByRole("group", { name: "Packs of Full Cream Milk" })).toContainText("2");
   await expect(milk).toContainText("₹66");
-  await expect(page.getByRole("link", { name: "Cart, 2 items" })).toBeVisible();
+  // Packs, not lines: 2 × milk + 1 × buttermilk.
+  await expect(page.getByRole("link", { name: "Cart, 3 items" })).toBeVisible();
 
+  // One more pack: the badge and the summary count follow the quantity.
   await milk.getByRole("button", { name: "One more pack of Full Cream Milk" }).click();
   await expect(milk).toContainText("₹99");
+  await expect(page.getByRole("link", { name: "Cart, 4 items" })).toBeVisible();
   const summary = page.getByRole("region", { name: "Order summary" });
-  await expect(summary).toContainText("Subtotal (2 items)₹114");
+  await expect(summary).toContainText("Subtotal (4 items)₹114");
   await expect(summary).toContainText("DeliveryFree");
   await expect(summary).toContainText(/Includes ₹\d/);
 
   await items.getByRole("button", { name: "Remove Masala Buttermilk" }).click();
   await expect(items.getByRole("listitem")).toHaveCount(1);
-  await expect(page.getByRole("link", { name: "Cart, 1 item" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Cart, 3 items" })).toBeVisible();
 
   // Coupon below its minimum order is refused with the reason; above it, it applies.
   await summary.getByLabel("Coupon code").fill("welcome50");

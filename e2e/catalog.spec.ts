@@ -94,7 +94,8 @@ test("PDP: a signed-in customer adds packs; the cart gets qty = pack size x pack
   await page.getByRole("button", { name: "More packs" }).click();
   await page.getByRole("button", { name: "Add to cart · ₹132" }).click();
   await expect(page.getByText("Added 2 × 1 L to your cart.")).toBeVisible();
-  await expect(page.getByRole("link", { name: "Cart, 1 item" })).toBeVisible();
+  // The badge counts packs in the cart's smallest pack (2 L = 4 × 500 ml), not lines.
+  await expect(page.getByRole("link", { name: "Cart, 4 items" })).toBeVisible();
 
   // The cart got qty = 1000 ml x 2 packs and charges exactly what was shown: 2 × ₹66.
   const cart = await (await page.request.get("/api/backend/api/v1/cart")).json();

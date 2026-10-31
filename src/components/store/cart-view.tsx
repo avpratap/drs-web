@@ -233,7 +233,7 @@ export function CouponBox() {
 }
 
 export function CartView() {
-  const { cart, session, coupon, setCoupon } = useCart();
+  const { cart, count, session, coupon, setCoupon } = useCart();
   const lines = cart?.items ?? [];
   const { products, loading } = useProducts(lines.map((l) => l.product_id));
   const { quote, error } = useQuote({ coupon });
@@ -254,7 +254,7 @@ export function CartView() {
         </ul>
       )}
       <div className="lg:sticky lg:top-28">
-        <OrderSummary quote={quote} count={lines.length}>
+        <OrderSummary quote={quote} count={count}>
           {error && coupon && (
             <p role="alert" className="mt-3 text-sm text-drs-maroon">
               {error}{" "}
