@@ -4,6 +4,11 @@ import { test as base, expect, type Locator, type Page } from "@playwright/test"
 const API = "http://127.0.0.1:8787";
 
 export const test = base.extend<{ admin: Page }>({
+  /** The cookie notice is answered up front (e2e/consent.spec.ts covers the banner itself). */
+  context: async ({ context, baseURL }, provide) => {
+    await context.addCookies([{ name: "drs_consent", value: "essential", url: baseURL! }]);
+    await provide(context);
+  },
   /** A page with a fresh mock database and an admin session (httpOnly cookies). */
   admin: async ({ page, baseURL }, provide) => {
     await page.request.post(`${API}/__reset`);

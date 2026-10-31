@@ -2,7 +2,7 @@
 import { Card } from "@/components/ui/card";
 import type { components } from "@/lib/api/client";
 import { formatDateTime } from "@/lib/format";
-import { mediaUrl } from "@/modules/delivery/actions";
+import { mediaUrl } from "@/lib/media";
 
 type POD = components["schemas"]["PODOut"];
 

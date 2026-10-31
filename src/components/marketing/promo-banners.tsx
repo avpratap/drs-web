@@ -1,7 +1,7 @@
 import { ArrowRightIcon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { mediaUrl } from "@/modules/delivery/actions";
+import { mediaUrl } from "@/lib/media";
 import { getBanners, type Banner } from "@/modules/store/content";
 
 /** Only site paths or https links are followed from a banner's CTA. */

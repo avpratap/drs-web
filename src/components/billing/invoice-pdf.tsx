@@ -5,7 +5,7 @@ import { useState } from "react";
 import { Button, buttonClass } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useApiAction } from "@/lib/use-api-action";
-import { mediaUrl } from "@/modules/delivery/actions";
+import { mediaUrl } from "@/lib/media";
 import { insightsActions } from "@/modules/insights/handlers";
 
 /**

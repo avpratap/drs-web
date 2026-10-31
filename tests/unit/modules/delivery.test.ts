@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { deliveryActions, mediaUrl } from "@/modules/delivery/actions";
+import { mediaUrl } from "@/lib/media";
+import { deliveryActions } from "@/modules/delivery/actions";
 import { todayIST } from "@/lib/forms";
 import { dataProvider, mockApi } from "../../helpers";
 

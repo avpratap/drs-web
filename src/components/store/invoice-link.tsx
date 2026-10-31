@@ -5,7 +5,7 @@ import { useState } from "react";
 import { buttonClass } from "@/components/ui/button";
 import { api } from "@/lib/api/browser";
 import { cn } from "@/lib/utils";
-import { mediaUrl } from "@/modules/delivery/actions";
+import { mediaUrl } from "@/lib/media";
 import { detailOf } from "./cart";
 
 /**

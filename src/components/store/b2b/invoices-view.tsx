@@ -8,7 +8,7 @@ import { Tabs } from "@/components/ui/tabs";
 import { api } from "@/lib/api/browser";
 import { formatDate, formatDateTime, money } from "@/lib/format";
 import { cn } from "@/lib/utils";
-import { mediaUrl } from "@/modules/delivery/actions";
+import { mediaUrl } from "@/lib/media";
 import { ledgerLabel, ledgerReduces, type CreditLine, type Invoice } from "@/modules/store/b2b";
 import { detailOf } from "../cart";
 import { LoadError, PanelSkeleton } from "../use-load";
