@@ -18,7 +18,11 @@ test("admin logs in with phone OTP and lands on the requested page", async ({ pa
   const cookies = await page.context().cookies();
   expect(cookies.find((c) => c.name === "drs_at")?.httpOnly).toBe(true);
   expect(cookies.find((c) => c.name === "drs_rt")?.path).toBe("/api/auth");
-  expect(await page.evaluate(() => document.cookie)).not.toContain("drs_");
+  // The session cookies are httpOnly: page JS can't read them (the cookie-consent choice,
+  // drs_consent, is deliberately readable and holds no secret).
+  const jsCookies = await page.evaluate(() => document.cookie);
+  expect(jsCookies).not.toContain("drs_at");
+  expect(jsCookies).not.toContain("drs_rt");
 });
 
 test("wrong OTP shows an error and stays on login", async ({ page }) => {
