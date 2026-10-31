@@ -30,10 +30,15 @@ test("withdrawals: approve a request", async ({ admin: page }) => {
   await visit(page, "/admin/withdrawals", "Withdrawals");
   const table = page.getByRole("table", { name: "Withdrawals" });
   await table.getByRole("button", { name: "Approve" }).click();
+  const approve = page.waitForRequest(
+    (r) => r.method() === "POST" && /withdrawals\/1\/approve$/.test(r.url()),
+  );
   await page
     .getByRole("dialog", { name: /approve withdrawal #1/i })
     .getByRole("button", { name: "Approve" })
     .click();
+  // Moves money: carries an Idempotency-Key.
+  expect((await approve).headers()["idempotency-key"]).toMatch(/^[0-9a-f-]{36}$/);
   await expect(toast(page, "Withdrawal approved")).toBeVisible();
   await expect(table.getByRole("cell", { name: "#1" })).toHaveCount(0); // gone from the "requested" view
 });

@@ -81,7 +81,10 @@ export const inventoryHandlers: Handlers = {
       ),
     create: (v) =>
       unwrap(
-        api.POST("/api/v1/admin/stock/batches", { params: { header: idem() }, body: v as S["BatchIn"] }),
+        api.POST("/api/v1/admin/stock/batches", {
+          params: { header: idem(["batch-receive", v]) },
+          body: v as S["BatchIn"],
+        }),
       ),
   },
   transfers: {
