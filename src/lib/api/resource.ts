@@ -82,6 +82,26 @@ export function notFound(what: string): HttpError {
   return { message: `${what} not found`, statusCode: 404 };
 }
 
+/**
+ * Find one row by id in a paged admin list, for resources with no GET-by-id endpoint. Walks
+ * every page (`limit` rows each) until it's found or a short page ends the list — no cap at
+ * the first page. `maxPages` only guards against a runaway list.
+ */
+export async function findById<T extends { id: number }>(
+  fetchPage: (q: { limit: number; offset: number }) => Promise<ApiResult<T[]>>,
+  id: number,
+  what: string,
+  { limit = 200, maxPages = 50 }: { limit?: number; maxPages?: number } = {},
+): Promise<T> {
+  for (let page = 0; page < maxPages; page++) {
+    const rows = await unwrap(fetchPage({ limit, offset: page * limit }));
+    const found = rows.find((r) => r.id === id);
+    if (found) return found;
+    if (rows.length < limit) break;
+  }
+  throw notFound(what);
+}
+
 export function requireMeta(meta: Meta, key: string, label: string): number {
   const v = meta?.[key];
   if (v === undefined || v === null || v === "")
