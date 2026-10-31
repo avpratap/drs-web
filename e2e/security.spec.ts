@@ -73,3 +73,16 @@ test("a production build never sends the dev OTP to the browser", async ({ page,
   await expect(page.getByLabel(/one-time code/i)).toBeVisible();
   await expect(page.getByText(/dev mode code/i)).toHaveCount(0);
 });
+
+test("login never follows an off-site next= (backslash and control-character tricks)", async ({ page }) => {
+  for (const next of ["/\\evil.example", "/\t/evil.example"]) {
+    await page.request.post(`${API}/__reset`);
+    await page.context().clearCookies();
+    await page.goto(`/account/login?next=${encodeURIComponent(next)}`);
+    await page.getByLabel(/mobile number/i).fill("9000000000");
+    await page.getByRole("button", { name: /send code/i }).click();
+    await page.getByLabel(/one-time code/i).fill("123456");
+    await page.getByRole("button", { name: /verify/i }).click();
+    await expect(page).toHaveURL(/^http:\/\/localhost:3100\/$/);
+  }
+});

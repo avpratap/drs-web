@@ -32,15 +32,30 @@ export function zoneOf(pathname: string): Zone {
   return "public";
 }
 
-/** A post-login `next` that stays inside the given zone (never off-site, never cross-zone). */
+const PROBE_ORIGIN = "https://drs.invalid";
+
+/**
+ * A post-login `next` that stays inside the given zone (never off-site, never cross-zone).
+ * Browsers treat `\` like `/` and drop tabs/newlines in URLs, so `/\evil.com` or
+ * `/<tab>/evil.com` would navigate off-site: any backslash or control character is refused,
+ * and the value must still resolve to this origin. The zone is judged on the parsed path.
+ */
 export function safeNext(
   next: string | null | undefined,
   zone: "admin" | "customer",
   fallback: string,
 ): string {
-  if (!next || !next.startsWith("/") || next.startsWith("//")) return fallback;
-  const path = next.split(/[?#]/)[0];
-  const z = zoneOf(path);
-  if (zone === "admin") return z === "admin" ? next : fallback;
-  return z === "admin" || z === "admin-login" || z === "customer-login" ? fallback : next;
+  if (!next || !next.startsWith("/") || next.startsWith("//") || /[\\\u0000-\u001f\u007f]/.test(next))
+    return fallback;
+  let url: URL;
+  try {
+    url = new URL(next, PROBE_ORIGIN);
+  } catch {
+    return fallback;
+  }
+  if (url.origin !== PROBE_ORIGIN) return fallback;
+  const safe = `${url.pathname}${url.search}${url.hash}`;
+  const z = zoneOf(url.pathname);
+  if (zone === "admin") return z === "admin" ? safe : fallback;
+  return z === "admin" || z === "admin-login" || z === "customer-login" ? fallback : safe;
 }

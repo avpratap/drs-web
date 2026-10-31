@@ -1536,57 +1536,68 @@ on("POST", "/api/v1/addresses", (req, res, { body, headers }) => {
   send(res, 201, withoutOwner(a));
 });
 // Replays the stored response for a repeated Idempotency-Key (like the backend).
-const idempotent = (headers, res, fn) => {
+// Like the backend's middleware: a stored key replays its response, but the same key with a
+// different request body is a 422 (the client must mint a new key for a changed request).
+const idempotent = (headers, res, fn, request = null) => {
   const key = headers["idempotency-key"];
   if (!key) return send(res, 400, { detail: "Idempotency-Key header required" });
-  if (db.idem[key]) return send(res, db.idem[key].status, db.idem[key].body);
+  const fingerprint = JSON.stringify(request);
+  const seen = db.idem[key];
+  if (seen && seen.fingerprint !== fingerprint)
+    return send(res, 422, { detail: "Idempotency-Key reused with a different request" });
+  if (seen) return send(res, seen.status, seen.body);
   const out = fn();
-  if (out.status < 500) db.idem[key] = out;
+  if (out.status < 500) db.idem[key] = { ...out, fingerprint };
   send(res, out.status, out.body);
 };
 const orderView = withoutOwner;
 on("POST", "/api/v1/cart/checkout", (req, res, { body, headers }) =>
-  idempotent(headers, res, () => {
-    if (body.address === "FAIL-ONCE" && !db.failedOnce) {
-      db.failedOnce = true;
-      return { status: 503, body: { detail: "Temporarily unavailable" } };
-    }
-    const cart = myCart(headers);
-    if (!cart.items.length) return { status: 422, body: { detail: "Cart is empty" } };
-    const qt = quoteOf(headers, body.coupon_code);
-    if (qt.error) return { status: 422, body: { detail: qt.error } };
-    const oid = id();
-    const order = {
-      id: oid,
-      order_no: `DRS-${String(oid).padStart(6, "0")}`,
-      account_id: 50,
-      shop_id: 1,
-      order_type: "one_time",
-      status: "created",
-      payment_status: "pending",
-      subtotal: qt.subtotal,
-      discount: qt.discount,
-      coupon_code: body.coupon_code ?? null,
-      total: qt.total,
-      tax_total: qt.tax_total,
-      total_incl_tax: qt.total,
-      items: qt.items.map((i) => ({
-        product_id: i.product_id,
-        qty: i.qty,
-        unit_price: i.unit_price,
-        line_total: i.line_total,
-        gst_rate: i.gst_rate,
-        gst_amount: i.gst_amount,
-        price_incl_tax: i.unit_price,
-      })),
-      owner: headers.authorization,
-      address: body.address,
-      pincode: body.pincode,
-    };
-    db.orders.push(order);
-    db.carts[headers.authorization ?? "anon"] = { id: cart.id + 1, status: "open", items: [] };
-    return { status: 200, body: orderView(order) };
-  }),
+  idempotent(
+    headers,
+    res,
+    () => {
+      if (body.address === "FAIL-ONCE" && !db.failedOnce) {
+        db.failedOnce = true;
+        return { status: 503, body: { detail: "Temporarily unavailable" } };
+      }
+      const cart = myCart(headers);
+      if (!cart.items.length) return { status: 422, body: { detail: "Cart is empty" } };
+      const qt = quoteOf(headers, body.coupon_code);
+      if (qt.error) return { status: 422, body: { detail: qt.error } };
+      const oid = id();
+      const order = {
+        id: oid,
+        order_no: `DRS-${String(oid).padStart(6, "0")}`,
+        account_id: 50,
+        shop_id: 1,
+        order_type: "one_time",
+        status: "created",
+        payment_status: "pending",
+        subtotal: qt.subtotal,
+        discount: qt.discount,
+        coupon_code: body.coupon_code ?? null,
+        total: qt.total,
+        tax_total: qt.tax_total,
+        total_incl_tax: qt.total,
+        items: qt.items.map((i) => ({
+          product_id: i.product_id,
+          qty: i.qty,
+          unit_price: i.unit_price,
+          line_total: i.line_total,
+          gst_rate: i.gst_rate,
+          gst_amount: i.gst_amount,
+          price_incl_tax: i.unit_price,
+        })),
+        owner: headers.authorization,
+        address: body.address,
+        pincode: body.pincode,
+      };
+      db.orders.push(order);
+      db.carts[headers.authorization ?? "anon"] = { id: cart.id + 1, status: "open", items: [] };
+      return { status: 200, body: orderView(order) };
+    },
+    body,
+  ),
 );
 on("GET", "/api/v1/orders", (req, res, { headers }) =>
   send(
@@ -2034,33 +2045,43 @@ on("GET", "/files/content/.+", (req, res) => {
   );
 });
 on("POST", "/api/v1/payments/create", (req, res, { body, headers }) =>
-  idempotent(headers, res, () => {
-    if (body.purpose === "wallet_topup") {
-      if (!(body.amount > 0)) return { status: 422, body: { detail: "amount required for top-up" } };
-      const pay = {
-        id: id(),
-        gateway_order_id: `order_dev_${id()}`,
-        topup: body.amount,
-        status: "initiated",
-      };
+  idempotent(
+    headers,
+    res,
+    () => {
+      if (body.purpose === "wallet_topup") {
+        if (!(body.amount > 0)) return { status: 422, body: { detail: "amount required for top-up" } };
+        const pay = {
+          id: id(),
+          gateway_order_id: `order_dev_${id()}`,
+          topup: body.amount,
+          status: "initiated",
+        };
+        db.onlinePayments.push(pay);
+        return {
+          status: 200,
+          body: {
+            payment_id: pay.id,
+            gateway_order_id: pay.gateway_order_id,
+            amount: body.amount,
+            key_id: "",
+          },
+        };
+      }
+      const o = find(db.orders, body.order_id);
+      if (body.purpose !== "order_payment" || !o || o.owner !== headers.authorization)
+        return { status: 404, body: { detail: "Order not found" } };
+      if (o.payment_status === "paid") return { status: 409, body: { detail: "Order already paid" } };
+      const pay = { id: id(), gateway_order_id: `order_dev_${id()}`, order_id: o.id, status: "initiated" };
       db.onlinePayments.push(pay);
+      // Dev stub (no Razorpay keys): empty key_id, verify accepts signature "dev".
       return {
         status: 200,
-        body: { payment_id: pay.id, gateway_order_id: pay.gateway_order_id, amount: body.amount, key_id: "" },
+        body: { payment_id: pay.id, gateway_order_id: pay.gateway_order_id, amount: o.total, key_id: "" },
       };
-    }
-    const o = find(db.orders, body.order_id);
-    if (body.purpose !== "order_payment" || !o || o.owner !== headers.authorization)
-      return { status: 404, body: { detail: "Order not found" } };
-    if (o.payment_status === "paid") return { status: 409, body: { detail: "Order already paid" } };
-    const pay = { id: id(), gateway_order_id: `order_dev_${id()}`, order_id: o.id, status: "initiated" };
-    db.onlinePayments.push(pay);
-    // Dev stub (no Razorpay keys): empty key_id, verify accepts signature "dev".
-    return {
-      status: 200,
-      body: { payment_id: pay.id, gateway_order_id: pay.gateway_order_id, amount: o.total, key_id: "" },
-    };
-  }),
+    },
+    body,
+  ),
 );
 on("POST", "/api/v1/payments/verify", (req, res, { body }) => {
   const pay = db.onlinePayments.find((x) => x.gateway_order_id === body.gateway_order_id);

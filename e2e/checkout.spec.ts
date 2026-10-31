@@ -157,3 +157,56 @@ test("order pages are customer-only", async ({ page }) => {
   await page.goto("/orders"); // old URL: redirects into the account area, which needs a sign-in
   await expect(page).toHaveURL(/\/account\/login\?next=%2Faccount%2Forders$/);
 });
+
+test("checkout: changing the address after a failed attempt retries with a new Idempotency-Key", async ({
+  page,
+  baseURL,
+}) => {
+  await signInCustomer(page, baseURL!);
+  await addToCart(page, baseURL!, 3, 1); // ghee ₹899
+  const address = (contact_name: string, line1: string, is_default: boolean) =>
+    page.request.post("/api/backend/api/v1/addresses", {
+      headers: { origin: baseURL! },
+      data: {
+        contact_name,
+        contact_phone: "9000000000",
+        line1,
+        city: "Jaipur",
+        state: "Rajasthan",
+        pincode: "302001",
+        label: "Home",
+        is_default,
+      },
+    });
+  expect((await address("Asha Verma", "12 Civil Lines", true)).ok()).toBeTruthy();
+  expect((await address("Asha at work", "4 MI Road", false)).ok()).toBeTruthy();
+  await visit(page, "/checkout", "Checkout");
+  await expect(page.getByText("We deliver to 302001")).toBeVisible();
+
+  // The first attempt fails with a retryable 503 (the same body would retry with the same key).
+  const sent: { key: string; address: string }[] = [];
+  let first = true;
+  await page.route("**/api/backend/api/v1/cart/checkout", async (route) => {
+    const req = route.request();
+    sent.push({ key: req.headers()["idempotency-key"], address: req.postDataJSON().address });
+    if (first) {
+      first = false;
+      await route.fulfill({ status: 503, json: { detail: "Temporarily unavailable" } });
+    } else await route.continue();
+  });
+  await page.getByRole("button", { name: "Place order · ₹899" }).click();
+  await expect(page.getByRole("alert").filter({ hasText: "Temporarily unavailable" })).toBeVisible();
+
+  // A different body must not reuse that key (the backend answers a reused key with a
+  // different body with a 422 — a dead end for the shopper).
+  await page.getByText("Asha at work").click();
+  await page
+    .getByRole("button", { name: /Try again|Place order/ })
+    .first()
+    .click();
+  await expect(page).toHaveURL(/\/account\/orders\/\d+\?placed=1$/);
+  expect(sent).toHaveLength(2);
+  expect(sent[1].address).toContain("4 MI Road");
+  expect(sent[1].key).toMatch(/^[0-9a-f-]{36}$/);
+  expect(sent[1].key).not.toBe(sent[0].key);
+});
