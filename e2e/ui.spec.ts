@@ -91,7 +91,9 @@ test("tablets get the inline nav and a search toggle (D)", async ({ page }) => {
 test("category grid steps 2 → 3 → 4 → 6 columns (E)", async ({ page }) => {
   await page.request.post(`${API}/__reset`);
   await page.goto("/categories");
+  // Scoped to <main>: the footer also lists a "Milk" link.
   const grid = page
+    .getByRole("main")
     .locator("ul")
     .filter({ has: page.getByRole("link", { name: /^Milk/ }) })
     .first();
