@@ -35,6 +35,26 @@ describe("auth zones", () => {
     expect(zoneOf("/administrator")).toBe("public");
   });
 
+  it("refuses off-site redirects disguised with backslashes, control characters or encodings", () => {
+    for (const evil of [
+      "/\\evil.com",
+      "/\\/evil.com",
+      "\\\\evil.com",
+      "/\t/evil.com",
+      "/\n/evil.com",
+      "/%5Cevil.com\\x",
+      "//evil.com",
+      "///evil.com",
+      "https://evil.com",
+      "javascript:alert(1)",
+    ])
+      expect(safeNext(evil, "customer", "/"), JSON.stringify(evil)).toBe("/");
+    expect(safeNext("/\\evil.com", "admin", "/admin")).toBe("/admin");
+    // Encoded slashes stay a path on this site.
+    expect(safeNext("/%2F%2Fevil.com", "customer", "/")).toBe("/%2F%2Fevil.com");
+    expect(safeNext("/account/orders?x=1#top", "customer", "/")).toBe("/account/orders?x=1#top");
+  });
+
   it("keeps post-login redirects inside their zone and on-site", () => {
     expect(safeNext("/admin/orders?x=1", "admin", "/admin")).toBe("/admin/orders?x=1");
     expect(safeNext("/products", "admin", "/admin")).toBe("/admin");

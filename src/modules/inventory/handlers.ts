@@ -5,7 +5,7 @@ import {
   filterNumber,
   filterValue,
   idem,
-  notFound,
+  findById,
   num,
   pagedList,
   requireMeta,
@@ -19,13 +19,9 @@ export const inventoryHandlers: Handlers = {
   locations: {
     list: ({ pagination }) =>
       pagedList(pagination, (page) => api.GET("/api/v1/admin/locations", { params: { query: page } })),
-    // No GET-by-id endpoint; locations are few, so read the (max) page and pick one.
-    async one(id) {
-      const rows = await unwrap(api.GET("/api/v1/admin/locations", { params: { query: { limit: 200 } } }));
-      const found = rows.find((r) => r.id === num(id));
-      if (!found) throw notFound("Location");
-      return found;
-    },
+    // No GET-by-id endpoint: walk the list's pages until the id turns up.
+    one: (id) =>
+      findById((q) => api.GET("/api/v1/admin/locations", { params: { query: q } }), num(id), "Location"),
     create: (v) =>
       unwrap(api.POST("/api/v1/admin/locations", { body: v as S["app__api__v1__inventory__LocationIn"] })),
     update: (id, v) =>
@@ -85,7 +81,10 @@ export const inventoryHandlers: Handlers = {
       ),
     create: (v) =>
       unwrap(
-        api.POST("/api/v1/admin/stock/batches", { params: { header: idem() }, body: v as S["BatchIn"] }),
+        api.POST("/api/v1/admin/stock/batches", {
+          params: { header: idem(["batch-receive", v]) },
+          body: v as S["BatchIn"],
+        }),
       ),
   },
   transfers: {

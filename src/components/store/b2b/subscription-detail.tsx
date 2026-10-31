@@ -590,7 +590,7 @@ function DayPlan({ sub, products }: { sub: SubscriptionDetail; products: Product
   const dates = upcomingDates(14);
   const [date, setDate] = useState(dates[0]);
   const [note, setNote] = useState("");
-  const plan = useDayPlan(sub.id, date);
+  const plan = useDayPlan(sub.id, date, planVersion(sub));
   const lines = dayLines(sub.items ?? [], plan.data);
 
   return (
@@ -671,8 +671,18 @@ function DayPlan({ sub, products }: { sub: SubscriptionDetail; products: Product
 }
 
 /** GET /subscriptions/{id}/plan?date= — re-read whenever the date changes. */
-function useDayPlan(subId: number, date: string) {
-  const key = `${subId}:${date}`;
+/** Changes whenever the standing order or its status does, so the plan for a date refetches. */
+export const planVersion = (sub: Pick<SubscriptionDetail, "status" | "items">) =>
+  `${sub.status}|${(sub.items ?? [])
+    .filter((i) => i.active)
+    .map(
+      (i) =>
+        `${i.product_id}:${i.default_qty}:${i.frequency}:${i.interval_days ?? ""}:${i.days_of_week ?? ""}`,
+    )
+    .join(",")}`;
+
+function useDayPlan(subId: number, date: string, version: string) {
+  const key = `${subId}:${date}:${version}`;
   const [state, setState] = useState<{ key: string; data: Plan | null; error: string | null }>({
     key: "",
     data: null,
@@ -689,6 +699,7 @@ function useDayPlan(subId: number, date: string) {
       ).then((r) => ({ key, data: r.data ?? null, error: r.error ?? null })),
     [key, subId, date],
   );
+  // `version` is part of `key`, so a changed standing order refetches the same date.
   useEffect(() => {
     let live = true;
     void fetchPlan().then((s) => live && setState(s));
@@ -731,14 +742,9 @@ export function SubscriptionDetailView({ id }: { id: number }) {
         products={products}
         onSaved={(s) => sub.setData(s)}
       />
-      <DayPlan
-        key={
-          (sub.data.items ?? []).map((i) => `${i.product_id}:${i.default_qty}:${i.frequency}`).join("|") +
-          sub.data.status
-        }
-        sub={sub.data}
-        products={products}
-      />
+      {/* Keyed by the subscription only: saving the standing order refetches the day's plan
+          (see planVersion) without remounting, so the chosen date stays selected. */}
+      <DayPlan key={sub.data.id} sub={sub.data} products={products} />
     </div>
   );
 }

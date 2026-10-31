@@ -84,12 +84,14 @@ export function PaymentPanel({
     setState({ kind: "busy", text: "Opening secure payment…" });
     let status: number | null = null;
     try {
+      const body =
+        purpose.kind === "order"
+          ? { purpose: "order_payment" as const, order_id: purpose.orderId }
+          : { purpose: "wallet_topup" as const, amount: total };
+      // Scoped to the body, so changing the top-up amount after a failure is a new attempt.
       const { data, error, response } = await api.POST("/api/v1/payments/create", {
-        params: { header: attempt.header() },
-        body:
-          purpose.kind === "order"
-            ? { purpose: "order_payment", order_id: purpose.orderId }
-            : { purpose: "wallet_topup", amount: total },
+        params: { header: attempt.header(body) },
+        body,
       });
       status = response.status;
       attempt.settle(status);

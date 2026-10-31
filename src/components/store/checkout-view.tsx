@@ -181,14 +181,18 @@ export function CheckoutView({ paymentsEnabled }: { paymentsEnabled: boolean }) 
     setPlaceError(null);
     let status: number | null = null;
     try {
+      const body = {
+        address: formatAddress(selected),
+        state: selected.state,
+        pincode: selected.pincode,
+        coupon_code: coupon || undefined,
+      };
+      // Scoped to the body: a retry after a 5xx/409/offline failure re-sends the same key, but
+      // once the address or coupon changes it's a new attempt (a reused key with a different
+      // body is a 422 from the backend).
       const { data, error, response } = await api.POST("/api/v1/cart/checkout", {
-        params: { header: attempt.header() },
-        body: {
-          address: formatAddress(selected),
-          state: selected.state,
-          pincode: selected.pincode,
-          coupon_code: coupon || undefined,
-        },
+        params: { header: attempt.header(body) },
+        body,
       });
       status = response.status;
       attempt.settle(status);

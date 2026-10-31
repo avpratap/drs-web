@@ -7,6 +7,7 @@ import {
   num,
   pagedList,
   requireMeta,
+  findById,
   unwrap,
   type Handlers,
 } from "@/lib/api/resource";
@@ -29,8 +30,17 @@ export const catalogHandlers: Handlers = {
           },
         }),
       ),
-    one: (id) =>
-      unwrap(api.GET("/api/v1/products/{product_id}", { params: { path: { product_id: num(id) } } })),
+    // The public read 404s retired products, which admins still open and edit. There's no
+    // admin GET-by-id yet, so a 404 falls back to the admin list (retired only).
+    async one(id) {
+      const r = await api.GET("/api/v1/products/{product_id}", { params: { path: { product_id: num(id) } } });
+      if (r.response.status !== 404) return unwrap(Promise.resolve(r));
+      return findById(
+        (q) => api.GET("/api/v1/admin/products", { params: { query: { ...q, status: "retired" } } }),
+        num(id),
+        "Product",
+      );
+    },
     create: (v) => unwrap(api.POST("/api/v1/products", { body: v as S["ProductCreate"] })),
     update: (id, v) =>
       unwrap(
