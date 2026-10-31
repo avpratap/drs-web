@@ -20,6 +20,19 @@ type Billing = components["schemas"]["BillingSummary"];
 type Txn = components["schemas"]["WalletTxnLineOut"];
 
 export const TXNS_PER_PAGE = 20;
+
+/**
+ * Pager state for one page of transactions. With X-Total-Count it's exact; without it (a proxy
+ * may strip the header), a full page means there may be more — the same has-next heuristic as
+ * the B2B lists — instead of treating the page as the whole history.
+ */
+export function txnPager(page: number, rows: number, total: number | null) {
+  const from = rows ? (page - 1) * TXNS_PER_PAGE + 1 : 0;
+  const to = rows ? from + rows - 1 : 0;
+  return total === null
+    ? { hasOlder: rows === TXNS_PER_PAGE, label: rows ? `${from}–${to}` : "" }
+    : { hasOlder: page * TXNS_PER_PAGE < total, label: `${from}–${to} of ${total}` };
+}
 export const TOPUP_PRESETS = [200, 500, 1000, 2000] as const;
 export const TOPUP_MIN = 100;
 export const TOPUP_MAX = 50_000;
@@ -152,7 +165,7 @@ function TopUp({ enabled, onAdded }: { enabled: boolean; onAdded: (amount: numbe
 export function WalletView({ paymentsEnabled }: { paymentsEnabled: boolean }) {
   const [billing, setBilling] = useState<Billing | null>(null);
   const [page, setPage] = useState(1);
-  const [txns, setTxns] = useState<{ page: number; rows: Txn[]; total: number } | null>(null);
+  const [txns, setTxns] = useState<{ page: number; rows: Txn[]; total: number | null } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [added, setAdded] = useState<number | null>(null);
 
@@ -164,11 +177,8 @@ export function WalletView({ paymentsEnabled }: { paymentsEnabled: boolean }) {
     const { data, response } = await api.GET("/api/v1/billing/transactions", {
       params: { query: { limit: TXNS_PER_PAGE, offset: (p - 1) * TXNS_PER_PAGE } },
     });
-    return {
-      page: p,
-      rows: data ?? [],
-      total: Number(response.headers.get("x-total-count") ?? data?.length ?? 0),
-    };
+    const header = response.headers.get("x-total-count");
+    return { page: p, rows: data ?? [], total: header === null ? null : Number(header) };
   }, []);
 
   useEffect(() => {
@@ -188,7 +198,7 @@ export function WalletView({ paymentsEnabled }: { paymentsEnabled: boolean }) {
     let live = true;
     void loadTxns(page)
       .then((t) => live && setTxns(t))
-      .catch(() => live && setTxns({ page, rows: [], total: 0 }));
+      .catch(() => live && setTxns({ page, rows: [], total: null }));
     return () => {
       live = false;
     };
@@ -204,9 +214,7 @@ export function WalletView({ paymentsEnabled }: { paymentsEnabled: boolean }) {
       </p>
     );
 
-  const pages = txns ? Math.max(1, Math.ceil(txns.total / TXNS_PER_PAGE)) : 1;
-  const from = txns && txns.total ? (txns.page - 1) * TXNS_PER_PAGE + 1 : 0;
-  const to = txns ? from + txns.rows.length - 1 : 0;
+  const pager = txns ? txnPager(txns.page, txns.rows.length, txns.total) : null;
 
   return (
     <div className="space-y-4">
@@ -319,9 +327,7 @@ export function WalletView({ paymentsEnabled }: { paymentsEnabled: boolean }) {
               aria-label="Transaction pages"
               className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-drs-ink/10 pt-4 text-sm"
             >
-              <span className="text-drs-ink/75">
-                {from}–{to} of {txns.total}
-              </span>
+              <span className="text-drs-ink/75">{pager?.label}</span>
               <span className="flex gap-2">
                 <button
                   type="button"
@@ -333,7 +339,7 @@ export function WalletView({ paymentsEnabled }: { paymentsEnabled: boolean }) {
                 </button>
                 <button
                   type="button"
-                  disabled={page >= pages}
+                  disabled={!pager?.hasOlder}
                   onClick={() => setPage((p) => p + 1)}
                   className="inline-flex min-h-11 items-center gap-1 rounded-full border border-drs-ink/15 px-4 font-medium text-drs-ink hover:border-drs-green/50 disabled:opacity-40"
                 >

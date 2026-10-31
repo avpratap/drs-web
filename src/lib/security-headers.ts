@@ -43,6 +43,9 @@ export function contentSecurityPolicy({
       ...(dev ? ["ws:", "wss:"] : []),
     ],
     "frame-src": ["'self'", api, ...razorpay],
+    // Without it, workers fall back to default-src 'self' and blob: workers (used by Razorpay
+    // Checkout) are blocked.
+    "worker-src": ["'self'", "blob:"],
     "object-src": ["'none'"],
     "base-uri": ["'self'"],
     "form-action": ["'self'", "https://api.razorpay.com"],
