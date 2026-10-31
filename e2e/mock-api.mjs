@@ -2985,14 +2985,15 @@ createServer(async (req, res) => {
   } catch {
     return send(res, 422, { detail: "bad json" });
   }
-  // Test control: POST /__fail {path} makes GETs of that exact path answer 503 until
-  // POST /__fail {path: null} (or /__reset) — to prove failed SSR reads aren't cached.
+  // Test control: POST /__fail {path, status?, body?} makes GETs of that exact path answer
+  // with that status (default 503) and body until POST /__fail {path: null} (or /__reset) —
+  // to prove failed reads aren't cached and that malformed data hits an error boundary.
   if (url.pathname === "/__fail") {
-    failing = body.path ?? null;
+    failing = body.path ? { path: body.path, status: body.status ?? 503, body: body.body } : null;
     return send(res, 200, { failing });
   }
-  if (failing && req.method === "GET" && url.pathname === failing)
-    return send(res, 503, { detail: "mock: temporarily unavailable" });
+  if (failing && req.method === "GET" && url.pathname === failing.path)
+    return send(res, failing.status, failing.body ?? { detail: "mock: temporarily unavailable" });
   const isAuth = url.pathname.startsWith("/api/v1/auth/") && url.pathname !== "/api/v1/auth/me";
   const signedFile = url.pathname.startsWith("/files/");
   const publicCatalogue =

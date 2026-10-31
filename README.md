@@ -8,18 +8,21 @@ through a **typed client generated from its OpenAPI spec**.
 
 ```bash
 pnpm install
-cp .env.example .env.local      # set NEXT_PUBLIC_API_BASE
-pnpm dev                        # http://localhost:3000
+cp .env.example .env.local      # set NEXT_PUBLIC_API_BASE (and NEXT_PUBLIC_SITE_URL)
+pnpm dev --port 3100            # http://localhost:3100
 ```
 
-Run the backend locally (see drs-backend README) and add `http://localhost:3000` to its `CORS_ORIGINS`
+Run the backend locally (see drs-backend README) and add `http://localhost:3100` to its `CORS_ORIGINS`
 (not strictly required — the browser only calls this app's own `/api/*` routes, which call the backend server-side).
 
 ### Environment
 
-| Variable               | Where       | Description                                                                                                                                                        |
-| ---------------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `NEXT_PUBLIC_API_BASE` | build + run | FastAPI origin, no trailing slash, e.g. `https://api.drs.example`. Inlined at build time, so set it in Vercel for each environment and redeploy after changing it. |
+| Variable                       | Where       | Description                                                                                                                                                                                                                                                                                              |
+| ------------------------------ | ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `NEXT_PUBLIC_API_BASE`         | build + run | FastAPI origin, no trailing slash, e.g. `https://api.drs.example`. Inlined at build time, so set it in Vercel for each environment and redeploy after changing it. Also the media origin allowed by the CSP.                                                                                             |
+| `NEXT_PUBLIC_SITE_URL`         | build + run | This site's public origin, no trailing slash, e.g. `https://drsdairy.in`. Used for canonical URLs/`metadataBase`, Open Graph and JSON-LD URLs, and the sitemap line in `robots.txt` (`src/lib/site.ts`). Defaults to `http://localhost:3100` — **set it in production** or those all point at localhost. |
+| `NEXT_PUBLIC_PAYMENTS_ENABLED` | build       | `true` to turn on Razorpay checkout once the backend has gateway keys (`src/lib/payments.ts`).                                                                                                                                                                                                           |
+| `NEXT_PUBLIC_FSSAI_LICENSE`    | build       | Optional FSSAI licence number shown in the footer and on /about.                                                                                                                                                                                                                                         |
 
 ## Scripts
 
@@ -105,7 +108,7 @@ ledgers, delivery fulfilment (POD + cash), and admin GETs for tickets/articles/p
 
 ```bash
 node e2e/mock-api.mjs                                   # :8787
-NEXT_PUBLIC_API_BASE=http://127.0.0.1:8787 pnpm dev     # http://localhost:3000 — any mobile, OTP 123456
+NEXT_PUBLIC_API_BASE=http://127.0.0.1:8787 pnpm dev --port 3100   # http://localhost:3100 — any mobile, OTP 123456
 ```
 
 ## Brand & accessibility

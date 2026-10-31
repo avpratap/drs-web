@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Poppins } from "next/font/google";
+import { siteUrl } from "@/lib/site";
 import "./globals.css";
 
 const poppins = Poppins({
@@ -9,11 +10,9 @@ const poppins = Poppins({
   display: "swap",
 });
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
-
 /** Storefront defaults (indexable). The admin overrides these with its own noindex metadata. */
 export const metadata: Metadata = {
-  metadataBase: new URL(siteUrl),
+  metadataBase: new URL(siteUrl()),
   title: { default: "DRS Dairy · Farm-fresh milk, delivered daily", template: "%s · DRS Dairy" },
   description:
     "Farm-fresh milk, buttermilk, paneer and ghee from DRS, delivered to your door every morning. Subscribe or order once.",
