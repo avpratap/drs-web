@@ -23,14 +23,8 @@ describe("auth zones", () => {
     expect(zoneOf("/products/12")).toBe("public");
     expect(zoneOf("/cart")).toBe("public");
     expect(zoneOf("/about")).toBe("public");
-    for (const p of [
-      "/account",
-      "/account/orders",
-      "/checkout",
-      "/orders/7",
-      "/subscriptions",
-      "/wallet/topup",
-    ])
+    expect(zoneOf("/subscriptions")).toBe("public");
+    for (const p of ["/account", "/account/orders", "/checkout", "/orders/7", "/wallet/topup"])
       expect(zoneOf(p)).toBe("customer");
     expect(zoneOf("/account/login")).toBe("customer-login");
     expect(zoneOf("/admin")).toBe("admin");

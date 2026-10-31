@@ -10,6 +10,7 @@ import { api } from "@/lib/api/browser";
 import { formatDate } from "@/lib/format";
 import { shopAddress, type Shop, type Subscription } from "@/modules/store/b2b";
 import { detailOf } from "../cart";
+import { useAttemptKey } from "../use-attempt-key";
 import { LoadError, PanelSkeleton, useLoad } from "../use-load";
 import { ShopSwitcher, useShops } from "./shops";
 
@@ -28,6 +29,7 @@ export function StartStandingOrder({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const inactive = shop.status !== "active";
+  const attempt = useAttemptKey();
   return (
     <div>
       <Button
@@ -38,9 +40,10 @@ export function StartStandingOrder({
           setBusy(true);
           setError(null);
           try {
-            const { data, error: err } = await api.POST("/api/v1/subscriptions", {
-              body: { shop_id: shop.id },
-            });
+            const body = { shop_id: shop.id };
+            const { data, error: err } = await attempt.send(body, (headers) =>
+              api.POST("/api/v1/subscriptions", { body, headers }),
+            );
             if (data) return router.push(`/account/subscriptions/${data.id}`);
             setError(detailOf(err) ?? "Couldn't start the standing order. Please try again.");
           } catch {

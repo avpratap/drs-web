@@ -50,7 +50,8 @@ describe("subscriber gating", () => {
       expect(zoneOf(p)).toBe("subscriber");
     expect(zoneOf("/account/orders")).toBe("customer");
     expect(zoneOf("/account/shopsy")).toBe("customer");
-    expect(zoneOf("/subscriptions")).toBe("customer");
+    // The subscription landing page is public marketing; managing one is under /account.
+    expect(zoneOf("/subscriptions")).toBe("public");
     // A subscriber may be sent back to a business page after signing in.
     expect(safeNext("/account/deliveries", "customer", "/account")).toBe("/account/deliveries");
   });

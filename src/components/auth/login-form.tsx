@@ -41,7 +41,8 @@ export function LoginForm({
       setError(r.data.detail ?? "Could not send the code. Try again.");
       return;
     }
-    setDevOtp(r.data.dev_otp ?? null);
+    // Never shown by a production build (the BFF strips it there too).
+    if (process.env.NODE_ENV !== "production") setDevOtp(r.data.dev_otp ?? null);
     setStep("otp");
   }
 

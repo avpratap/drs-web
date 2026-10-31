@@ -21,6 +21,18 @@ export type ZoneAuth = {
 
 const badOrigin = () => NextResponse.json({ detail: "Bad origin" }, { status: 403 });
 
+/**
+ * The OTP-request response the browser may see. The backend only includes `dev_otp` outside
+ * production, but a production web build never forwards it whatever the backend sends (a
+ * misconfigured backend must not leak live login codes).
+ */
+export function publicOtpResponse<T extends { dev_otp?: string | null }>(data: T, production: boolean) {
+  if (!production) return data;
+  const { dev_otp: _drop, ...rest } = data;
+  void _drop;
+  return rest;
+}
+
 export function otpRequestHandler() {
   return async function POST(req: Request) {
     if (!isSameOrigin(req)) return badOrigin();
@@ -33,7 +45,7 @@ export function otpRequestHandler() {
       const e = toHttpError(error, response.status);
       return NextResponse.json({ detail: e.message, errors: e.errors }, { status: response.status });
     }
-    return NextResponse.json(data);
+    return NextResponse.json(publicOtpResponse(data, process.env.NODE_ENV === "production"));
   };
 }
 

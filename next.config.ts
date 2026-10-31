@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { securityHeaders } from "./src/lib/security-headers";
 
 const nextConfig: NextConfig = {
   cacheComponents: true,
@@ -32,11 +33,11 @@ const nextConfig: NextConfig = {
     return [
       {
         source: "/:path*",
-        headers: [
-          { key: "X-Frame-Options", value: "DENY" },
-          { key: "X-Content-Type-Options", value: "nosniff" },
-          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
-        ],
+        headers: securityHeaders({
+          apiBase: process.env.NEXT_PUBLIC_API_BASE,
+          production: process.env.NODE_ENV === "production",
+          extraImgHosts: (process.env.CSP_IMG_HOSTS ?? "").split(/\s+/).filter(Boolean),
+        }),
       },
     ];
   },

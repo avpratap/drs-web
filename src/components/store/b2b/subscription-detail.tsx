@@ -32,6 +32,7 @@ import {
   type SubscriptionDetail,
 } from "@/modules/store/b2b";
 import { detailOf } from "../cart";
+import { useAttemptKey } from "../use-attempt-key";
 import { packLabel } from "../product-card";
 import { LoadError, PanelSkeleton, useLoad } from "../use-load";
 import { StartStandingOrder } from "./subscriptions-view";
@@ -81,13 +82,15 @@ function StatusPanel({ sub, onChange }: { sub: SubscriptionDetail; onChange: () 
   const shop = shops?.find((s) => s.id === sub.shop_id);
   const [busy, setBusy] = useState(false);
   const [outcome, setOutcome] = useState<Outcome>(null);
+  const attempt = useAttemptKey();
 
   const act = async (action: "pause" | "resume" | "cancel", done: string) => {
     setBusy(true);
     setOutcome(null);
     const path = `/api/v1/subscriptions/{sub_id}/${action}` as const;
     const r = await call(
-      () => api.POST(path, { params: { path: { sub_id: sub.id } } }),
+      () =>
+        attempt.send(action, (headers) => api.POST(path, { params: { path: { sub_id: sub.id } }, headers })),
       "Couldn't update the standing order.",
     );
     if (r.error) {
@@ -328,6 +331,7 @@ function StandingOrderEditor({
   const [adding, setAdding] = useState<number | "">("");
   const [busy, setBusy] = useState(false);
   const [outcome, setOutcome] = useState<Outcome>(null);
+  const attempt = useAttemptKey();
   const locked = sub.status === "cancelled";
 
   const addable = [...products.values()].filter(
@@ -353,12 +357,16 @@ function StandingOrderEditor({
           setOutcome(null);
           if (hasErrors(errs)) return;
           setBusy(true);
+          const body = itemsPayload(lines);
           const r = await call(
             () =>
-              api.PUT("/api/v1/subscriptions/{sub_id}/items", {
-                params: { path: { sub_id: sub.id } },
-                body: itemsPayload(lines),
-              }),
+              attempt.send(body, (headers) =>
+                api.PUT("/api/v1/subscriptions/{sub_id}/items", {
+                  params: { path: { sub_id: sub.id } },
+                  body,
+                  headers,
+                }),
+              ),
             "Couldn't save the standing order.",
           );
           setBusy(false);
@@ -457,16 +465,21 @@ function DayLineRow({
   const [error, setError] = useState<string | null>(null);
   const pid = line.item.product_id;
   const name = productName(products, pid);
+  const attempt = useAttemptKey();
 
   const save = async (q: number, text: string) => {
     setBusy(true);
     setError(null);
+    const body = { product_id: pid, for_date: date, override_qty: q };
     const r = await call(
       () =>
-        api.POST("/api/v1/subscriptions/{sub_id}/overrides", {
-          params: { path: { sub_id: subId } },
-          body: { product_id: pid, for_date: date, override_qty: q },
-        }),
+        attempt.send(body, (headers) =>
+          api.POST("/api/v1/subscriptions/{sub_id}/overrides", {
+            params: { path: { sub_id: subId } },
+            body,
+            headers,
+          }),
+        ),
       "Couldn't change this day.",
     );
     setBusy(false);

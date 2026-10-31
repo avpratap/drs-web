@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api/browser";
 import { cn } from "@/lib/utils";
 import { detailOf } from "./cart";
+import { useAttemptKey } from "./use-attempt-key";
 import { LoadError, PanelSkeleton, useLoad } from "./use-load";
 
 const REASONS: Record<string, string> = {
@@ -81,6 +82,8 @@ function ReferralCard() {
 
 function RedeemReferral() {
   const id = useId();
+  // Awards points: one Idempotency-Key per redeem attempt.
+  const attempt = useAttemptKey();
   const [code, setCode] = useState("");
   const [state, setState] = useState<{ kind: "idle" | "busy" } | { kind: "done" | "error"; text: string }>({
     kind: "idle",
@@ -106,9 +109,10 @@ function RedeemReferral() {
             if (c.length < 4) return setState({ kind: "error", text: "Enter the code your friend shared." });
             setState({ kind: "busy" });
             try {
-              const { data, error } = await api.POST("/api/v1/loyalty/referral/redeem", {
-                body: { code: c },
-              });
+              const body = { code: c };
+              const { data, error } = await attempt.send(body, (headers) =>
+                api.POST("/api/v1/loyalty/referral/redeem", { body, headers }),
+              );
               setState(
                 data
                   ? { kind: "done", text: data.detail }
