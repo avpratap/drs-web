@@ -101,3 +101,43 @@ test("category grid steps 2 → 3 → 4 → 6 columns (E)", async ({ page }) => 
   const w = page.viewportSize()!.width;
   expect(cols).toBe(w >= 1280 ? 6 : w >= 1024 ? 4 : w >= 768 ? 3 : 2);
 });
+
+test("phone header: brand logo on the left, menu button rightmost after the cart", async ({ page }) => {
+  await page.request.post(`${API}/__reset`);
+  await page.goto("/");
+  const header = page.getByRole("banner");
+  const logo = header.locator('a[href="/"]').first();
+  const cart = header.getByRole("link", { name: /^Cart,/ });
+  const logoBox = (await logo.boundingBox())!;
+  const cartBox = (await cart.boundingBox())!;
+  // The logo opens the bar on every width.
+  const firstControl = await header.evaluate((h) => {
+    const row = h.querySelector("a[href='/']")!.parentElement!;
+    const visible = [...row.querySelectorAll("a,button")].filter((e) => {
+      const r = e.getBoundingClientRect();
+      return r.width > 0 && r.height > 0;
+    });
+    return visible[0]?.getAttribute("href");
+  });
+  expect(firstControl).toBe("/");
+  if (hasHamburger(page)) {
+    const menuBtn = header.getByRole("button", { name: "Open menu" });
+    const menuBox = (await menuBtn.boundingBox())!;
+    expect(logoBox.x).toBeLessThan(cartBox.x);
+    expect(menuBox.x).toBeGreaterThan(cartBox.x);
+    // Flush with the right gutter and inside the viewport.
+    expect(menuBox.x + menuBox.width).toBeLessThanOrEqual(page.viewportSize()!.width);
+    expect(menuBox.width).toBeGreaterThanOrEqual(44);
+    // The drawer still opens and closes from its new spot.
+    await menuBtn.click();
+    const menu = page.getByRole("dialog", { name: "Menu" });
+    await expect(menu).toBeVisible();
+    await menu.getByRole("button", { name: "Close menu" }).last().click();
+    await expect(menu).toHaveCount(0);
+    await menuBtn.click();
+    await page.keyboard.press("Escape");
+    await expect(page.getByRole("dialog", { name: "Menu" })).toHaveCount(0);
+  } else {
+    await expect(header.getByRole("button", { name: "Open menu" })).toBeHidden();
+  }
+});

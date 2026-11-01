@@ -17,7 +17,7 @@ export function StoreHeader() {
       </div>
       <div className="border-b border-drs-ink/10 bg-drs-cream/95 backdrop-blur supports-[backdrop-filter]:bg-drs-cream/85">
         <div className="mx-auto flex h-16 max-w-7xl items-center gap-2 px-4 md:h-[4.5rem] md:gap-4 md:px-6">
-          <MobileMenu />
+          {/* Phones: brand on the left, actions + menu on the right. */}
           <StoreLogo className="mr-auto md:mr-3 lg:mr-6" />
           {/* Inline from md (tablets get the nav too; only phones use the menu). */}
           <nav aria-label="Store" className="hidden items-center gap-0.5 md:flex lg:gap-1">
@@ -37,6 +37,8 @@ export function StoreHeader() {
             <NotificationBell />
             <AccountButton />
             <CartButton />
+            {/* Rightmost on phones (hidden from md, where the nav is inline). */}
+            <MobileMenu />
           </div>
         </div>
       </div>
