@@ -42,20 +42,16 @@ describe("inventory handlers", () => {
     expect(api.calls[2].headers.get("idempotency-key")).toBeTruthy();
   });
 
-  it("locations: no GET by id, so getOne reads the list", async () => {
-    mockApi([
-      {
-        path: "/api/v1/admin/locations",
-        body: [
-          { id: 1, name: "Plant" },
-          { id: 2, name: "Hub" },
-        ],
-      },
+  it("locations: getOne reads GET /admin/locations/{id} (no list scan)", async () => {
+    const api = mockApi([
+      { path: "/api/v1/admin/locations/2", body: { id: 2, name: "Hub" } },
+      { path: "/api/v1/admin/locations/9", status: 404, body: { detail: "Location not found" } },
     ]);
     expect((await dataProvider.getOne({ resource: "locations", id: 2 })).data).toMatchObject({ name: "Hub" });
     await expect(dataProvider.getOne({ resource: "locations", id: 9 })).rejects.toMatchObject({
       statusCode: 404,
     });
+    expect(api.calls.map((c) => c.path)).toEqual(["/api/v1/admin/locations/2", "/api/v1/admin/locations/9"]);
   });
 
   it("stock adjust/wastage are idempotent; reorder point and expiry are not", async () => {

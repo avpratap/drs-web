@@ -145,3 +145,11 @@ test("locations: a duplicate name is refused with a clear message", async ({ adm
   await expect(toast(page, "A location with this name already exists")).toBeVisible();
   await expect(page).toHaveURL(/\/admin\/locations\/create$/);
 });
+
+test("locations: the edit screen loads one location by id", async ({ admin: page }) => {
+  // Deep link straight to the form: GET /admin/locations/{id}, no list scan.
+  const byId = page.waitForResponse((r) => /\/api\/v1\/admin\/locations\/1(\?|$)/.test(r.url()));
+  await visit(page, "/admin/locations/1/edit", "Edit location");
+  expect((await byId).status()).toBe(200);
+  await expect(page.getByLabel(/^Name/)).toHaveValue("Jaipur plant");
+});

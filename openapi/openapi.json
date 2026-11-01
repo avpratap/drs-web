@@ -2809,6 +2809,95 @@
         }
       }
     },
+    "/api/v1/internal/jobs/{job}": {
+      "post": {
+        "tags": [
+          "jobs"
+        ],
+        "summary": "Run Scheduled Job",
+        "description": "Run one scheduled job now, inline.\n\n- cutoff: materialize standing orders into delivery_orders for `date` (default\n  tomorrow, IST); today/past dates are refused.\n- outbox: deliver due queued notifications (WhatsApp/SMS/push/email).\n- housekeeping: prune short-retention rows + reward missed referrals.\n- churn: churn scoring over all accounts.\n- expire_batches: write off stock batches past expiry (as of today, IST).",
+        "operationId": "run_scheduled_job",
+        "parameters": [
+          {
+            "name": "job",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "enum": [
+                "cutoff",
+                "outbox",
+                "housekeeping",
+                "churn",
+                "expire_batches"
+              ],
+              "type": "string",
+              "title": "Job"
+            }
+          },
+          {
+            "name": "date",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Date"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobRunOut"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "bad or missing jobs token"
+          },
+          "404": {
+            "description": "jobs endpoint disabled (JOBS_TOKEN unset)"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/products": {
       "get": {
         "tags": [
@@ -7333,6 +7422,55 @@
                 }
               }
             }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "inventory"
+        ],
+        "summary": "Admin Get Location",
+        "description": "One stock location (warehouse / shop / vehicle) for the admin detail screen.",
+        "operationId": "admin_get_location",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "location_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Location Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LocationOut"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Location not found"
           },
           "422": {
             "description": "Validation Error",
@@ -13648,6 +13786,57 @@
                 }
               }
             }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/products/{product_id}": {
+      "get": {
+        "tags": [
+          "admin-tools"
+        ],
+        "summary": "Admin Get Product",
+        "description": "One product for the admin detail screen. Unlike the storefront GET /products/{id},\nretired products are returned too (their status says so).",
+        "operationId": "admin_get_product",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "product_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Product Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductOut"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Product not found"
           },
           "422": {
             "description": "Validation Error",
@@ -20963,6 +21152,30 @@
           "active"
         ],
         "title": "ItemOut"
+      },
+      "JobRunOut": {
+        "properties": {
+          "job": {
+            "type": "string",
+            "title": "Job"
+          },
+          "ok": {
+            "type": "boolean",
+            "title": "Ok"
+          },
+          "result": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Result"
+          }
+        },
+        "type": "object",
+        "required": [
+          "job",
+          "ok",
+          "result"
+        ],
+        "title": "JobRunOut"
       },
       "LedgerEntryOut": {
         "properties": {
