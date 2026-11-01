@@ -5,6 +5,7 @@ import Link from "next/link";
 import { notFound, permanentRedirect } from "next/navigation";
 import { Suspense } from "react";
 import { WishlistButton } from "@/components/store/engagement";
+import { MyReview } from "@/components/store/my-review";
 import { PurchasePanel } from "@/components/store/purchase-panel";
 import { Unavailable } from "@/components/store/sections";
 import { cn } from "@/lib/utils";
@@ -164,6 +165,9 @@ export async function ProductDetail({ params }: { params: Promise<{ slug: string
           Ratings &amp; reviews
         </h2>
         <div aria-hidden className="mt-3 mb-6 h-0.5 w-10 rounded bg-drs-gold" />
+        <div className="mb-8">
+          <MyReview productId={p.id} productName={p.name} />
+        </div>
         <Suspense fallback={<ReviewsSkeleton />}>
           <Reviews productId={p.id} />
         </Suspense>

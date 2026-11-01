@@ -1411,10 +1411,16 @@ on("GET", "/api/v1/products/:pid/full", (req, res, { p }) => {
   if (!x || x.status !== "active") return send(res, 404, { detail: "Product not found" });
   send(res, 200, { ...publicProduct(x), variants: pricedVariants(x.id) });
 });
-on("GET", "/api/v1/products/:pid/ratings", (req, res, { p }) => {
+on("GET", "/api/v1/products/:pid/ratings", (req, res, { p, headers }) => {
   // Summary matches the product's own avg_rating/rating_count; the list is the latest few.
+  // Like the backend: the public sees approved reviews; a signed-in user also sees their own
+  // (any status), flagged `mine`.
   const prod = find(db.products, p.pid);
-  const rows = db.reviews.filter((r) => r.product_id === Number(p.pid));
+  const me = headers.authorization;
+  const rows = db.reviews.filter(
+    (r) =>
+      r.product_id === Number(p.pid) && ((r.status ?? "approved") === "approved" || (me && r.owner === me)),
+  );
   const count = prod?.rating_count ?? 0;
   const split = [0.02, 0.02, 0.06, 0.2]; // 1..4 stars; 5 stars takes the rest
   const distribution = Object.fromEntries(split.map((f, i) => [String(i + 1), Math.round(count * f)]));
@@ -1424,8 +1430,64 @@ on("GET", "/api/v1/products/:pid/ratings", (req, res, { p }) => {
     count,
     average: prod?.avg_rating ?? 0,
     distribution,
-    ratings: rows.map((r) => ({ ...r, user_id: null, mine: false, status: "approved", admin_reply: null })),
+    ratings: [...rows].reverse().map((r) => ({
+      ...withoutOwner(r),
+      status: r.status ?? "approved",
+      user_id: me && r.owner === me ? 50 : null,
+      mine: !!me && r.owner === me,
+      admin_reply: r.admin_reply ?? null,
+    })),
   });
+});
+// Rate & review (backend rules): any signed-in user may rate; a verified purchase (a paid order
+// or a delivered item with this product) publishes at once, anyone else's is held for
+// moderation. One review per user per product (upsert); editing a rejected one re-queues it.
+const boughtIt = (auth, pid) =>
+  db.orders.some(
+    (o) =>
+      o.owner === auth &&
+      (o.payment_status === "paid" || o.status === "delivered") &&
+      o.items.some((i) => i.product_id === pid),
+  );
+on("POST", "/api/v1/products/:pid/ratings", (req, res, { p, body, headers }) => {
+  const auth = headers.authorization;
+  if (!auth) return send(res, 401, { detail: "Not authenticated" });
+  const prod = find(db.products, p.pid);
+  if (!prod || prod.status !== "active") return send(res, 404, { detail: "Product not found" });
+  if (!Number.isInteger(body.stars) || body.stars < 1 || body.stars > 5)
+    return send(res, 422, { detail: [{ loc: ["body", "stars"], msg: "Input should be between 1 and 5" }] });
+  if (body.comment != null && body.comment.length > 1000)
+    return send(res, 422, {
+      detail: [{ loc: ["body", "comment"], msg: "String should have at most 1000 characters" }],
+    });
+  const verified = boughtIt(auth, prod.id);
+  let row = db.reviews.find((r) => r.owner === auth && r.product_id === prod.id);
+  if (row) {
+    Object.assign(row, { stars: body.stars, comment: body.comment ?? null, verified_purchase: verified });
+    if (row.status === "rejected" || (!verified && row.status === "approved")) row.status = "pending";
+  } else {
+    row = {
+      id: id(),
+      product_id: prod.id,
+      stars: body.stars,
+      comment: body.comment ?? null,
+      verified_purchase: verified,
+      helpful_count: 0,
+      status: verified ? "approved" : "pending",
+      admin_reply: null,
+      owner: auth,
+    };
+    db.reviews.push(row);
+  }
+  send(res, 200, { ...withoutOwner(row), user_id: 50, mine: true });
+});
+on("DELETE", "/api/v1/products/:pid/ratings", (req, res, { p, headers }) => {
+  const auth = headers.authorization;
+  if (!auth) return send(res, 401, { detail: "Not authenticated" });
+  const i = db.reviews.findIndex((r) => r.owner === auth && r.product_id === Number(p.pid));
+  if (i < 0) return send(res, 404, { detail: "Review not found" });
+  db.reviews.splice(i, 1);
+  send(res, 204);
 });
 // Customer cart: unit price = cheapest per-unit retail price, so qty = pack_size charges selling_price.
 const cartOf = (headers) => {
