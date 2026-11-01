@@ -20,6 +20,11 @@ export function ScrollReset() {
     document
       .getElementById("scroll-region")
       ?.scrollTo({ top: 0, left: 0, behavior: "instant" as ScrollBehavior });
+    // Defensive: the shell uses overflow:clip so it can't scroll, but on any browser
+    // without clip support (where it falls back to a scrollable box) Next's post-nav
+    // scrollIntoView could still shift it and hide the header — pin it back to 0.
+    const shell = document.getElementById("app-shell");
+    if (shell && shell.scrollTop !== 0) shell.scrollTop = 0;
   }, [pathname]);
   return null;
 }

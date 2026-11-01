@@ -20,8 +20,15 @@ export default function StoreLayout({ children }: { children: React.ReactNode })
         {/* App shell: fixed to the viewport (out of document flow) so the page itself
             never scrolls — the green bar + nav stay put and ONLY ScrollRegion scrolls, so
             there's a single scrollbar that starts below the nav, never a full-height one.
-            ScrollRegion pads its bottom by the cookie notice height (--banner-h). */}
-        <div className="fixed inset-0 flex flex-col overflow-hidden">
+            ScrollRegion pads its bottom by the cookie notice height (--banner-h).
+
+            overflow-CLIP (not hidden): `overflow:hidden` is still a scroll *container* and
+            can be moved programmatically. After a client-side navigation Next's focus/
+            scroll handling calls scrollIntoView, which scrolled THIS shell by one header
+            height — hiding the nav until a full refresh. `overflow:clip` is not a scroll
+            container, so scrollIntoView falls through to #scroll-region (the intended
+            scroller) and the header can never be pushed off-screen. */}
+        <div id="app-shell" className="fixed inset-0 flex flex-col overflow-clip">
           <StoreHeader />
           {/* The single scroll area: header stays above it, so the scrollbar starts
               below the nav. pb leaves room for the cookie notice (--banner-h). */}
