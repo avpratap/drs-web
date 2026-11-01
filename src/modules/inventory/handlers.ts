@@ -5,7 +5,6 @@ import {
   filterNumber,
   filterValue,
   idem,
-  findById,
   num,
   pagedList,
   requireMeta,
@@ -19,9 +18,10 @@ export const inventoryHandlers: Handlers = {
   locations: {
     list: ({ pagination }) =>
       pagedList(pagination, (page) => api.GET("/api/v1/admin/locations", { params: { query: page } })),
-    // No GET-by-id endpoint: walk the list's pages until the id turns up.
     one: (id) =>
-      findById((q) => api.GET("/api/v1/admin/locations", { params: { query: q } }), num(id), "Location"),
+      unwrap(
+        api.GET("/api/v1/admin/locations/{location_id}", { params: { path: { location_id: num(id) } } }),
+      ),
     create: (v) =>
       unwrap(api.POST("/api/v1/admin/locations", { body: v as S["app__api__v1__inventory__LocationIn"] })),
     update: (id, v) =>

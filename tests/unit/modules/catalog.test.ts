@@ -39,7 +39,7 @@ describe("catalog handlers", () => {
       { method: "POST", path: "/api/v1/products", body: { id: 9 } },
       { method: "PATCH", path: "/api/v1/products/9", body: { id: 9 } },
       { method: "DELETE", path: "/api/v1/products/9", status: 204 },
-      { path: "/api/v1/products/9", body: { id: 9 } },
+      { path: "/api/v1/admin/products/9", body: { id: 9, status: "retired" } },
     ]);
     await dataProvider.create({ resource: "products", variables: { sku: "S", name: "N" } });
     await dataProvider.update({ resource: "products", id: 9, variables: { name: "M" } });
@@ -48,7 +48,7 @@ describe("catalog handlers", () => {
     expect(api.calls.map((c) => `${c.method} ${c.path}`)).toEqual([
       "POST /api/v1/products",
       "PATCH /api/v1/products/9",
-      "GET /api/v1/products/9",
+      "GET /api/v1/admin/products/9",
       "DELETE /api/v1/products/9",
     ]);
     expect(api.calls[1].body).toEqual({ name: "M" });

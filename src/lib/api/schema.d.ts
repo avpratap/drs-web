@@ -960,6 +960,33 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/internal/jobs/{job}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Run Scheduled Job
+     * @description Run one scheduled job now, inline.
+     *
+     *     - cutoff: materialize standing orders into delivery_orders for `date` (default
+     *       tomorrow, IST); today/past dates are refused.
+     *     - outbox: deliver due queued notifications (WhatsApp/SMS/push/email).
+     *     - housekeeping: prune short-retention rows + reward missed referrals.
+     *     - churn: churn scoring over all accounts.
+     *     - expire_batches: write off stock batches past expiry (as of today, IST).
+     */
+    post: operations["run_scheduled_job"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/products": {
     parameters: {
       query?: never;
@@ -2009,7 +2036,11 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    get?: never;
+    /**
+     * Admin Get Location
+     * @description One stock location (warehouse / shop / vehicle) for the admin detail screen.
+     */
+    get: operations["admin_get_location"];
     put?: never;
     post?: never;
     delete?: never;
@@ -3620,6 +3651,27 @@ export interface paths {
     };
     /** Product Search */
     get: operations["admin_product_search"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/admin/products/{product_id}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Admin Get Product
+     * @description One product for the admin detail screen. Unlike the storefront GET /products/{id},
+     *     retired products are returned too (their status says so).
+     */
+    get: operations["admin_get_product"];
     put?: never;
     post?: never;
     delete?: never;
@@ -5889,6 +5941,17 @@ export interface components {
       id: number;
       /** Active */
       active: boolean;
+    };
+    /** JobRunOut */
+    JobRunOut: {
+      /** Job */
+      job: string;
+      /** Ok */
+      ok: boolean;
+      /** Result */
+      result: {
+        [key: string]: unknown;
+      };
     };
     /** LedgerEntryOut */
     LedgerEntryOut: {
@@ -9937,6 +10000,55 @@ export interface operations {
       };
     };
   };
+  run_scheduled_job: {
+    parameters: {
+      query?: {
+        date?: string | null;
+      };
+      header?: {
+        authorization?: string | null;
+      };
+      path: {
+        job: "cutoff" | "outbox" | "housekeeping" | "churn" | "expire_batches";
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["JobRunOut"];
+        };
+      };
+      /** @description bad or missing jobs token */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description jobs endpoint disabled (JOBS_TOKEN unset) */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
   list_products: {
     parameters: {
       query?: {
@@ -12544,6 +12656,44 @@ export interface operations {
         content: {
           "application/json": components["schemas"]["LocationOut"];
         };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  admin_get_location: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        location_id: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["LocationOut"];
+        };
+      };
+      /** @description Location not found */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
       };
       /** @description Validation Error */
       422: {
@@ -16180,6 +16330,44 @@ export interface operations {
         content: {
           "application/json": components["schemas"]["ProductSearchOut"][];
         };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  admin_get_product: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        product_id: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ProductOut"];
+        };
+      };
+      /** @description Product not found */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
       };
       /** @description Validation Error */
       422: {

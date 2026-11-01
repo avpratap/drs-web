@@ -2146,6 +2146,11 @@ on("GET", "/api/v1/products/:pid", (req, res, { p }) => {
   const x = find(db.products, p.pid);
   return x && x.status !== "retired" ? send(res, 200, x) : send(res, 404, { detail: "Product not found" });
 });
+// Admin read by id: includes retired products.
+on("GET", "/api/v1/admin/products/:pid", (req, res, { p }) => {
+  const x = find(db.products, p.pid);
+  return x ? send(res, 200, x) : send(res, 404, { detail: "Product not found" });
+});
 on("POST", "/api/v1/products", (req, res, { body }) => {
   if (db.products.some((p) => p.sku === body.sku))
     return send(res, 409, { detail: "Product SKU already exists" });
@@ -2272,6 +2277,10 @@ on("POST", "/api/v1/payments/refunds/:rid/reconcile", (req, res, { p, body }) =>
 
 // --- inventory ---
 on("GET", "/api/v1/admin/locations", (req, res, { q }) => page(res, db.locations, q));
+on("GET", "/api/v1/admin/locations/:lid", (req, res, { p }) => {
+  const l = find(db.locations, p.lid);
+  return l ? send(res, 200, l) : send(res, 404, { detail: "Location not found" });
+});
 on("POST", "/api/v1/admin/locations", (req, res, { body }) => {
   const name = String(body.name ?? "").trim();
   if (db.locations.some((x) => x.name.toLowerCase() === name.toLowerCase()))
