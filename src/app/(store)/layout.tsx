@@ -22,13 +22,12 @@ export default function StoreLayout({ children }: { children: React.ReactNode })
             there's a single scrollbar that starts below the nav, never a full-height one.
             ScrollRegion pads its bottom by the cookie notice height (--banner-h).
 
-            overflow-CLIP (not hidden): `overflow:hidden` is still a scroll *container* and
-            can be moved programmatically. After a client-side navigation Next's focus/
-            scroll handling calls scrollIntoView, which scrolled THIS shell by one header
-            height — hiding the nav until a full refresh. `overflow:clip` is not a scroll
-            container, so scrollIntoView falls through to #scroll-region (the intended
-            scroller) and the header can never be pushed off-screen. */}
-        <div id="app-shell" className="fixed inset-0 flex flex-col overflow-clip">
+            Kept overflow-HIDDEN (not clip): clip stops this box being a scroll container,
+            which also changes native lazy-image loading for below-the-fold product images.
+            Instead, ScrollReset pins #app-shell's scrollTop to 0 (see scroll-region.tsx):
+            after a client-side navigation Next's focus/scrollIntoView could otherwise scroll
+            this box by one header height and hide the nav until a full refresh. */}
+        <div id="app-shell" className="fixed inset-0 flex flex-col overflow-hidden">
           <StoreHeader />
           {/* The single scroll area: header stays above it, so the scrollbar starts
               below the nav. pb leaves room for the cookie notice (--banner-h). */}

@@ -20,11 +20,24 @@ export function ScrollReset() {
     document
       .getElementById("scroll-region")
       ?.scrollTo({ top: 0, left: 0, behavior: "instant" as ScrollBehavior });
-    // Defensive: the shell uses overflow:clip so it can't scroll, but on any browser
-    // without clip support (where it falls back to a scrollable box) Next's post-nav
-    // scrollIntoView could still shift it and hide the header — pin it back to 0.
-    const shell = document.getElementById("app-shell");
-    if (shell && shell.scrollTop !== 0) shell.scrollTop = 0;
   }, [pathname]);
+
+  // The app shell is fixed + overflow-hidden, but overflow-hidden is still a scroll
+  // *container*: Next's post-navigation scrollIntoView/focus can scroll it by a header
+  // height, hiding the nav until a full refresh. We keep it overflow-hidden (so native
+  // lazy image loading is unchanged) and instead pin it: reset to 0 now and on any scroll.
+  // Resetting inside the scroll handler settles immediately (scrollTo(0,0) when already at
+  // 0 is a no-op), so there's no loop.
+  useEffect(() => {
+    const shell = document.getElementById("app-shell");
+    if (!shell) return;
+    const pin = () => {
+      if (shell.scrollTop !== 0 || shell.scrollLeft !== 0) shell.scrollTo(0, 0);
+    };
+    pin();
+    shell.addEventListener("scroll", pin, { passive: true });
+    return () => shell.removeEventListener("scroll", pin);
+  }, []);
+
   return null;
 }
