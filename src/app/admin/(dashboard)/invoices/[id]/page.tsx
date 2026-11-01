@@ -1,7 +1,8 @@
 "use client";
 
 import { useOne } from "@refinedev/core";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
+import { ActionDialog } from "@/components/resource/action-dialog";
 import { InvoicePdfButton } from "@/components/billing/invoice-pdf";
 import { ItemsTable } from "@/components/inventory/items-table";
 import { Badge, StatusBadge } from "@/components/ui/badge";
@@ -12,11 +13,13 @@ import { formatQty, money } from "@/lib/format";
 import { formatDate } from "@/lib/forms";
 import { useAccountOptions } from "@/modules/engagement/use-account-options";
 import type { Invoice } from "@/modules/insights/handlers";
+import { operationsActions } from "@/modules/operations/handlers";
 
 type Line = components["schemas"]["InvoiceLineOut"];
 
 export default function InvoiceShowPage() {
   const { id } = useParams<{ id: string }>();
+  const router = useRouter();
   const accounts = useAccountOptions();
   const { result: i, query } = useOne<Invoice>({ resource: "invoices", id });
   if (query.isLoading) return <Card>Loading…</Card>;
@@ -29,7 +32,27 @@ export default function InvoiceShowPage() {
         eyebrow={<BackLink href="/admin/invoices">Invoices</BackLink>}
         title={i.invoice_no}
         description={`${i.is_credit_note ? "Credit note" : "Tax invoice"} · ${formatDate(i.invoice_date)} · FY ${i.fy}`}
-        actions={<InvoicePdfButton invoiceId={i.id} variant="primary" />}
+        actions={
+          <>
+            {!i.is_credit_note && i.status === "issued" && (
+              <ActionDialog
+                label="Issue credit note"
+                confirmVariant="danger"
+                title={`Credit note against ${i.invoice_no}?`}
+                description="Reverses this invoice in full with a GST credit note and reduces what the account owes. It can't be undone."
+                fields={[{ name: "reason", label: "Reason", type: "textarea", maxLength: 255, rows: 3 }]}
+                toBody={(v) => ({ reason: String(v.reason ?? "").trim() || null })}
+                onConfirm={async (v) => {
+                  const note = await operationsActions.creditNote(i.id, v.reason as string | null);
+                  router.push(`/admin/invoices/${note.id}`);
+                }}
+                success="Credit note issued"
+                invalidate={["invoices"]}
+              />
+            )}
+            <InvoicePdfButton invoiceId={i.id} variant="primary" />
+          </>
+        }
       />
       <Card>
         <DescriptionList

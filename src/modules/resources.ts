@@ -63,4 +63,7 @@ export const resources: ResourceProps[] = [
   crud("notifications", "/admin/notifications", "Notifications"),
   crud("webhooks", "/admin/webhooks", "Webhooks", { show: true }),
   crud("cutoff-runs", "/admin/cutoff", "Cutoff runs"),
+  crud("staff", "/admin/staff", "Staff & shop access"),
+  crud("unpriced-packs", "/admin/unpriced-packs", "Unpriced packs"),
+  crud("route", "/admin/route", "Route planner"),
 ];

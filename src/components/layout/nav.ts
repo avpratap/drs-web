@@ -13,6 +13,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { href: "/admin/products", label: "Products" },
       { href: "/admin/price-tiers", label: "Price tiers" },
       { href: "/admin/product-prices", label: "Product prices" },
+      { href: "/admin/unpriced-packs", label: "Unpriced packs" },
     ],
   },
   {
@@ -51,6 +52,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { href: "/admin/delivery", label: "Daily deliveries" },
       { href: "/admin/cutoff", label: "Cutoff runs" },
       { href: "/admin/delivery-assignments", label: "Driver assignments" },
+      { href: "/admin/route", label: "Route planner" },
       { href: "/admin/orders", label: "Orders" },
       { href: "/admin/returns", label: "Returns (RMA)" },
     ],
@@ -89,6 +91,7 @@ export const NAV_GROUPS: NavGroup[] = [
     label: "System",
     items: [
       { href: "/admin/users", label: "Users & staff" },
+      { href: "/admin/staff", label: "Staff & shop access" },
       { href: "/admin/notifications", label: "Notifications" },
       { href: "/admin/webhooks", label: "Webhooks" },
       { href: "/admin/feature-flags", label: "Feature flags" },

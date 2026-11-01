@@ -2728,6 +2728,94 @@ on("GET", "/api/v1/admin/users", (req, res, { q }) => {
 on("PATCH", "/api/v1/admin/users/:uid", (req, res, { p, body }) =>
   send(res, 200, Object.assign(find(db.users, p.uid), body)),
 );
+// --- staff shop scope, DPDP erase, credit notes, unpriced packs, route optimiser ---
+const scopeOf = (u) => ({
+  all_shops: u.role === "admin",
+  shop_ids:
+    u.role === "delivery"
+      ? db.assignments.filter((a) => a.delivery_id === u.id && a.active).map((a) => a.shop_id)
+      : [],
+});
+on("GET", "/api/v1/admin/staff", (req, res, { q }) => {
+  let rows = db.users.filter((u) => ["admin", "delivery"].includes(u.role) && u.status !== "erased");
+  if (q.get("role")) rows = rows.filter((u) => u.role === q.get("role"));
+  if (q.get("status_filter")) rows = rows.filter((u) => u.status === q.get("status_filter"));
+  const term = q.get("q")?.toLowerCase();
+  if (term)
+    rows = rows.filter((u) => u.phone.includes(term) || (u.full_name ?? "").toLowerCase().includes(term));
+  page(
+    res,
+    rows.map((u) => ({ ...u, ...scopeOf(u) })),
+    q,
+  );
+});
+on("PUT", "/api/v1/admin/users/:uid/shop-scope", (req, res, { p, body }) => {
+  const u = find(db.users, p.uid);
+  if (!u) return send(res, 404, { detail: "User not found" });
+  if (u.role !== "delivery") return send(res, 409, { detail: "Only delivery staff have an editable scope" });
+  const want = new Set(body.shop_ids);
+  for (const a of db.assignments.filter((x) => x.delivery_id === u.id)) a.active = want.has(a.shop_id);
+  for (const sid of want)
+    if (!db.assignments.some((a) => a.delivery_id === u.id && a.shop_id === sid))
+      db.assignments.push({ id: id(), delivery_id: u.id, shop_id: sid, active: true });
+  send(res, 200, { user_id: u.id, role: u.role, ...scopeOf(u), editable: true, source: "assignments" });
+});
+on("POST", "/api/v1/admin/users/:uid/erase", (req, res, { p }) => {
+  const u = find(db.users, p.uid);
+  if (!u) return send(res, 404, { detail: "User not found" });
+  if (u.role === "admin") return send(res, 409, { detail: "Admins can't be erased" });
+  Object.assign(u, { status: "erased", full_name: null, email: null, phone: `erased-${u.id}` });
+  send(res, 200, {
+    detail: "erased",
+    user_id: u.id,
+    retained: "Tax invoices and payment records are kept for 8 years as required by law.",
+  });
+});
+on("POST", "/api/v1/admin/invoices/:iid/credit-note", (req, res, { p }) => {
+  const i = find(db.invoices, p.iid);
+  if (!i) return send(res, 404, { detail: "Invoice not found" });
+  if (i.is_credit_note || i.status !== "issued")
+    return send(res, 409, { detail: "Only an issued tax invoice can be credited" });
+  i.status = "credited";
+  const note = {
+    ...i,
+    id: id(),
+    invoice_no: `DRS/2026-27/CN${String(db.invoices.length + 1).padStart(3, "0")}`,
+    is_credit_note: true,
+    original_invoice_id: i.id,
+    status: "issued",
+  };
+  db.invoices.push(note);
+  send(res, 201, note);
+});
+on("GET", "/api/v1/admin/catalog/unpriced-packs", (req, res) =>
+  send(res, 200, [
+    {
+      product_id: 2,
+      product_sku: "BUTTERMILK-200",
+      variant_id: null,
+      variant_sku: null,
+      label: "Masala Buttermilk 200 ml",
+      pack_size: 0.2,
+      reason: "min_qty_above_pack",
+    },
+  ]),
+);
+on("GET", "/api/v1/admin/ml/route/optimize", (req, res, { q }) => {
+  const date = q.get("date");
+  if (!date) return send(res, 422, { detail: "date is required" });
+  let rows = db.deliveries.filter((d) => d.delivery_date === date);
+  const driver = Number(q.get("delivery_id"));
+  if (driver) {
+    const shops = new Set(
+      db.assignments.filter((a) => a.delivery_id === driver && a.active).map((a) => a.shop_id),
+    );
+    rows = rows.filter((d) => shops.has(d.shop_id));
+  }
+  // Mock "optimiser": highest shop id first, so the order visibly differs from the list.
+  const stops = [...rows].sort((a, b) => b.shop_id - a.shop_id).map((d, i) => ({ id: d.id, seq: i + 1 }));
+  send(res, 200, { date, stops, total_distance_km: stops.length * 2.4 });
+});
 on("GET", "/api/v1/admin/cutoff/runs", (req, res, { q }) =>
   page(res, [...byStatus(db.cutoffRuns, q)].reverse(), q),
 );

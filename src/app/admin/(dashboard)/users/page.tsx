@@ -9,6 +9,7 @@ import { api } from "@/lib/api/browser";
 import type { components } from "@/lib/api/client";
 import { unwrap } from "@/lib/api/resource";
 import { humanize } from "@/lib/format";
+import { operationsActions } from "@/modules/operations/handlers";
 import { OPTIONS } from "@/modules/options";
 
 type User = components["schemas"]["UserAdminOut"];
@@ -44,37 +45,60 @@ const columns: Column<User>[] = [
       u.status === "erased" ? (
         <span className="text-drs-ink/70">—</span>
       ) : (
-        <ActionDialog
-          label="Edit"
-          ariaLabel={`Edit ${u.full_name || u.phone}`}
-          variant="ghost"
-          title={`Edit ${u.full_name || u.phone}`}
-          description="Changing the role signs the user out everywhere so it takes effect immediately."
-          defaultValues={{ role: u.role, status: u.status }}
-          fields={[
-            { name: "role", label: "Role", type: "select", required: true, options: OPTIONS.userRole },
-            {
-              name: "status",
-              label: "Status",
-              type: "select",
-              required: true,
-              options: OPTIONS.userStatus.filter((o) => o.value !== "erased"),
-            },
-          ]}
-          onConfirm={(v) =>
-            unwrap(
-              api.PATCH("/api/v1/admin/users/{user_id}", {
-                params: { path: { user_id: u.id } },
-                body: v as components["schemas"]["UserPatch"],
-              }),
-            )
-          }
-          success="User updated"
-          invalidate={["users"]}
-        />
+        <span className="inline-flex flex-wrap justify-end gap-1">
+          <ActionDialog
+            label="Edit"
+            ariaLabel={`Edit ${u.full_name || u.phone}`}
+            variant="ghost"
+            title={`Edit ${u.full_name || u.phone}`}
+            description="Changing the role signs the user out everywhere so it takes effect immediately."
+            defaultValues={{ role: u.role, status: u.status }}
+            fields={[
+              { name: "role", label: "Role", type: "select", required: true, options: OPTIONS.userRole },
+              {
+                name: "status",
+                label: "Status",
+                type: "select",
+                required: true,
+                options: OPTIONS.userStatus.filter((o) => o.value !== "erased"),
+              },
+            ]}
+            onConfirm={(v) =>
+              unwrap(
+                api.PATCH("/api/v1/admin/users/{user_id}", {
+                  params: { path: { user_id: u.id } },
+                  body: v as components["schemas"]["UserPatch"],
+                }),
+              )
+            }
+            success="User updated"
+            invalidate={["users"]}
+          />
+          {u.role !== "admin" && <EraseUser user={u} />}
+        </span>
       ),
   },
 ];
+
+/** DPDP right to erasure, from the admin side (the customer can also ask from their account). */
+function EraseUser({ user: u }: { user: User }) {
+  const who = u.full_name || u.phone;
+  return (
+    <ActionDialog
+      label="Erase"
+      ariaLabel={`Erase ${who}`}
+      variant="ghost"
+      triggerClassName="text-drs-maroon hover:bg-drs-maroon/10"
+      confirmVariant="danger"
+      title={`Erase ${who}?`}
+      description="Removes their personal data and signs them out everywhere. Tax invoices and payment records are kept as the law requires. This can't be undone."
+      confirmLabel="Erase permanently"
+      onConfirm={() => operationsActions.eraseUser(u.id)}
+      success="User erased"
+      invalidate={["users", "staff"]}
+    />
+  );
+}
 
 export default function UsersPage() {
   return (
