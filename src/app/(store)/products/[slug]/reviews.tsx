@@ -37,7 +37,7 @@ export async function Reviews({ productId }: { productId: number }) {
   if (count === 0) {
     return (
       <p className="rounded-2xl border border-dashed border-drs-ink/20 bg-drs-white/60 px-6 py-8 text-center text-sm text-drs-ink/75">
-        No reviews yet. Customers can review a product after it&apos;s delivered.
+        No reviews yet. Bought this? Be the first to review it.
       </p>
     );
   }
@@ -74,7 +74,11 @@ export async function Reviews({ productId }: { productId: number }) {
       </div>
       <ul aria-label="Customer reviews" className="space-y-4">
         {ratings.map((r) => (
-          <li key={r.id} className="rounded-2xl border border-drs-ink/10 bg-drs-white p-5">
+          <li
+            key={r.id}
+            id={`review-${r.id}`}
+            className="rounded-2xl border border-drs-ink/10 bg-drs-white p-5"
+          >
             <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
               <Stars value={r.stars} />
               <span className="sr-only">{r.stars} out of 5 stars</span>
