@@ -24,7 +24,15 @@ const PASS_RES_HEADERS = [
 ];
 
 async function handle(req: Request, ctx: { params: Promise<{ path: string[] }> }) {
-  const path = (await ctx.params).path.map(encodeURIComponent).join("/");
+  const segments = (await ctx.params).path;
+  // Reject path-traversal segments BEFORE the guards. encodeURIComponent leaves "." / ".."
+  // intact, so a crafted `api/v1/x/../auth/otp/verify` would slip past the BLOCKED/admin
+  // string checks here yet collapse to the blocked endpoint once undici normalizes the
+  // fetch URL below. No legitimate backend path has a "." or ".." segment.
+  if (segments.some((s) => s === "." || s === "..")) {
+    return NextResponse.json({ detail: "Not found" }, { status: 404 });
+  }
+  const path = segments.map(encodeURIComponent).join("/");
   if (!path.startsWith("api/v1/") || BLOCKED.test(path)) {
     return NextResponse.json({ detail: "Not found" }, { status: 404 });
   }

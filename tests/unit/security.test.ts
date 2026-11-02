@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { GET } from "@/app/api/backend/[...path]/route";
 import { isAdminOnlyApi } from "@/lib/auth/bff";
 import { publicOtpResponse } from "@/lib/auth/handlers";
 import { contentSecurityPolicy, securityHeaders } from "@/lib/security-headers";
@@ -73,5 +74,18 @@ describe("dev OTP", () => {
       detail: "OTP sent",
     });
     expect(publicOtpResponse({ detail: "OTP sent", dev_otp: "123456" }, false)).toHaveProperty("dev_otp");
+  });
+});
+
+describe("BFF path traversal", () => {
+  it("rejects a `..` segment that would normalize to a blocked token endpoint", async () => {
+    // Without the pre-guard, `api/v1/x/../auth/otp/verify` passes the BLOCKED string check
+    // yet undici collapses it to the blocked `api/v1/auth/otp/verify` on fetch.
+    const req = new Request("http://localhost/api/backend/api/v1/x/../auth/otp/verify");
+    const ctx = {
+      params: Promise.resolve({ path: ["api", "v1", "x", "..", "auth", "otp", "verify"] }),
+    };
+    const res = await GET(req, ctx);
+    expect(res.status).toBe(404); // rejected before any cookie/backend fetch
   });
 });
