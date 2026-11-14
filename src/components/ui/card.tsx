@@ -23,9 +23,11 @@ export function PageHeader({
 }) {
   return (
     <header className="mb-6 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-      <div>
+      <div className="min-w-0">
         {eyebrow && <div className="mb-1 text-sm text-drs-ink/70">{eyebrow}</div>}
-        <h1 className="text-2xl font-semibold tracking-tight text-drs-green md:text-3xl">{title}</h1>
+        <h1 className="text-2xl font-semibold tracking-tight break-words text-drs-green md:text-3xl">
+          {title}
+        </h1>
         {/* Gold hairline: the signature accent, kept small. */}
         <div aria-hidden className="mt-2 h-0.5 w-12 rounded bg-drs-gold" />
         {description && <p className="mt-3 max-w-prose text-sm text-drs-ink/75">{description}</p>}
