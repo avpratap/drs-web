@@ -11,7 +11,7 @@ import { Field } from "@/components/ui/field";
 import { BackLink } from "@/components/ui/links";
 import type { components } from "@/lib/api/client";
 import { cn } from "@/lib/cn";
-import { humanize } from "@/lib/format";
+import { formatDateTime, humanize } from "@/lib/format";
 import { useApiAction } from "@/lib/use-api-action";
 import { mediaUrl } from "@/lib/media";
 import { customerActions } from "@/modules/customers/handlers";
@@ -67,8 +67,11 @@ export default function TicketShowPage() {
                       : "self-start border-drs-ink/10 bg-drs-white",
                   )}
                 >
-                  <p className="mb-1 text-xs font-semibold text-drs-ink/70">
-                    {staff ? "DRS support" : humanize(m.sender_role)}
+                  <p className="mb-1 flex flex-wrap items-baseline gap-x-2 text-xs font-semibold text-drs-ink/70">
+                    <span>{staff ? "DRS support" : humanize(m.sender_role)}</span>
+                    <time dateTime={m.created_at} className="font-normal text-drs-ink/55">
+                      {formatDateTime(m.created_at)}
+                    </time>
                   </p>
                   <p className="whitespace-pre-wrap break-words">{m.body}</p>
                   {att && (
