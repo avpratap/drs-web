@@ -47,7 +47,7 @@ export function PurchasePanel({ productId, options }: { productId: number; optio
   async function addToCart() {
     if (!selected || !buyable) return;
     setStatus({ kind: "adding" });
-    const res = await cart.add(productId, cartQty(selected, packs));
+    const res = await cart.add(productId, cartQty(selected, packs), selected.packSize);
     if (res.ok) {
       setStatus({ kind: "added", text: `Added ${packs} × ${selected.label} to your cart.` });
     } else if (res.reason === "auth") {

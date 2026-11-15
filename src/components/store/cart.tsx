@@ -3,7 +3,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { api } from "@/lib/api/browser";
 import type { components } from "@/lib/api/client";
-import { useProducts } from "./use-products";
 
 /**
  * Storefront cart, backed by the customer's server cart (/api/v1/cart via the BFF).
@@ -21,7 +20,7 @@ type CartApi = {
   count: number;
   /** "unknown" until the first read; "signed-out" when there's no customer session. */
   session: "unknown" | "customer" | "signed-out";
-  add: (productId: number, qty: number) => Promise<WriteResult>;
+  add: (productId: number, qty: number, packSize?: number) => Promise<WriteResult>;
   setQty: (itemId: number, qty: number) => Promise<WriteResult>;
   remove: (itemId: number) => Promise<WriteResult>;
   refresh: () => Promise<void>;
@@ -31,35 +30,20 @@ type CartApi = {
 };
 const CartContext = createContext<CartApi | null>(null);
 
-/** What a line's count needs from the catalogue: its pack sizes (and which are on sale). */
-export type PackInfo = {
-  pack_size: number;
-  variants?: { pack_size: number; selling_price?: number | null }[] | null;
-} | null;
-
-/**
- * Packs in one cart line: qty (base units) over the smallest buyable pack — the same pack the
- * cart's stepper counts in. 1 while the product details are unknown, or if qty isn't a whole
- * number of packs.
- */
-export function linePacks(qty: number, info: PackInfo | undefined): number {
-  if (!info) return 1;
-  const all = info.variants?.length ? info.variants : [{ pack_size: info.pack_size, selling_price: 0 }];
-  const priced = all.filter((v) => v.selling_price != null);
-  const size = Math.min(...(priced.length ? priced : all).map((v) => v.pack_size).filter((n) => n > 0));
-  if (!Number.isFinite(size)) return 1;
-  const packs = Math.round(qty / size);
-  return packs >= 1 && Math.abs(qty / size - packs) < 1e-6 ? packs : 1;
+/** Packs in one cart line: qty (base units) over the line's own chosen pack. At least 1. */
+export function linePacks(line: Pick<CartLine, "qty" | "pack_size">): number {
+  const size = line.pack_size;
+  if (!(size > 0)) return 1;
+  const packs = Math.round(line.qty / size);
+  return packs >= 1 ? packs : 1;
 }
 
 /**
  * The cart's item count: packs, not lines, so the header badge and the "N items" summary
- * change when a quantity does. `info` gives each product's packs (see useProducts).
+ * change when a quantity does. Each line carries its own pack now, so no catalogue lookup.
  */
-export const cartCount = (
-  cart: Pick<ServerCart, "items"> | null | undefined,
-  info?: ReadonlyMap<number, PackInfo | undefined>,
-) => (cart?.items ?? []).reduce((n, i) => n + linePacks(i.qty, info?.get(i.product_id)), 0);
+export const cartCount = (cart: Pick<ServerCart, "items"> | null | undefined) =>
+  (cart?.items ?? []).reduce((n, i) => n + linePacks(i), 0);
 
 export function detailOf(body: unknown): string | undefined {
   const d = (body as { detail?: unknown } | undefined)?.detail;
@@ -96,8 +80,6 @@ type CartCall = Promise<{ data?: ServerCart; error?: unknown; response: Response
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [cart, setCart] = useState<ServerCart | null>(null);
-  // Pack sizes for the badge count (shared, cached reads; see use-products).
-  const { products } = useProducts((cart?.items ?? []).map((i) => i.product_id));
   const [session, setSession] = useState<CartApi["session"]>("unknown");
   const [coupon, setCouponState] = useState<string | null>(null);
 
@@ -150,9 +132,12 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const add = useCallback(
-    (productId: number, qty: number) =>
+    (productId: number, qty: number, packSize?: number) =>
       write(
-        () => api.POST("/api/v1/cart/items", { body: { product_id: productId, qty } }),
+        () =>
+          api.POST("/api/v1/cart/items", {
+            body: { product_id: productId, qty, pack_size: packSize },
+          }),
         "We couldn't add that to your cart. Please try again.",
       ),
     [write],
@@ -178,7 +163,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const value = useMemo(
     () => ({
       cart,
-      count: cartCount(cart, products),
+      count: cartCount(cart),
       session,
       add,
       setQty,
@@ -187,7 +172,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       coupon,
       setCoupon,
     }),
-    [cart, products, session, add, setQty, remove, refresh, coupon, setCoupon],
+    [cart, session, add, setQty, remove, refresh, coupon, setCoupon],
   );
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }

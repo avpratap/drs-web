@@ -69,7 +69,7 @@ function LineItem({ line, product }: { line: CartLine; product: ProductInfo | nu
   const { setQty, remove } = useCart();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const pack = linePack(product, line.qty, line.unit_price);
+  const pack = linePack(product, line.qty, line.unit_price, line.pack_size);
   const name = product?.name ?? `Product #${line.product_id}`;
   const meta = categoryMeta(product?.category ?? "");
   const Icon = meta.icon;

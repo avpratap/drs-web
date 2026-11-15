@@ -32,15 +32,26 @@ export function packOptions(p: StoreProductFull): PackOption[] {
 /** How a cart/order line reads: its smallest buyable pack, and how many of them it holds. */
 export type LinePack = { label: string; size: number; packs: number | null; packPrice: number };
 
-export function linePack(p: StoreProductFull | null | undefined, qty: number, unitPrice: number): LinePack {
+/**
+ * How a line reads as packs. The cart passes the line's stored `packSize`, so it uses the
+ * exact pack the customer chose; orders (which don't store a pack) omit it and fall back to
+ * the smallest buyable pack.
+ */
+export function linePack(
+  p: StoreProductFull | null | undefined,
+  qty: number,
+  unitPrice: number,
+  packSize?: number | null,
+): LinePack {
   const opts = p ? packOptions(p) : [];
   const priced = opts.filter((o) => o.price != null);
-  const step = [...(priced.length ? priced : opts)].sort((a, b) => a.packSize - b.packSize)[0];
-  const size = step?.packSize ?? qty;
+  const chosen = packSize != null ? opts.find((o) => Math.abs(o.packSize - packSize) < 1e-6) : undefined;
+  const step = chosen ?? [...(priced.length ? priced : opts)].sort((a, b) => a.packSize - b.packSize)[0];
+  const size = packSize != null && packSize > 0 ? packSize : (step?.packSize ?? qty);
   const ratio = size > 0 ? qty / size : 1;
   const whole = Math.round(ratio);
   return {
-    label: step?.label ?? (p ? packLabel(qty, p.uom) : String(qty)),
+    label: step?.label ?? (p ? packLabel(size, p.uom) : String(size)),
     size,
     packs: Math.abs(ratio - whole) < 1e-6 && whole > 0 ? whole : null,
     packPrice: Math.round(unitPrice * size * 100) / 100,
