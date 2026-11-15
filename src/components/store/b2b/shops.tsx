@@ -109,8 +109,8 @@ export function ShopSwitcher() {
   if (shops.length === 1)
     return (
       <p className="mb-5 flex items-center gap-2 text-sm text-drs-ink/75">
-        <StoreIcon aria-hidden className="size-4 text-drs-green" />
-        <span>
+        <StoreIcon aria-hidden className="size-4 shrink-0 text-drs-green" />
+        <span className="min-w-0 break-words">
           Shop: <span className="font-medium text-drs-ink">{current?.name ?? shops[0].name}</span>
         </span>
       </p>

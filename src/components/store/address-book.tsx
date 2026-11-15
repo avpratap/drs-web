@@ -154,11 +154,11 @@ export function AddressBook() {
                 ) : (
                   <>
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="font-semibold text-drs-ink">{a.contact_name ?? name}</span>
+                      <span className="font-semibold break-words text-drs-ink">{a.contact_name ?? name}</span>
                       {a.label && <Badge>{a.label}</Badge>}
                       {a.is_default && <Badge tone="green">Default</Badge>}
                     </div>
-                    <p className="mt-1.5 text-sm text-drs-ink/80">
+                    <p className="mt-1.5 text-sm break-words text-drs-ink/80">
                       {[a.line1, a.line2, a.landmark && `Near ${a.landmark}`].filter(Boolean).join(", ")}
                       <br />
                       {a.city}, {a.state} {a.pincode}

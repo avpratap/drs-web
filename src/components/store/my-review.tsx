@@ -217,13 +217,13 @@ function MyReviewCard({
         {badge && <Badge tone={badge.tone}>{badge.label}</Badge>}
       </div>
       {review.comment && (
-        <p className="mt-2 text-[0.9375rem] leading-relaxed text-drs-ink/90">{review.comment}</p>
+        <p className="mt-2 text-[0.9375rem] leading-relaxed break-words text-drs-ink/90">{review.comment}</p>
       )}
       {review.status === "pending" && (
         <p className="mt-2 text-xs text-drs-ink/75">Only you can see it until our team approves it.</p>
       )}
       {review.admin_reply && (
-        <p className="mt-3 rounded-lg bg-drs-cream px-3 py-2 text-sm text-drs-ink/85">
+        <p className="mt-3 rounded-lg bg-drs-cream px-3 py-2 text-sm break-words text-drs-ink/85">
           <span className="font-semibold text-drs-green">DRS Dairy: </span>
           {review.admin_reply}
         </p>

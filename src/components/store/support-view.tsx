@@ -172,7 +172,7 @@ export function SupportList() {
                 >
                   <span className="min-w-0 flex-1">
                     <span className="flex flex-wrap items-center gap-2">
-                      <span className="font-semibold text-drs-ink group-hover:text-drs-green">
+                      <span className="font-semibold break-words text-drs-ink group-hover:text-drs-green">
                         {t.subject}
                       </span>
                       <Badge tone={st.tone}>{st.label}</Badge>
@@ -215,7 +215,7 @@ export function SupportThread({ id }: { id: number }) {
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-2">
-        <h2 className="text-lg font-semibold text-drs-ink">{t.subject}</h2>
+        <h2 className="min-w-0 text-lg font-semibold break-words text-drs-ink">{t.subject}</h2>
         <Badge tone={st.tone}>{st.label}</Badge>
         <span className="text-sm text-drs-ink/70">{t.ticket_no}</span>
       </div>
@@ -235,7 +235,7 @@ export function SupportThread({ id }: { id: number }) {
                 <p className={cn("text-xs font-semibold", mine ? "text-drs-cream/85" : "text-drs-green")}>
                   {mine ? "You" : "DRS support"}
                 </p>
-                <p className="mt-1 whitespace-pre-line">{m.body}</p>
+                <p className="mt-1 break-words whitespace-pre-line">{m.body}</p>
                 {m.attachment_url && (
                   <a
                     href={m.attachment_url}

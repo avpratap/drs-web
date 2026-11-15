@@ -85,7 +85,7 @@ export function ProductCard({ product, className }: { product: StoreProduct; cla
         <p className="text-[0.6875rem] font-semibold tracking-[0.16em] text-drs-ink/70 uppercase">
           {meta.label}
         </p>
-        <h3 className="text-[0.9375rem] leading-snug font-semibold text-drs-ink">
+        <h3 className="text-[0.9375rem] leading-snug font-semibold break-words text-drs-ink">
           <Link href={productHref(product)} className="after:absolute after:inset-0 hover:text-drs-green">
             {product.name}
           </Link>

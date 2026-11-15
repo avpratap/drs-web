@@ -79,7 +79,7 @@ export function AccountOverview() {
   return (
     <div className="space-y-6">
       <header>
-        <h1 className="text-[1.75rem] leading-tight font-semibold tracking-tight text-drs-green md:text-4xl">
+        <h1 className="text-[1.75rem] leading-tight font-semibold tracking-tight break-words text-drs-green md:text-4xl">
           {name ? `Hello, ${name}` : "Your account"}
         </h1>
         <p className="mt-1 text-sm text-drs-ink/75 md:text-base">
