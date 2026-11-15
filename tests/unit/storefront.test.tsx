@@ -235,7 +235,8 @@ describe("purchase panel + server cart", () => {
     await waitFor(() => expect(screen.getByRole("link", { name: "Cart, empty" })).toBeInTheDocument());
 
     expect(screen.getByRole("radio", { name: /Crate of 12/ })).toBeDisabled();
-    expect(screen.getByRole("radio", { name: /500 ml/ })).toBeChecked();
+    // Defaults to the largest buyable pack (1 L), not the smallest (500 ml).
+    expect(screen.getByRole("radio", { name: /1 L/ })).toBeChecked();
 
     await user.click(screen.getByRole("radio", { name: /1 L/ }));
     expect(screen.getByTestId("pack-price")).toHaveTextContent("₹66");

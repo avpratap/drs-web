@@ -35,12 +35,17 @@ export function PurchasePanel({ productId, options }: { productId: number; optio
   const cart = useCart();
   const router = useRouter();
   const groupId = useId();
-  const firstBuyable = options.find((o) => o.price != null) ?? options[0];
-  const [selectedKey, setSelectedKey] = useState(firstBuyable?.key);
+  // Default to the largest buyable pack (the whole unit — e.g. 1 L / 1 kg — over a 0.5 pack),
+  // so a customer isn't nudged into a half-size pack by default.
+  const buyablePacks = options.filter((o) => o.price != null);
+  const defaultPack = buyablePacks.length
+    ? buyablePacks.reduce((a, b) => (b.packSize > a.packSize ? b : a))
+    : options[0];
+  const [selectedKey, setSelectedKey] = useState(defaultPack?.key);
   const [packs, setPacks] = useState(1);
   const [status, setStatus] = useState<Status>({ kind: "idle" });
 
-  const selected = options.find((o) => o.key === selectedKey) ?? firstBuyable;
+  const selected = options.find((o) => o.key === selectedKey) ?? defaultPack;
   const buyable = selected?.price != null;
   const total = buyable ? selected.price! * packs : null;
 
