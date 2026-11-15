@@ -1503,11 +1503,24 @@ on("POST", "/api/v1/cart/items", (req, res, { body, headers }) => {
   if (!prod || !priced.length || !(body.qty > 0))
     return send(res, 422, { detail: "This product can't be added right now." });
   const unit = Math.min(...priced.map((v) => v.selling_price / v.pack_size));
+  // Like the backend: default an omitted pack to the smallest, and keep one line per pack.
+  const packs = priced.map((v) => v.pack_size);
+  const pack = body.pack_size ?? Math.min(...packs);
+  if (!packs.some((s) => Math.abs(s - pack) < 1e-6))
+    return send(res, 422, { detail: "That pack isn't available for this product." });
   cartOf(headers);
   const cart = db.carts[headers.authorization ?? "anon"];
-  const line = cart.items.find((i) => i.product_id === prod.id);
+  const line = cart.items.find((i) => i.product_id === prod.id && Math.abs(i.pack_size - pack) < 1e-6);
   if (line) line.qty += body.qty;
-  else cart.items.push({ id: id(), product_id: prod.id, qty: body.qty, unit_price: unit, line_total: 0 });
+  else
+    cart.items.push({
+      id: id(),
+      product_id: prod.id,
+      qty: body.qty,
+      pack_size: pack,
+      unit_price: unit,
+      line_total: 0,
+    });
   cart.items.forEach((i) => (i.line_total = Math.round(i.unit_price * i.qty * 100) / 100));
   send(res, 200, cartOf(headers));
 });

@@ -5091,6 +5091,8 @@ export interface components {
       product_id: number;
       /** Qty */
       qty: number;
+      /** Pack Size */
+      pack_size?: number | null;
     };
     /** CartItemQtyIn */
     CartItemQtyIn: {
@@ -5105,6 +5107,8 @@ export interface components {
       product_id: number;
       /** Qty */
       qty: number;
+      /** Pack Size */
+      pack_size: number;
       /** Unit Price */
       unit_price: number;
       /** Line Total */

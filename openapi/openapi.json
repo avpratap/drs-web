@@ -18697,6 +18697,19 @@
             "maximum": 100000.0,
             "exclusiveMinimum": 0.0,
             "title": "Qty"
+          },
+          "pack_size": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 100000.0,
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pack Size"
           }
         },
         "type": "object",
@@ -18735,6 +18748,10 @@
             "type": "number",
             "title": "Qty"
           },
+          "pack_size": {
+            "type": "number",
+            "title": "Pack Size"
+          },
           "unit_price": {
             "type": "number",
             "title": "Unit Price"
@@ -18749,6 +18766,7 @@
           "id",
           "product_id",
           "qty",
+          "pack_size",
           "unit_price",
           "line_total"
         ],

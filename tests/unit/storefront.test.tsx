@@ -207,7 +207,7 @@ describe("purchase panel + server cart", () => {
         if (!signedIn) return json(401, { detail: "Not authenticated" });
         if (path === "/api/backend/api/v1/cart") return json(200, cart());
         if (path === "/api/backend/api/v1/cart/items" && req.method === "POST") {
-          const body = (await req.json()) as { product_id: number; qty: number };
+          const body = (await req.json()) as { product_id: number; qty: number; pack_size?: number };
           posts.push(body);
           const line = items.find((i) => i.product_id === body.product_id);
           if (line) line.qty += body.qty;
@@ -248,8 +248,10 @@ describe("purchase panel + server cart", () => {
     await user.click(add);
 
     expect(await screen.findByText("Added 3 × 1 L to your cart.")).toBeInTheDocument();
-    expect(posts).toEqual([{ product_id: 1, qty: 3000 }]);
-    expect(screen.getByRole("link", { name: "Cart, 1 item" })).toBeInTheDocument();
+    // The chosen pack rides along, so the cart line remembers it...
+    expect(posts).toEqual([{ product_id: 1, qty: 3000, pack_size: 1000 }]);
+    // ...and the badge counts packs straight from the line (3 × 1 L), no catalogue lookup.
+    expect(screen.getByRole("link", { name: "Cart, 3 items" })).toBeInTheDocument();
   });
 
   it("sends signed-out shoppers to sign in and back to the product (without reading a cart)", async () => {
