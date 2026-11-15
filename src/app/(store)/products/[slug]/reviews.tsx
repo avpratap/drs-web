@@ -90,10 +90,10 @@ export async function Reviews({ productId }: { productId: number }) {
               )}
             </div>
             {r.comment && (
-              <p className="mt-2 text-[0.9375rem] leading-relaxed text-drs-ink/90">{r.comment}</p>
+              <p className="mt-2 text-[0.9375rem] leading-relaxed break-words text-drs-ink/90">{r.comment}</p>
             )}
             {r.admin_reply && (
-              <p className="mt-3 rounded-lg bg-drs-cream px-3 py-2 text-sm text-drs-ink/85">
+              <p className="mt-3 rounded-lg bg-drs-cream px-3 py-2 text-sm break-words text-drs-ink/85">
                 <span className="font-semibold text-drs-green">DRS Dairy: </span>
                 {r.admin_reply}
               </p>

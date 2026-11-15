@@ -43,7 +43,7 @@ export function DescriptionList({ items }: { items: { label: string; value: Reac
       {items.map((i) => (
         <div key={i.label} className="border-b border-drs-ink/10 pb-3">
           <dt className="text-xs font-medium tracking-wide text-drs-ink/65 uppercase">{i.label}</dt>
-          <dd className="mt-1 text-sm text-drs-ink">{i.value ?? "—"}</dd>
+          <dd className="mt-1 text-sm break-words text-drs-ink">{i.value ?? "—"}</dd>
         </div>
       ))}
     </dl>

@@ -179,13 +179,13 @@ export function ShopsView() {
                     <StoreIcon className="size-5" />
                   </span>
                   <div className="min-w-0 flex-1">
-                    <p className="flex flex-wrap items-center gap-2 font-semibold text-drs-ink">
+                    <p className="flex flex-wrap items-center gap-2 font-semibold break-words text-drs-ink">
                       {s.name}
                       {s.status !== "active" && <StatusBadge status={s.status} />}
                       {isCurrent && shops.length > 1 && <Badge tone="green">Viewing</Badge>}
                     </p>
                     {shopAddress(s) && (
-                      <p className="mt-0.5 flex items-start gap-1 text-sm text-drs-ink/75">
+                      <p className="mt-0.5 flex items-start gap-1 text-sm break-words text-drs-ink/75">
                         <MapPinIcon aria-hidden className="mt-0.5 size-3.5 shrink-0" /> {shopAddress(s)}
                       </p>
                     )}

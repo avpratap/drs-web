@@ -233,7 +233,9 @@ function Shipments({ tracking }: { tracking: Tracking | null }) {
                   <p className="font-medium text-drs-ink">
                     {e.status.replace(/_/g, " ").replace(/^\w/, (c) => c.toUpperCase())}
                   </p>
-                  <p className="text-drs-ink/70">{[e.location, e.note].filter(Boolean).join(" · ")}</p>
+                  <p className="break-words text-drs-ink/70">
+                    {[e.location, e.note].filter(Boolean).join(" · ")}
+                  </p>
                 </li>
               ))}
             </ol>
@@ -367,7 +369,7 @@ export function OrderDetail({
                     {p ? (
                       <Link
                         href={productHref(p)}
-                        className="font-semibold text-drs-ink hover:text-drs-green hover:underline"
+                        className="font-semibold break-words text-drs-ink hover:text-drs-green hover:underline"
                       >
                         {p.name}
                       </Link>

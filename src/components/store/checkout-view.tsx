@@ -119,7 +119,7 @@ function AddressCard({ a, checked, onSelect }: { a: Address; checked: boolean; o
       <input type="radio" name="address" checked={checked} onChange={onSelect} className="sr-only" />
       <MapPinIcon aria-hidden className="mt-0.5 size-5 shrink-0 text-drs-green" />
       <span className="min-w-0 text-sm">
-        <span className="flex flex-wrap items-center gap-2 font-semibold text-drs-ink">
+        <span className="flex flex-wrap items-center gap-2 font-semibold break-words text-drs-ink">
           {a.contact_name ?? a.label ?? "Address"}
           {a.label && (
             <span className="rounded-full bg-drs-cream px-2 py-0.5 text-xs font-medium text-drs-ink/80">
@@ -128,7 +128,7 @@ function AddressCard({ a, checked, onSelect }: { a: Address; checked: boolean; o
           )}
           {a.is_default && <span className="text-xs font-medium text-drs-green">Default</span>}
         </span>
-        <span className="mt-1 block text-drs-ink/80">
+        <span className="mt-1 block break-words text-drs-ink/80">
           {[a.line1, a.line2, a.landmark && `Near ${a.landmark}`].filter(Boolean).join(", ")}
         </span>
         <span className="block text-drs-ink/80">
@@ -291,7 +291,7 @@ export function CheckoutView({ paymentsEnabled }: { paymentsEnabled: boolean }) 
           <ul aria-label="Items in this order" className="divide-y divide-drs-ink/10 text-sm">
             {lines.map((l) => (
               <li key={l.id} className="flex justify-between gap-3 py-2.5">
-                <span className="min-w-0 text-drs-ink">
+                <span className="min-w-0 break-words text-drs-ink">
                   {products.get(l.product_id)?.name ?? `Product #${l.product_id}`}
                 </span>
                 <span className="shrink-0 tabular-nums text-drs-ink">{rupees(l.line_total)}</span>

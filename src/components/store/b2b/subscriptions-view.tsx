@@ -83,10 +83,12 @@ function SubscriptionCard({ sub, shop }: { sub: Subscription; shop?: Shop }) {
       </span>
       <span className="min-w-0 flex-1">
         <span className="flex flex-wrap items-center gap-2">
-          <span className="font-semibold text-drs-ink">{shop?.name ?? `Shop #${sub.shop_id}`}</span>
+          <span className="font-semibold break-words text-drs-ink">
+            {shop?.name ?? `Shop #${sub.shop_id}`}
+          </span>
           <StatusBadge status={sub.status} />
         </span>
-        <span className="mt-0.5 block text-sm text-drs-ink/75">
+        <span className="mt-0.5 block text-sm break-words text-drs-ink/75">
           {sub.status === "cancelled"
             ? `Ended${sub.end_date ? ` ${formatDate(sub.end_date)}` : ""}`
             : `Since ${formatDate(sub.start_date)}`}
@@ -118,7 +120,7 @@ export function SubscriptionsView() {
       <ShopSwitcher />
       {current && (
         <section aria-labelledby="this-shop-h">
-          <h2 id="this-shop-h" className="mb-3 text-lg font-semibold text-drs-ink">
+          <h2 id="this-shop-h" className="mb-3 text-lg font-semibold break-words text-drs-ink">
             {current.name}
           </h2>
           {mine && mine.status !== "cancelled" ? (

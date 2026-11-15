@@ -100,7 +100,7 @@ export default function ProductShowPage() {
           ]}
         />
         {product.description && (
-          <p className="mt-6 max-w-prose text-sm text-drs-ink/80">{product.description}</p>
+          <p className="mt-6 max-w-prose text-sm break-words text-drs-ink/80">{product.description}</p>
         )}
       </Card>
 

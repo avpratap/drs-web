@@ -108,7 +108,7 @@ export async function ProductDetail({ params }: { params: Promise<{ slug: string
 
         <div className="flex flex-col">
           <p className="text-xs font-semibold tracking-[0.18em] text-drs-ink/70 uppercase">{meta.label}</p>
-          <h1 className="mt-2 text-[1.75rem] leading-tight font-semibold tracking-tight text-drs-green md:text-[2.5rem]">
+          <h1 className="mt-2 text-[1.75rem] leading-tight font-semibold tracking-tight break-words text-drs-green md:text-[2.5rem]">
             {p.name}
           </h1>
           {p.rating_count > 0 && (
@@ -152,7 +152,7 @@ export async function ProductDetail({ params }: { params: Promise<{ slug: string
               <h2 id="about-heading" className="text-lg font-semibold text-drs-ink">
                 About this product
               </h2>
-              <p className="mt-2 text-[0.9375rem] leading-relaxed whitespace-pre-line text-drs-ink/85">
+              <p className="mt-2 text-[0.9375rem] leading-relaxed break-words whitespace-pre-line text-drs-ink/85">
                 {p.description}
               </p>
             </section>

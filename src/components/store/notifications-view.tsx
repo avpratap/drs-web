@@ -131,7 +131,7 @@ export function NotificationsView() {
                     {categoryLabel(n.category)}
                     {isUnread && <span className="sr-only"> (unread)</span>}
                   </p>
-                  <p className={cn("mt-0.5 text-sm text-drs-ink", isUnread && "font-medium")}>
+                  <p className={cn("mt-0.5 text-sm break-words text-drs-ink", isUnread && "font-medium")}>
                     {n.body ?? n.event_type.replace(/_/g, " ")}
                   </p>
                   <p className="mt-1 text-xs text-drs-ink/70">{when.format(new Date(n.created_at))}</p>

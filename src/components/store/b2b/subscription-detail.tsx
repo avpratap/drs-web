@@ -107,7 +107,10 @@ function StatusPanel({ sub, onChange }: { sub: SubscriptionDetail; onChange: () 
     <section aria-labelledby="status-h" className={card}>
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
-          <h2 id="status-h" className="flex flex-wrap items-center gap-2 text-lg font-semibold text-drs-ink">
+          <h2
+            id="status-h"
+            className="flex flex-wrap items-center gap-2 text-lg font-semibold break-words text-drs-ink"
+          >
             {shop?.name ?? `Shop #${sub.shop_id}`} <StatusBadge status={sub.status} />
           </h2>
           <p className="mt-0.5 text-sm text-drs-ink/75">
@@ -202,7 +205,7 @@ function LineEditor({
   return (
     <li className="py-4 first:pt-0 last:pb-0">
       <div className="flex items-start justify-between gap-3">
-        <p className="font-medium text-drs-ink">
+        <p className="min-w-0 font-medium break-words text-drs-ink">
           {name}
           {p && <span className="ml-1.5 text-sm font-normal text-drs-ink/70">sold in {p.uom}</span>}
         </p>
@@ -492,7 +495,7 @@ function DayLineRow({
     <li className="py-3 first:pt-0 last:pb-0">
       <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
         <div className="min-w-0">
-          <p className="font-medium text-drs-ink">{name}</p>
+          <p className="font-medium break-words text-drs-ink">{name}</p>
           <p className="text-sm text-drs-ink/75">
             {line.state === "none" ? (
               "No delivery"

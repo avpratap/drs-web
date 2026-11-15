@@ -103,12 +103,12 @@ function LineItem({ line, product }: { line: CartLine; product: ProductInfo | nu
               <Link
                 href={productHref(product)}
                 // -my/py: a 44px tap target without changing the line's layout.
-                className="-my-3 inline-block py-3 font-semibold text-drs-ink hover:text-drs-green hover:underline"
+                className="-my-3 inline-block py-3 font-semibold break-words text-drs-ink hover:text-drs-green hover:underline"
               >
                 {name}
               </Link>
             ) : (
-              <span className="font-semibold text-drs-ink">{name}</span>
+              <span className="font-semibold break-words text-drs-ink">{name}</span>
             )}
             <p className="mt-0.5 text-sm text-drs-ink/75">
               {pack.label} pack · {rupees(pack.packPrice)} each
