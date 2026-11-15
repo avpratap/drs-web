@@ -83,7 +83,7 @@ export default function RatingsPage() {
           <p className="mt-1 text-xs text-drs-ink/70">
             {lk.productName(r.product_id)} · user #{r.user_id}
           </p>
-          {r.comment && <p className="mt-1 text-sm whitespace-pre-wrap">{r.comment}</p>}
+          {r.comment && <p className="mt-1 text-sm whitespace-pre-wrap break-words">{r.comment}</p>}
           {r.admin_reply && (
             <p className="mt-2 border-l-2 border-drs-green/40 pl-2 text-xs text-drs-ink/80">
               <span className="font-semibold">DRS:</span> {r.admin_reply}

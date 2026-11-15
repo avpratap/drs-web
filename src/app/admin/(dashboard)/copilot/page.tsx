@@ -71,7 +71,7 @@ export default function CopilotPage() {
               <p className="ml-auto max-w-[85%] rounded-2xl rounded-br-sm bg-drs-green px-4 py-2.5 text-sm text-drs-cream">
                 {t.q}
               </p>
-              <div className="max-w-[90%] rounded-2xl rounded-bl-sm border border-drs-ink/10 bg-drs-cream/50 px-4 py-3 text-sm whitespace-pre-wrap text-drs-ink">
+              <div className="max-w-[90%] rounded-2xl rounded-bl-sm border border-drs-ink/10 bg-drs-cream/50 px-4 py-3 text-sm whitespace-pre-wrap break-words text-drs-ink">
                 <span className="mb-1.5 flex items-center gap-2 text-xs font-medium text-drs-green">
                   <SparklesIcon aria-hidden className="size-3.5" /> Copilot
                   {!t.live && <Badge>Offline answer</Badge>}

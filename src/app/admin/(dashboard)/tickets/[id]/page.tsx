@@ -49,7 +49,7 @@ export default function TicketShowPage() {
         description={t.ticket_no}
       />
       <div className="grid gap-6 lg:grid-cols-[1fr_20rem]">
-        <section aria-labelledby="thread" className="order-2 lg:order-1">
+        <section aria-labelledby="thread" className="order-2 min-w-0 lg:order-1">
           <h2 id="thread" className="sr-only">
             Conversation
           </h2>
@@ -70,7 +70,7 @@ export default function TicketShowPage() {
                   <p className="mb-1 text-xs font-semibold text-drs-ink/70">
                     {staff ? "DRS support" : humanize(m.sender_role)}
                   </p>
-                  <p className="whitespace-pre-wrap">{m.body}</p>
+                  <p className="whitespace-pre-wrap break-words">{m.body}</p>
                   {att && (
                     <a
                       href={att}
