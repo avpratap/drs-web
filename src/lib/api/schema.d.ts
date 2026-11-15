@@ -6064,6 +6064,11 @@ export interface components {
       body: string;
       /** Attachment Url */
       attachment_url?: string | null;
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at: string;
     };
     /** ModerateIn */
     ModerateIn: {

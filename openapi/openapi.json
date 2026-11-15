@@ -21537,13 +21537,19 @@
               }
             ],
             "title": "Attachment Url"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
           }
         },
         "type": "object",
         "required": [
           "id",
           "sender_role",
-          "body"
+          "body",
+          "created_at"
         ],
         "title": "MessageOut"
       },

@@ -9,6 +9,7 @@ import { Field } from "@/components/ui/field";
 import { Select } from "@/components/ui/select";
 import { api } from "@/lib/api/browser";
 import type { components } from "@/lib/api/client";
+import { formatDateTime } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { detailOf } from "./cart";
 import { LoadError, PanelSkeleton, useLoad } from "./use-load";
@@ -246,6 +247,9 @@ export function SupportThread({ id }: { id: number }) {
                     Attachment<span className="sr-only"> (opens in a new tab)</span>
                   </a>
                 )}
+                <p className={cn("mt-1.5 text-[11px]", mine ? "text-drs-cream/70" : "text-drs-ink/55")}>
+                  <time dateTime={m.created_at}>{formatDateTime(m.created_at)}</time>
+                </p>
               </div>
             </li>
           );
